@@ -1,0 +1,293 @@
+import random
+
+from django.db.models import Avg
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from apps.cognitive.models import (
+    AIDiagnosis,
+    BKTState,
+    BlindSpotIndex,
+    CognitiveIndex,
+)
+from apps.questions.models import Question
+from apps.questions.serializers import QuestionPublicSerializer
+from apps.rooms.models import Room, RoomMembership
+from services.bkt_engine import BKTEngine
+from services.claude_service import CognitiveAnalysisService
+from services.icc_calculator import ICCCalculator
+
+from .models import Answer, EvaluationSession
+from .serializers import (
+    CreateSessionSerializer,
+    EvaluationSessionSerializer,
+    SubmitAnswerSerializer,
+)
+
+
+def _is_member(user, room):
+    if room.owner_id == user.id:
+        return True
+    if room.mode == 'individual':
+        return room.owner_id == user.id
+    return RoomMembership.objects.filter(room=room, student=user).exists()
+
+
+def _gather_student_data(user, room):
+    bkt_states = BKTState.objects.filter(
+        student=user, node__room=room
+    ).select_related('node')
+
+    bkt_nodes = {b.node.name: round(b.p_mastery, 4) for b in bkt_states}
+
+    cog_indices = CognitiveIndex.objects.filter(
+        student=user, node__room=room
+    ).select_related('node').order_by('-created_at')
+
+    icc_avg = cog_indices.aggregate(avg=Avg('icc'))['avg'] or 0.0
+    confidence_avg = cog_indices.aggregate(
+        avg=Avg('declared_confidence')
+    )['avg'] or 0.0
+
+    overconfident_nodes = list(
+        cog_indices.filter(profile='overconfident')
+        .values_list('node__name', flat=True)
+        .distinct()
+    )
+
+    error_patterns = []
+    by_node = {}
+    answers = (
+        Answer.objects.filter(session__student=user, session__room=room)
+        .select_related('question__node')
+        .order_by('-created_at')[:50]
+    )
+    for ans in answers:
+        node_name = ans.question.node.name
+        by_node.setdefault(node_name, []).append(ans.is_correct)
+    for node_name, results in by_node.items():
+        if len(results) >= 2 and not results[0] and not results[1]:
+            error_patterns.append(node_name)
+
+    return {
+        'icc_avg': round(float(icc_avg), 4),
+        'bkt_nodes': bkt_nodes,
+        'confidence_avg': round(float(confidence_avg), 4),
+        'overconfident_nodes': overconfident_nodes,
+        'error_patterns': error_patterns,
+    }
+
+
+def _recalc_blind_spot(node, room):
+    avg_icc = (
+        CognitiveIndex.objects.filter(node=node)
+        .aggregate(avg=Avg('icc'))['avg']
+        or 0.0
+    )
+    students_count = (
+        CognitiveIndex.objects.filter(node=node)
+        .values('student').distinct().count()
+    )
+    bsi, _ = BlindSpotIndex.objects.get_or_create(node=node, room=room)
+    bsi.ipc = round(float(avg_icc), 4)
+    bsi.students_count = students_count
+    bsi.save()
+    return bsi
+
+
+class CreateSessionView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = CreateSessionSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        room = get_object_or_404(Room, id=serializer.validated_data['room_id'])
+
+        if not _is_member(request.user, room):
+            return Response(
+                {'detail': 'Not a member of this room.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        session = EvaluationSession.objects.create(student=request.user, room=room)
+        return Response(
+            EvaluationSessionSerializer(session).data, status=status.HTTP_201_CREATED
+        )
+
+
+class NextQuestionView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, session_id):
+        session = get_object_or_404(EvaluationSession, id=session_id)
+        if session.student_id != request.user.id:
+            return Response(
+                {'detail': 'Forbidden.'}, status=status.HTTP_403_FORBIDDEN
+            )
+
+        answered_ids = Answer.objects.filter(session=session).values_list(
+            'question_id', flat=True
+        )
+
+        candidates = Question.objects.filter(
+            node__room=session.room,
+            is_approved=True,
+        ).exclude(id__in=answered_ids)
+
+        if not candidates.exists():
+            return Response({'completed': True})
+
+        node_ids = candidates.values_list('node_id', flat=True).distinct()
+        bkt_states = BKTState.objects.filter(
+            student=request.user, node_id__in=node_ids
+        )
+        mastery_by_node = {b.node_id: b.p_mastery for b in bkt_states}
+
+        def node_priority(node_id):
+            return mastery_by_node.get(node_id, 0.3)
+
+        sorted_node_ids = sorted(node_ids, key=node_priority)
+        target_node_id = sorted_node_ids[0]
+
+        node_questions = list(candidates.filter(node_id=target_node_id))
+        question = random.choice(node_questions)
+
+        data = QuestionPublicSerializer(question).data
+        data['completed'] = False
+        return Response(data)
+
+
+class SubmitAnswerView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, session_id):
+        session = get_object_or_404(EvaluationSession, id=session_id)
+        if session.student_id != request.user.id:
+            return Response(
+                {'detail': 'Forbidden.'}, status=status.HTTP_403_FORBIDDEN
+            )
+        if session.status != EvaluationSession.STATUS_ACTIVE:
+            return Response(
+                {'detail': 'Session is not active.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        serializer = SubmitAnswerSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        question = get_object_or_404(Question, id=data['question_id'])
+        if question.node.room_id != session.room_id:
+            return Response(
+                {'detail': 'Question does not belong to this room.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        is_correct = data['selected_index'] == question.correct_index
+
+        bkt_state, _ = BKTState.objects.get_or_create(
+            student=request.user, node=question.node
+        )
+        engine = BKTEngine()
+        new_mastery = engine.update(
+            bkt_state.p_mastery,
+            bkt_state.p_transit,
+            bkt_state.p_slip,
+            bkt_state.p_guess,
+            is_correct,
+        )
+        bkt_state.p_mastery = new_mastery
+        bkt_state.attempts += 1
+        bkt_state.save()
+
+        calc = ICCCalculator()
+        icc_result = calc.calculate(data['declared_confidence'], new_mastery)
+
+        CognitiveIndex.objects.create(
+            student=request.user,
+            node=question.node,
+            session=session,
+            declared_confidence=data['declared_confidence'],
+            bkt_mastery=new_mastery,
+            icc=icc_result['icc'],
+            gap=icc_result['gap'],
+            profile=icc_result['profile'],
+        )
+
+        answer = Answer.objects.create(
+            session=session,
+            question=question,
+            selected_index=data['selected_index'],
+            is_correct=is_correct,
+            declared_confidence=data['declared_confidence'],
+            response_time_seconds=data.get('response_time_seconds', 0),
+            ai_feedback='',
+        )
+
+        ai_feedback = ''
+        risk_level = None
+
+        if icc_result['icc'] < 0.5:
+            claude = CognitiveAnalysisService()
+            try:
+                correct_answer = question.options[question.correct_index]
+                selected_answer = question.options[data['selected_index']]
+            except (IndexError, TypeError):
+                correct_answer = ''
+                selected_answer = ''
+
+            ai_feedback = claude.explain_error(
+                question.text,
+                selected_answer,
+                correct_answer,
+                {'p_mastery': new_mastery, 'node': question.node.name},
+            )
+            answer.ai_feedback = ai_feedback
+            answer.save(update_fields=['ai_feedback'])
+
+            student_data = _gather_student_data(request.user, session.room)
+            diagnosis = claude.analyze_student(student_data)
+
+            ai_diag = AIDiagnosis.objects.create(
+                student=request.user,
+                session=session,
+                profile=diagnosis.get('profile', 'calibrated'),
+                risk_level=diagnosis.get('risk_level', 'low'),
+                risk_nodes=diagnosis.get('risk_nodes', []) or [],
+                prediction=float(diagnosis.get('prediction', 0.5) or 0.5),
+                reasoning=diagnosis.get('reasoning', '') or '',
+                recommendation=diagnosis.get('recommendation', '') or '',
+            )
+            risk_level = ai_diag.risk_level
+
+        if session.room.mode == 'group':
+            _recalc_blind_spot(question.node, session.room)
+
+        return Response({
+            'is_correct': is_correct,
+            'icc': icc_result['icc'],
+            'gap': icc_result['gap'],
+            'profile': icc_result['profile'],
+            'bkt_mastery': new_mastery,
+            'ai_feedback': ai_feedback,
+            'risk_level': risk_level,
+        })
+
+
+class CompleteSessionView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, session_id):
+        session = get_object_or_404(EvaluationSession, id=session_id)
+        if session.student_id != request.user.id:
+            return Response(
+                {'detail': 'Forbidden.'}, status=status.HTTP_403_FORBIDDEN
+            )
+        session.status = EvaluationSession.STATUS_COMPLETED
+        session.completed_at = timezone.now()
+        session.save(update_fields=['status', 'completed_at'])
+        return Response(EvaluationSessionSerializer(session).data)

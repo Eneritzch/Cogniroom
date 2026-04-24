@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>CogniRoom — Demo</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { color: #60a5fa; margin-bottom: 6px; }
+        h2 { color: #93c5fd; margin-top: 24px; border-bottom: 1px solid #334155; padding-bottom: 4px; }
+        .card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        input, select, button, textarea {
+            font-family: inherit;
+            font-size: 14px;
+            padding: 8px 12px;
+            background: #0f172a;
+            color: #e2e8f0;
+            border: 1px solid #475569;
+            border-radius: 4px;
+            margin: 4px 0;
+        }
+        button {
+            background: #3b82f6;
+            cursor: pointer;
+            border: none;
+            color: white;
+            font-weight: 600;
+        }
+        button:hover { background: #2563eb; }
+        button:disabled { background: #475569; cursor: not-allowed; }
+        button.secondary { background: #475569; }
+        button.danger { background: #dc2626; }
+        .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        label { font-size: 12px; color: #94a3b8; display: block; margin-top: 8px; }
+        pre {
+            background: #0f172a;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+            border: 1px solid #334155;
+            max-height: 240px;
+        }
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            background: #334155;
+            margin-right: 4px;
+        }
+        .badge.ok { background: #059669; }
+        .badge.bad { background: #dc2626; }
+        .badge.warn { background: #d97706; }
+        .option {
+            display: block;
+            padding: 10px;
+            margin: 6px 0;
+            background: #0f172a;
+            border: 1px solid #475569;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .option:hover { background: #1e293b; border-color: #60a5fa; }
+        .option.selected { border-color: #60a5fa; background: #1e3a5f; }
+        .hidden { display: none; }
+        .muted { color: #94a3b8; font-size: 13px; }
+        .stat {
+            display: inline-block;
+            padding: 8px 12px;
+            background: #0f172a;
+            border-radius: 4px;
+            margin-right: 8px;
+            margin-top: 6px;
+            font-size: 13px;
+        }
+        .stat b { color: #60a5fa; }
+        a { color: #60a5fa; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🧠 CogniRoom — Demo</h1>
+    <p class="muted">
+        Demo rápido del API. Credenciales seed:
+        <code>teacher@cogniroom.com</code> /
+        <code>student1@cogniroom.com</code> — password:
+        <code>password123</code>.
+    </p>
+
+    <!-- LOGIN -->
+    <div class="card" id="loginCard">
+        <h2>1. Login</h2>
+        <div class="grid">
+            <div>
+                <label>Email</label>
+                <input id="email" type="email" value="student1@cogniroom.com" style="width:100%;">
+            </div>
+            <div>
+                <label>Password</label>
+                <input id="password" type="password" value="password123" style="width:100%;">
+            </div>
+        </div>
+        <div class="row" style="margin-top:12px;">
+            <button onclick="login()">Login</button>
+            <button class="secondary" onclick="setEmail('teacher@cogniroom.com')">Usar teacher</button>
+            <button class="secondary" onclick="setEmail('student1@cogniroom.com')">Student 1</button>
+            <button class="secondary" onclick="setEmail('student2@cogniroom.com')">Student 2</button>
+        </div>
+        <div id="loginMsg" class="muted" style="margin-top:8px;"></div>
+    </div>
+
+    <!-- USER INFO -->
+    <div class="card hidden" id="userCard">
+        <h2>2. Usuario actual</h2>
+        <div id="userInfo"></div>
+        <button class="danger" onclick="logout()" style="margin-top:8px;">Logout</button>
+    </div>
+
+    <!-- ROOMS -->
+    <div class="card hidden" id="roomsCard">
+        <h2>3. Salas</h2>
+        <div class="row">
+            <button onclick="loadRooms()">Listar mis salas</button>
+            <input id="joinCode" placeholder="ACCESS CODE" style="text-transform:uppercase;">
+            <button onclick="joinRoom()">Unirme con código</button>
+        </div>
+        <div id="roomsList" style="margin-top:12px;"></div>
+    </div>
+
+    <!-- SESSION -->
+    <div class="card hidden" id="sessionCard">
+        <h2>4. Sesión de evaluación</h2>
+        <div id="sessionInfo" class="muted"></div>
+        <div class="row" style="margin-top:8px;">
+            <button onclick="startSession()">Iniciar nueva sesión</button>
+            <button class="secondary" onclick="nextQuestion()" id="nextBtn" disabled>Siguiente pregunta</button>
+            <button class="danger" onclick="completeSession()" id="completeBtn" disabled>Completar sesión</button>
+        </div>
+        <div id="questionArea" style="margin-top:16px;"></div>
+        <div id="answerResult" style="margin-top:12px;"></div>
+    </div>
+
+    <!-- COGNITIVE -->
+    <div class="card hidden" id="cognitiveCard">
+        <h2>5. Perfil cognitivo</h2>
+        <div class="row">
+            <button onclick="loadProfile()">Mi perfil</button>
+            <button onclick="loadNodes()">Mis nodos</button>
+            <button onclick="loadBlindSpots()" id="blindBtn">Blind spots (teacher)</button>
+            <button onclick="loadAtRisk()" id="riskBtn">Alumnos en riesgo (teacher)</button>
+        </div>
+        <div id="cognitiveOut" style="margin-top:12px;"></div>
+    </div>
+</div>
+
+<script>
+const API = '/api';
+let token = localStorage.getItem('token') || null;
+let currentUser = null;
+let currentRoom = null;
+let currentSession = null;
+let currentQuestion = null;
+let selectedOption = null;
+
+function setEmail(e) { document.getElementById('email').value = e; }
+
+async function api(path, opts = {}) {
+    opts.headers = opts.headers || {};
+    opts.headers['Content-Type'] = 'application/json';
+    if (token) opts.headers['Authorization'] = 'Bearer ' + token;
+    if (opts.body && typeof opts.body !== 'string') opts.body = JSON.stringify(opts.body);
+    const r = await fetch(API + path, opts);
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) {
+        const msg = data.detail || JSON.stringify(data);
+        throw new Error(msg);
+    }
+    return data;
+}
+
+async function login() {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const msg = document.getElementById('loginMsg');
+    msg.textContent = 'Autenticando...';
+    try {
+        const data = await api('/auth/login/', {
+            method: 'POST',
+            body: { email, password },
+        });
+        token = data.tokens.access;
+        localStorage.setItem('token', token);
+        currentUser = data.user;
+        msg.textContent = 'Login OK.';
+        showUI();
+    } catch (e) {
+        msg.textContent = 'Error: ' + e.message;
+    }
+}
+
+async function loadMe() {
+    try {
+        currentUser = await api('/auth/me/');
+        return true;
+    } catch (e) {
+        token = null;
+        localStorage.removeItem('token');
+        return false;
+    }
+}
+
+function logout() {
+    token = null;
+    currentUser = null;
+    currentRoom = null;
+    currentSession = null;
+    localStorage.removeItem('token');
+    document.getElementById('userCard').classList.add('hidden');
+    document.getElementById('roomsCard').classList.add('hidden');
+    document.getElementById('sessionCard').classList.add('hidden');
+    document.getElementById('cognitiveCard').classList.add('hidden');
+    document.getElementById('loginMsg').textContent = 'Sesión cerrada.';
+}
+
+function showUI() {
+    document.getElementById('userCard').classList.remove('hidden');
+    document.getElementById('roomsCard').classList.remove('hidden');
+    document.getElementById('sessionCard').classList.remove('hidden');
+    document.getElementById('cognitiveCard').classList.remove('hidden');
+    const info = document.getElementById('userInfo');
+    info.innerHTML = `
+        <span class="badge">${currentUser.role}</span>
+        <b>${currentUser.username}</b> — ${currentUser.email}
+        ${currentUser.institution ? '<br><span class="muted">' + currentUser.institution + '</span>' : ''}
+    `;
+    const isTeacher = currentUser.role === 'teacher';
+    document.getElementById('blindBtn').disabled = !isTeacher;
+    document.getElementById('riskBtn').disabled = !isTeacher;
+}
+
+async function loadRooms() {
+    const list = document.getElementById('roomsList');
+    list.innerHTML = '<span class="muted">Cargando...</span>';
+    try {
+        const rooms = await api('/rooms/');
+        if (rooms.length === 0) {
+            list.innerHTML = '<span class="muted">Sin salas.</span>';
+            return;
+        }
+        list.innerHTML = rooms.map(r => `
+            <div class="card" style="background:#0f172a;">
+                <b>${r.name}</b>
+                <span class="badge">${r.mode}</span>
+                ${r.access_code ? '<span class="badge">' + r.access_code + '</span>' : ''}
+                <br>
+                <span class="muted">${r.subject} · owner: ${r.owner.username}</span>
+                <br>
+                <button onclick="selectRoom(${r.id}, '${r.name.replace(/'/g, "\\'")}')" style="margin-top:6px;">Seleccionar</button>
+            </div>
+        `).join('');
+    } catch (e) {
+        list.innerHTML = 'Error: ' + e.message;
+    }
+}
+
+async function joinRoom() {
+    const code = document.getElementById('joinCode').value.trim().toUpperCase();
+    if (!code) return;
+    try {
+        const r = await api('/rooms/join/', { method: 'POST', body: { access_code: code } });
+        alert('Te uniste a: ' + r.name);
+        loadRooms();
+    } catch (e) {
+        alert('Error: ' + e.message);
+    }
+}
+
+function selectRoom(id, name) {
+    currentRoom = { id, name };
+    document.getElementById('sessionInfo').innerHTML =
+        `Sala seleccionada: <b>${name}</b> (id ${id})`;
+}
+
+async function startSession() {
+    if (!currentRoom) { alert('Selecciona una sala primero.'); return; }
+    try {
+        const s = await api('/sessions/', { method: 'POST', body: { room_id: currentRoom.id } });
+        currentSession = s;
+        document.getElementById('sessionInfo').innerHTML =
+            `Sesión <b>#${s.id}</b> activa en <b>${currentRoom.name}</b>`;
+        document.getElementById('nextBtn').disabled = false;
+        document.getElementById('completeBtn').disabled = false;
+        nextQuestion();
+    } catch (e) {
+        alert('Error: ' + e.message);
+    }
+}
+
+async function nextQuestion() {
+    if (!currentSession) return;
+    const area = document.getElementById('questionArea');
+    area.innerHTML = '<span class="muted">Cargando...</span>';
+    document.getElementById('answerResult').innerHTML = '';
+    try {
+        const q = await api(`/sessions/${currentSession.id}/next-question/`);
+        if (q.completed) {
+            area.innerHTML = '<b>🎉 No quedan preguntas en la sala.</b>';
+            currentQuestion = null;
+            return;
+        }
+        currentQuestion = q;
+        selectedOption = null;
+        area.innerHTML = `
+            <div class="muted">Dificultad: ${q.difficulty} · Nodo: ${q.node}</div>
+            <div style="font-size:16px; margin:10px 0;"><b>${escapeHtml(q.text)}</b></div>
+            <div id="options">
+                ${q.options.map((opt, i) => `
+                    <div class="option" onclick="selectOption(${i})" id="opt${i}">
+                        <b>${String.fromCharCode(65 + i)})</b> ${escapeHtml(opt)}
+                    </div>
+                `).join('')}
+            </div>
+            <label>¿Qué tan seguro estás? (declared_confidence: 0 a 1)</label>
+            <input type="range" id="confidence" min="0" max="1" step="0.05" value="0.7"
+                   oninput="document.getElementById('confVal').textContent = this.value">
+            <span id="confVal">0.7</span>
+            <br>
+            <button onclick="submitAnswer()" style="margin-top:8px;">Enviar respuesta</button>
+        `;
+    } catch (e) {
+        area.innerHTML = 'Error: ' + e.message;
+    }
+}
+
+function selectOption(i) {
+    selectedOption = i;
+    document.querySelectorAll('.option').forEach((el, idx) => {
+        el.classList.toggle('selected', idx === i);
+    });
+}
+
+async function submitAnswer() {
+    if (selectedOption === null) { alert('Selecciona una opción.'); return; }
+    const confidence = parseFloat(document.getElementById('confidence').value);
+    try {
+        const r = await api(`/sessions/${currentSession.id}/answer/`, {
+            method: 'POST',
+            body: {
+                question_id: currentQuestion.id,
+                selected_index: selectedOption,
+                declared_confidence: confidence,
+                response_time_seconds: 0,
+            },
+        });
+        const correctBadge = r.is_correct
+            ? '<span class="badge ok">✓ Correcto</span>'
+            : '<span class="badge bad">✗ Incorrecto</span>';
+        const profileBadge = `<span class="badge ${r.profile === 'calibrated' ? 'ok' : 'warn'}">${r.profile}</span>`;
+        document.getElementById('answerResult').innerHTML = `
+            <div class="card" style="background:#0f172a;">
+                ${correctBadge} ${profileBadge}
+                ${r.risk_level ? '<span class="badge bad">risk: ' + r.risk_level + '</span>' : ''}
+                <div style="margin-top:8px;">
+                    <span class="stat">ICC: <b>${r.icc}</b></span>
+                    <span class="stat">Gap: <b>${r.gap}</b></span>
+                    <span class="stat">Mastery: <b>${r.bkt_mastery}</b></span>
+                </div>
+                ${r.ai_feedback ? '<div style="margin-top:8px; padding:8px; background:#1e293b; border-left:3px solid #60a5fa;"><b>IA:</b> ' + escapeHtml(r.ai_feedback) + '</div>' : ''}
+            </div>
+        `;
+    } catch (e) {
+        document.getElementById('answerResult').innerHTML = 'Error: ' + e.message;
+    }
+}
+
+async function completeSession() {
+    if (!currentSession) return;
+    try {
+        await api(`/sessions/${currentSession.id}/complete/`, { method: 'POST' });
+        document.getElementById('sessionInfo').innerHTML += ' <span class="badge">completada</span>';
+        document.getElementById('nextBtn').disabled = true;
+        document.getElementById('completeBtn').disabled = true;
+        currentSession = null;
+    } catch (e) {
+        alert('Error: ' + e.message);
+    }
+}
+
+async function loadProfile() {
+    try {
+        const data = await api('/cognitive/my-profile/');
+        document.getElementById('cognitiveOut').innerHTML =
+            '<pre>' + escapeHtml(JSON.stringify(data, null, 2)) + '</pre>';
+    } catch (e) {
+        document.getElementById('cognitiveOut').innerHTML = 'Error: ' + e.message;
+    }
+}
+
+async function loadNodes() {
+    try {
+        const data = await api('/cognitive/my-nodes/');
+        document.getElementById('cognitiveOut').innerHTML =
+            '<pre>' + escapeHtml(JSON.stringify(data, null, 2)) + '</pre>';
+    } catch (e) {
+        document.getElementById('cognitiveOut').innerHTML = 'Error: ' + e.message;
+    }
+}
+
+async function loadBlindSpots() {
+    if (!currentRoom) { alert('Selecciona una sala.'); return; }
+    try {
+        const data = await api(`/rooms/${currentRoom.id}/blind-spots/`);
+        document.getElementById('cognitiveOut').innerHTML =
+            '<pre>' + escapeHtml(JSON.stringify(data, null, 2)) + '</pre>';
+    } catch (e) {
+        document.getElementById('cognitiveOut').innerHTML = 'Error: ' + e.message;
+    }
+}
+
+async function loadAtRisk() {
+    if (!currentRoom) { alert('Selecciona una sala.'); return; }
+    try {
+        const data = await api(`/rooms/${currentRoom.id}/at-risk/`);
+        document.getElementById('cognitiveOut').innerHTML =
+            '<pre>' + escapeHtml(JSON.stringify(data, null, 2)) + '</pre>';
+    } catch (e) {
+        document.getElementById('cognitiveOut').innerHTML = 'Error: ' + e.message;
+    }
+}
+
+function escapeHtml(s) {
+    if (s == null) return '';
+    return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+// Auto-login si hay token guardado
+(async () => {
+    if (token && await loadMe()) {
+        document.getElementById('loginMsg').textContent = 'Sesión restaurada.';
+        showUI();
+    }
+})();
+</script>
+</body>
+</html>
