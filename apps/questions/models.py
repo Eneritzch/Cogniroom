@@ -12,14 +12,22 @@ class KnowledgeNode(models.Model):
         return f'{self.name} ({self.room.name})'
 
 
+def _pdf_upload_path(instance, filename):
+    return f'pdfs/room_{instance.room_id}/{filename}'
+
+
 class PDFDocument(models.Model):
     room = models.ForeignKey('rooms.Room', on_delete=models.CASCADE, related_name='pdfs')
     uploaded_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='pdfs'
     )
-    file_path = models.CharField(max_length=500)
+    file_path = models.FileField(upload_to=_pdf_upload_path, max_length=500)
+    extracted_text = models.TextField(blank=True)
     processed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'PDF#{self.pk} ({self.room.name})'
 
 
 class Question(models.Model):
@@ -55,14 +63,15 @@ class Question(models.Model):
             raise ValidationError('correct_index must be 0, 1, 2 or 3.')
 
     def save(self, *args, **kwargs):
-        if self.source == self.SOURCE_MANUAL:
-            self.is_approved = True
-        elif self.source == self.SOURCE_AI:
-            room_mode = self.node.room.mode
-            if room_mode == 'individual':
+        if self._state.adding:
+            if self.source == self.SOURCE_MANUAL:
                 self.is_approved = True
-            else:
-                self.is_approved = False
+            elif self.source == self.SOURCE_AI:
+                room_mode = self.node.room.mode
+                if room_mode == 'individual':
+                    self.is_approved = True
+                else:
+                    self.is_approved = False
         super().save(*args, **kwargs)
 
     def __str__(self):

@@ -1,0 +1,145 @@
+/* ============================================================
+   DESIGN TOKENS — CogniRoom
+   Una sola fuente de verdad para colores, espaciado, tipografía,
+   sombras, radios y motion. Cualquier cambio visual sistémico
+   ocurre aquí, no en archivos de componentes.
+   ============================================================ */
+
+:root {
+  /* ---------- Color · Surfaces ---------- */
+  --c-bg: #07090f;
+  --c-bg-elevated: #0f1320;
+  --c-surface: #161b2c;
+  --c-surface-2: #1c2238;
+  --c-border: #262d44;
+  --c-border-strong: #38415e;
+
+  /* ---------- Color · Text ---------- */
+  --c-text: #ecf0fb;
+  --c-text-muted: #8a93b0;
+  --c-text-faint: #565d77;
+  --c-text-on-accent: #051018;
+
+  /* ---------- Color · Brand & Accents ---------- */
+  --c-brand: #00d8ff;
+  --c-brand-strong: #00f0ff;
+  --c-brand-glow: rgba(0, 216, 255, 0.18);
+  --c-violet: #8b7dff;
+  --c-violet-glow: rgba(139, 125, 255, 0.18);
+
+  /* ---------- Color · Semantic (cognitive states) ---------- */
+  --c-calibrated: #34d399;
+  --c-calibrated-bg: rgba(52, 211, 153, 0.12);
+  --c-overconfident: #f59e0b;
+  --c-overconfident-bg: rgba(245, 158, 11, 0.12);
+  --c-underconfident: #60a5fa;
+  --c-underconfident-bg: rgba(96, 165, 250, 0.12);
+
+  /* ---------- Color · Status ---------- */
+  --c-success: #22c55e;
+  --c-warning: #eab308;
+  --c-danger: #ef4444;
+  --c-danger-bg: rgba(239, 68, 68, 0.12);
+  --c-info: #3b82f6;
+
+  /* ---------- Color · Risk ---------- */
+  --c-risk-high: #ef4444;
+  --c-risk-medium: #f59e0b;
+  --c-risk-low: #34d399;
+
+  /* ---------- Typography ---------- */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular,
+    Consolas, monospace;
+
+  --fs-xs: 0.75rem;     /* 12 */
+  --fs-sm: 0.875rem;    /* 14 */
+  --fs-base: 1rem;      /* 16 */
+  --fs-md: 1.125rem;    /* 18 */
+  --fs-lg: 1.375rem;    /* 22 */
+  --fs-xl: 1.75rem;     /* 28 */
+  --fs-2xl: 2.5rem;     /* 40 */
+  --fs-display: 4rem;   /* 64 */
+
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+
+  --lh-tight: 1.15;
+  --lh-snug: 1.35;
+  --lh-base: 1.55;
+
+  --tracking-tight: -0.02em;
+  --tracking-wide: 0.02em;
+  --tracking-caps: 0.12em;
+
+  /* ---------- Spacing scale (4px base) ---------- */
+  --s-1: 0.25rem;   /* 4  */
+  --s-2: 0.5rem;    /* 8  */
+  --s-3: 0.75rem;   /* 12 */
+  --s-4: 1rem;      /* 16 */
+  --s-5: 1.25rem;   /* 20 */
+  --s-6: 1.5rem;    /* 24 */
+  --s-8: 2rem;      /* 32 */
+  --s-10: 2.5rem;   /* 40 */
+  --s-12: 3rem;     /* 48 */
+  --s-16: 4rem;     /* 64 */
+  --s-20: 5rem;     /* 80 */
+
+  /* ---------- Radii ---------- */
+  --r-xs: 4px;
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
+  --r-xl: 24px;
+  --r-pill: 999px;
+
+  /* ---------- Shadows ---------- */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.45);
+  --shadow-glow: 0 0 0 1px var(--c-brand-glow), 0 8px 32px var(--c-brand-glow);
+
+  /* ---------- Motion ---------- */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast: 120ms;
+  --dur-base: 220ms;
+  --dur-slow: 420ms;
+
+  /* ---------- Layout ---------- */
+  --content-max: 1280px;
+  --header-h: 64px;
+}
+
+/* Light theme override (opt-in via [data-theme="light"]) */
+[data-theme='light'] {
+  --c-bg: #f6f7fb;
+  --c-bg-elevated: #ffffff;
+  --c-surface: #ffffff;
+  --c-surface-2: #f0f2f8;
+  --c-border: #e2e6ef;
+  --c-border-strong: #c8cee0;
+  --c-text: #0f1320;
+  --c-text-muted: #5b6379;
+  --c-text-faint: #98a0b6;
+  --c-brand-glow: rgba(0, 145, 175, 0.14);
+}
+
+/* Reduced motion — accessibility */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0ms;
+    --dur-base: 0ms;
+    --dur-slow: 0ms;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

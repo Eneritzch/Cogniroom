@@ -107,8 +107,9 @@ Documento PDF subido como fuente de generación de preguntas.
 | `id` | BigAutoField | PK | — |
 | `room_id` | FK → rooms_room | ON DELETE CASCADE | — |
 | `uploaded_by_id` | FK → users_user | ON DELETE CASCADE | — |
-| `file_path` | CharField(500) | NOT NULL | Ruta relativa en `media/` |
-| `processed` | Boolean | default False | ¿Ya se extrajo texto? |
+| `file_path` | FileField(500) | NOT NULL | Almacenado en `media/pdfs/room_<id>/` |
+| `extracted_text` | TextField | BLANK | Texto extraído por `pdfplumber` |
+| `processed` | Boolean | default False | True tras extracción exitosa |
 | `created_at` | DateTime | auto_now_add | — |
 
 ### `questions_question`

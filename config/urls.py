@@ -30,6 +30,12 @@ def api_root(request):
                 'approve': 'POST /api/rooms/{room_id}/questions/approve/',
                 'list': 'GET /api/rooms/{room_id}/questions/',
             },
+            'pdfs': {
+                'upload': 'POST /api/rooms/{room_id}/pdfs/  (multipart, field: file)',
+                'list': 'GET /api/rooms/{room_id}/pdfs/',
+                'detail': 'GET /api/rooms/{room_id}/pdfs/{pdf_id}/',
+                'delete': 'DELETE /api/rooms/{room_id}/pdfs/{pdf_id}/',
+            },
             'sessions': {
                 'create': 'POST /api/sessions/',
                 'next_question': 'GET /api/sessions/{id}/next-question/',
@@ -47,7 +53,9 @@ def api_root(request):
 
 
 urlpatterns = [
-    path('', TemplateView.as_view(template_name='demo.html')),
+    path('', TemplateView.as_view(template_name='app/index.html')),
+    path('app/', TemplateView.as_view(template_name='app/index.html')),
+    path('app/dashboard/', TemplateView.as_view(template_name='app/dashboard.html')),
     path('demo/', TemplateView.as_view(template_name='demo.html')),
     path('api/', api_root),
     path('api/auth/', include('apps.users.urls')),

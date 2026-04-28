@@ -1,0 +1,118 @@
+/**
+ * Cliente API — fetch wrapper con JWT, manejo de refresh y errores tipados.
+ * Todos los módulos UI llaman aquí, no directamente a fetch.
+ */
+
+const API_BASE = '/api';
+const TOKEN_KEY = 'cogniroom.access';
+const REFRESH_KEY = 'cogniroom.refresh';
+
+export const tokens = {
+    get access() { return localStorage.getItem(TOKEN_KEY); },
+    set access(v) { v ? localStorage.setItem(TOKEN_KEY, v) : localStorage.removeItem(TOKEN_KEY); },
+    get refresh() { return localStorage.getItem(REFRESH_KEY); },
+    set refresh(v) { v ? localStorage.setItem(REFRESH_KEY, v) : localStorage.removeItem(REFRESH_KEY); },
+    clear() {
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(REFRESH_KEY);
+    },
+};
+
+export class ApiError extends Error {
+    constructor(message, status, body) {
+        super(message);
+        this.status = status;
+        this.body = body;
+    }
+}
+
+async function request(path, { method = 'GET', body, auth = true, isFormData = false } = {}) {
+    const headers = {};
+    if (!isFormData) headers['Content-Type'] = 'application/json';
+    if (auth && tokens.access) headers['Authorization'] = `Bearer ${tokens.access}`;
+
+    const init = { method, headers };
+    if (body !== undefined) {
+        init.body = isFormData ? body : JSON.stringify(body);
+    }
+
+    const res = await fetch(API_BASE + path, init);
+
+    if (res.status === 204) return null;
+
+    let data = null;
+    try { data = await res.json(); } catch (_) { /* no body */ }
+
+    if (!res.ok) {
+        const msg = data?.detail || `HTTP ${res.status}`;
+        throw new ApiError(msg, res.status, data);
+    }
+    return data;
+}
+
+/* ---------- Auth ---------- */
+export const auth = {
+    login: (email, password) => request('/auth/login/', {
+        method: 'POST', body: { email, password }, auth: false,
+    }),
+    me: () => request('/auth/me/'),
+    logout: () => tokens.clear(),
+};
+
+/* ---------- Rooms ---------- */
+export const rooms = {
+    list: () => request('/rooms/'),
+    create: (data) => request('/rooms/', { method: 'POST', body: data }),
+    join: (access_code) => request('/rooms/join/', { method: 'POST', body: { access_code } }),
+    members: (roomId) => request(`/rooms/${roomId}/members/`),
+    blindSpots: (roomId) => request(`/rooms/${roomId}/blind-spots/`),
+    atRisk: (roomId) => request(`/rooms/${roomId}/at-risk/`),
+};
+
+/* ---------- Questions ---------- */
+export const questions = {
+    listNodes: (roomId) => request(`/rooms/${roomId}/nodes/`),
+    createNode: (roomId, name) => request(`/rooms/${roomId}/nodes/`, {
+        method: 'POST', body: { name },
+    }),
+    list: (roomId) => request(`/rooms/${roomId}/questions/`),
+    generate: (roomId, payload) => request(`/rooms/${roomId}/questions/generate/`, {
+        method: 'POST', body: payload,
+    }),
+    manual: (roomId, payload) => request(`/rooms/${roomId}/questions/manual/`, {
+        method: 'POST', body: payload,
+    }),
+    approve: (roomId, ids) => request(`/rooms/${roomId}/questions/approve/`, {
+        method: 'POST', body: { question_ids: ids },
+    }),
+};
+
+/* ---------- PDFs ---------- */
+export const pdfs = {
+    list: (roomId) => request(`/rooms/${roomId}/pdfs/`),
+    detail: (roomId, pdfId) => request(`/rooms/${roomId}/pdfs/${pdfId}/`),
+    upload: (roomId, file) => {
+        const fd = new FormData();
+        fd.append('file', file);
+        return request(`/rooms/${roomId}/pdfs/`, {
+            method: 'POST', body: fd, isFormData: true,
+        });
+    },
+    delete: (roomId, pdfId) => request(`/rooms/${roomId}/pdfs/${pdfId}/`, { method: 'DELETE' }),
+};
+
+/* ---------- Sessions ---------- */
+export const sessions = {
+    create: (roomId) => request('/sessions/', { method: 'POST', body: { room_id: roomId } }),
+    nextQuestion: (sessionId) => request(`/sessions/${sessionId}/next-question/`),
+    answer: (sessionId, payload) => request(`/sessions/${sessionId}/answer/`, {
+        method: 'POST', body: payload,
+    }),
+    complete: (sessionId) => request(`/sessions/${sessionId}/complete/`, { method: 'POST' }),
+};
+
+/* ---------- Cognitive ---------- */
+export const cognitive = {
+    myProfile: () => request('/cognitive/my-profile/'),
+    myNodes: () => request('/cognitive/my-nodes/'),
+};

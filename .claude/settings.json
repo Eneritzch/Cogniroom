@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python manage.py *)",
+      "Bash(pip install *)",
+      "Bash(pip list)",
+      "Bash(pip freeze)",
+      "Bash(git status)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git branch*)",
+      "Bash(git show*)",
+      "Bash(ls *)",
+      "Read",
+      "Glob",
+      "Grep"
+    ]
+  }
+}

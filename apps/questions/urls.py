@@ -5,6 +5,8 @@ from .views import (
     GenerateQuestionsView,
     ManualQuestionView,
     NodeListCreateView,
+    PDFDetailView,
+    PDFUploadListView,
     QuestionListView,
 )
 
@@ -29,5 +31,15 @@ urlpatterns = [
         '<int:room_id>/questions/',
         QuestionListView.as_view(),
         name='question-list',
+    ),
+    path(
+        '<int:room_id>/pdfs/',
+        PDFUploadListView.as_view(),
+        name='pdf-upload-list',
+    ),
+    path(
+        '<int:room_id>/pdfs/<int:pdf_id>/',
+        PDFDetailView.as_view(),
+        name='pdf-detail',
     ),
 ]

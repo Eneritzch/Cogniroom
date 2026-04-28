@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import status
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -7,12 +8,15 @@ from rest_framework.views import APIView
 from apps.rooms.models import Room, RoomMembership
 from services.claude_service import CognitiveAnalysisService
 
-from .models import KnowledgeNode, Question
+from .models import KnowledgeNode, PDFDocument, Question
 from .serializers import (
     ApproveQuestionsSerializer,
     GenerateQuestionsSerializer,
     KnowledgeNodeSerializer,
     ManualQuestionSerializer,
+    PDFDocumentDetailSerializer,
+    PDFDocumentSerializer,
+    PDFUploadSerializer,
     QuestionPublicSerializer,
     QuestionSerializer,
 )
@@ -73,9 +77,19 @@ class GenerateQuestionsView(APIView):
 
         node = get_object_or_404(KnowledgeNode, id=data['node_id'], room=room)
 
+        content = data.get('content') or ''
+        if not content and data.get('pdf_id'):
+            pdf = get_object_or_404(PDFDocument, id=data['pdf_id'], room=room)
+            content = pdf.extracted_text
+            if not content:
+                return Response(
+                    {'detail': 'PDF has no extracted text yet.'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
         claude = CognitiveAnalysisService()
         generated = claude.generate_questions(
-            content=data['content'],
+            content=content,
             node_name=node.name,
             difficulty=data['difficulty'],
             count=data['count'],
@@ -116,9 +130,14 @@ class ManualQuestionView(APIView):
 
     def post(self, request, room_id):
         room = get_object_or_404(Room, id=room_id)
-        if room.owner_id != request.user.id or request.user.role != 'teacher':
+        if room.owner_id != request.user.id:
             return Response(
-                {'detail': 'Only the teacher owner can create manual questions.'},
+                {'detail': 'Only the room owner can create manual questions.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        if room.mode == 'group' and request.user.role != 'teacher':
+            return Response(
+                {'detail': 'Group rooms require a teacher owner.'},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
@@ -181,3 +200,109 @@ class QuestionListView(APIView):
         if request.user.id == room.owner_id:
             return Response(QuestionSerializer(qs, many=True).data)
         return Response(QuestionPublicSerializer(qs, many=True).data)
+
+
+def _extract_pdf_text(file_obj) -> str:
+    import pdfplumber
+
+    parts = []
+    with pdfplumber.open(file_obj) as pdf:
+        for page in pdf.pages:
+            text = page.extract_text() or ''
+            if text:
+                parts.append(text)
+    return '\n\n'.join(parts).strip()
+
+
+class PDFUploadListView(APIView):
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get(self, request, room_id):
+        room = get_object_or_404(Room, id=room_id)
+        if not _is_member(request.user, room):
+            return Response(
+                {'detail': 'Not a member of this room.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        pdfs = PDFDocument.objects.filter(room=room).order_by('-created_at')
+        return Response(PDFDocumentSerializer(pdfs, many=True).data)
+
+    def post(self, request, room_id):
+        room = get_object_or_404(Room, id=room_id)
+        if room.owner_id != request.user.id:
+            return Response(
+                {'detail': 'Only the room owner can upload PDFs.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        serializer = PDFUploadSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        uploaded = serializer.validated_data['file']
+
+        if not uploaded.name.lower().endswith('.pdf'):
+            return Response(
+                {'detail': 'File must be a .pdf'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        pdf = PDFDocument.objects.create(
+            room=room,
+            uploaded_by=request.user,
+            file_path=uploaded,
+        )
+
+        try:
+            pdf.file_path.open('rb')
+            pdf.extracted_text = _extract_pdf_text(pdf.file_path)
+            pdf.processed = True
+            pdf.save(update_fields=['extracted_text', 'processed'])
+        except Exception as e:
+            pdf.processed = False
+            pdf.save(update_fields=['processed'])
+            return Response(
+                {
+                    'detail': f'PDF uploaded but extraction failed: {e}',
+                    'pdf': PDFDocumentSerializer(pdf).data,
+                },
+                status=status.HTTP_201_CREATED,
+            )
+        finally:
+            try:
+                pdf.file_path.close()
+            except Exception:
+                pass
+
+        return Response(
+            PDFDocumentDetailSerializer(pdf).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class PDFDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, room_id, pdf_id):
+        room = get_object_or_404(Room, id=room_id)
+        if not _is_member(request.user, room):
+            return Response(
+                {'detail': 'Not a member of this room.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        pdf = get_object_or_404(PDFDocument, id=pdf_id, room=room)
+        return Response(PDFDocumentDetailSerializer(pdf).data)
+
+    def delete(self, request, room_id, pdf_id):
+        room = get_object_or_404(Room, id=room_id)
+        if room.owner_id != request.user.id:
+            return Response(
+                {'detail': 'Only the room owner can delete PDFs.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        pdf = get_object_or_404(PDFDocument, id=pdf_id, room=room)
+        try:
+            pdf.file_path.delete(save=False)
+        except Exception:
+            pass
+        pdf.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
