@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="CogniRoom — Revolucionando el aprendizaje con Inteligencia Artificial y métricas cognitivas reales.">
+    <title>CogniRoom · Aprende inteligentemente</title>
+    <link rel="preconnect" href="https://rsms.me">
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'app/css/tokens.css' %}">
+    <link rel="stylesheet" href="{% static 'app/css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'app/css/landing.css' %}">
+</head>
+<body class="landing-body">
+
+    <!-- Navigation -->
+    <nav class="landing-nav">
+        <div class="landing-container landing-nav__inner">
+            <a href="/" class="landing-brand">
+                CogniRoom <span>AI</span>
+            </a>
+            <div class="landing-nav__actions">
+                <a href="/app/design-system/" class="landing-nav__link">Design System</a>
+                <a href="/app/" class="btn btn--primary">Acceder</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="landing-hero">
+        <div class="landing-aurora" aria-hidden="true"></div>
+        <div class="landing-container landing-hero__inner">
+            <div class="landing-hero__badge">
+                <span class="landing-hero__dot"></span>
+                v1.0 Ahora disponible para instituciones
+            </div>
+            
+            <h1 class="landing-hero__title">
+                Saber lo que <span>crees saber</span>.
+            </h1>
+            
+            <p class="landing-hero__lead">
+                CogniRoom utiliza Inteligencia Artificial y Bayesian Knowledge Tracing para medir tu dominio real y eliminar la ilusión de competencia. Descubre tu verdadero potencial cognitivo.
+            </p>
+            
+            <div class="landing-hero__actions">
+                <a href="/app/" class="landing-btn-primary">
+                    Empezar ahora
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                </a>
+                <a href="#funciona" class="btn btn--ghost">Cómo funciona</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Showcase Section -->
+    <section class="landing-showcase">
+        <div class="landing-container">
+            <div class="landing-showcase__frame">
+                <div class="landing-showcase__header">
+                    <div class="landing-showcase__dots"><span></span><span></span><span></span></div>
+                    <div class="landing-showcase__url">cogniroom.ai/app/dashboard</div>
+                </div>
+                <div class="landing-showcase__content">
+                    <!-- Representación visual del dashboard simplificada -->
+                    <div class="ls-preview">
+                        <div class="ls-sidebar"></div>
+                        <div class="ls-main">
+                            <div class="ls-grid">
+                                <div class="ls-card ls-card--main"></div>
+                                <div class="ls-card"></div>
+                                <div class="ls-card"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="landing-features" id="funciona">
+        <div class="landing-container">
+            <div class="landing-section-head">
+                <h2 class="landing-section-title">Tecnología de vanguardia</h2>
+                <p class="landing-section-lead">Tres pilares diseñados para optimizar la curva de aprendizaje de forma científica.</p>
+            </div>
+            
+            <div class="landing-features__grid">
+                <article class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                    </div>
+                    <h3 class="feature-title">BKT Dinámico</h3>
+                    <p class="feature-desc">
+                        Rastreo de Conocimiento Bayesiano en tiempo real. Medimos tu probabilidad de dominio basándonos en tu historial interactivo.
+                    </p>
+                </article>
+
+                <article class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                    </div>
+                    <h3 class="feature-title">Índice ICC</h3>
+                    <p class="feature-desc">
+                        Identificamos si estás calibrado, sobreconfiado o subconfiado. Ajusta tu percepción de la realidad con datos precisos.
+                    </p>
+                </article>
+
+                <article class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    </div>
+                    <h3 class="feature-title">IA Predictiva</h3>
+                    <p class="feature-desc">
+                        Intervenciones generadas por Claude (Anthropic). Obtén explicaciones precisas justo cuando tu curva de aprendizaje empieza a caer.
+                    </p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- Steps Section -->
+    <section class="landing-steps">
+        <div class="landing-container">
+            <div class="landing-steps__grid">
+                <div class="landing-steps__content">
+                    <h2 class="landing-section-title">Tres pasos hacia el dominio real</h2>
+                    <div class="landing-step-list">
+                        <div class="landing-step-item">
+                            <span class="landing-step-num">01</span>
+                            <div>
+                                <h4>Evaluación inicial</h4>
+                                <p>Sube tus PDFs y genera nodos de conocimiento automáticamente con nuestra IA.</p>
+                            </div>
+                        </div>
+                        <div class="landing-step-item">
+                            <span class="landing-step-num">02</span>
+                            <div>
+                                <h4>Práctica calibrada</h4>
+                                <p>Responde preguntas y registra tu nivel de confianza en cada una.</p>
+                            </div>
+                        </div>
+                        <div class="landing-step-item">
+                            <span class="landing-step-num">03</span>
+                            <div>
+                                <h4>Análisis profundo</h4>
+                                <p>Revisa tu perfil cognitivo y descubre tus puntos ciegos antes del examen.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="landing-steps__visual">
+                    <div class="ls-orb"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="landing-cta">
+        <div class="landing-container">
+            <div class="landing-cta__box">
+                <h2>¿Listo para dejar de adivinar?</h2>
+                <p>Únete a las instituciones que ya están midiendo el dominio real de sus estudiantes.</p>
+                <div class="landing-cta__actions">
+                    <a href="/app/" class="landing-btn-primary">Empezar gratis</a>
+                    <a href="mailto:hola@cogniroom.ai" class="btn btn--ghost">Contactar ventas</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="landing-footer">
+        <div class="landing-container landing-footer__inner">
+            <div class="landing-footer__brand">
+                <p class="landing-brand">CogniRoom <span>AI</span></p>
+                <p class="landing-footer__copy">&copy; 2026 CogniRoom Lab. Todos los derechos reservados.</p>
+            </div>
+            <div class="landing-footer__links">
+                <a href="#">Privacidad</a>
+                <a href="#">Términos</a>
+                <a href="https://github.com/Eneritzch/Cogniroom">GitHub</a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

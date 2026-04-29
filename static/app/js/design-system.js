@@ -1,15 +1,15 @@
 /**
- * Design System — controlador de /app/design-system/.
+ * Design System JS — v2.0
  *
  *   1. Copy-to-clipboard de tokens (botones [data-copy]).
- *   2. Theme toggle dark ↔ light, persistido en localStorage.
- *   3. Scroll-spy del topbar.
- *   4. Demos de toast (botones [data-toast]).
+ *   2. Theme toggle dark ↔ light.
+ *   3. Scroll-spy del sidebar.
+ *   4. Demos de toast.
  */
 
 import { toast } from './toast.js';
 
-/* ---------- 1. Copy ---------- */
+/* ---------- 1. Copy Logic ---------- */
 
 const hint = document.getElementById('copy-hint');
 
@@ -18,7 +18,7 @@ function showHint(msg) {
     hint.textContent = msg;
     hint.classList.add('is-visible');
     clearTimeout(showHint._t);
-    showHint._t = setTimeout(() => hint.classList.remove('is-visible'), 1400);
+    showHint._t = setTimeout(() => hint.classList.remove('is-visible'), 2000);
 }
 
 document.querySelectorAll('[data-copy]').forEach((el) => {
@@ -27,15 +27,15 @@ document.querySelectorAll('[data-copy]').forEach((el) => {
         try {
             await navigator.clipboard.writeText(value);
             el.classList.add('is-copied');
-            setTimeout(() => el.classList.remove('is-copied'), 800);
+            setTimeout(() => el.classList.remove('is-copied'), 1000);
             showHint(`Copiado: ${value}`);
         } catch {
-            showHint('No se pudo copiar');
+            showHint('No se pudo copiar al portapapeles');
         }
     });
 });
 
-/* ---------- 2. Theme toggle ---------- */
+/* ---------- 2. Theme Toggle ---------- */
 
 const themeBtn = document.getElementById('theme-toggle');
 if (themeBtn) {
@@ -61,49 +61,57 @@ if (themeBtn) {
     });
 }
 
-/* ---------- 3. Scroll-spy ---------- */
+/* ---------- 3. Scroll-Spy (Sidebar) ---------- */
 
-const navLinks = document.querySelectorAll('.ds-topbar__nav a');
+const navLinks = document.querySelectorAll('.ds-nav-link');
 const sections = [...document.querySelectorAll('.ds-section[id]')];
 
 if (navLinks.length && sections.length && 'IntersectionObserver' in window) {
     const linkById = new Map(
         [...navLinks].map((a) => [a.getAttribute('href').slice(1), a])
     );
-    const io = new IntersectionObserver(
-        (entries) => {
-            entries.forEach((entry) => {
-                if (entry.isIntersecting) {
-                    navLinks.forEach((l) => l.classList.remove('is-active'));
-                    const link = linkById.get(entry.target.id);
-                    if (link) link.classList.add('is-active');
+
+    const observerOptions = {
+        rootMargin: '-20% 0px -70% 0px',
+        threshold: 0
+    };
+
+    const io = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+                navLinks.forEach((l) => l.classList.remove('is-active'));
+                const link = linkById.get(entry.target.id);
+                if (link) {
+                    link.classList.add('is-active');
+                    // Opcional: Centrar el link en el sidebar si hay scroll
+                    // link.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 }
-            });
-        },
-        { rootMargin: '-30% 0px -60% 0px', threshold: 0 }
-    );
+            }
+        });
+    }, observerOptions);
+
     sections.forEach((s) => io.observe(s));
 }
 
-/* ---------- 4. Toast demos ---------- */
+/* ---------- 4. Toast Demos ---------- */
 
 document.querySelectorAll('[data-toast]').forEach((btn) => {
     btn.addEventListener('click', () => {
         const variant = btn.dataset.toast;
         switch (variant) {
             case 'info':
-                toast('Sesión sincronizada con el servidor.');
+                toast('Información del sistema: los cambios se han guardado.');
                 break;
             case 'success':
-                toast('¡Hola, María!', { kind: 'success', duration: 1500 });
+                toast('¡Operación exitosa!', { kind: 'success', duration: 2000 });
                 break;
             case 'error':
-                toast('Credenciales inválidas.', { kind: 'error' });
+                toast('Hubo un problema al procesar la solicitud.', { kind: 'error' });
                 break;
             case 'stack':
-                toast('Subiendo PDF…');
-                setTimeout(() => toast('PDF procesado.', { kind: 'success' }), 350);
-                setTimeout(() => toast('Generando preguntas con Claude.'), 700);
+                toast('Iniciando sincronización...');
+                setTimeout(() => toast('Analizando datos cognitivos...', { duration: 2000 }), 500);
+                setTimeout(() => toast('Sincronización completada.', { kind: 'success' }), 1200);
                 break;
         }
     });
