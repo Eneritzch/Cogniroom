@@ -1,9 +1,3 @@
-/* ============================================================
-   DESIGN TOKENS — CogniRoom
-   Una sola fuente de verdad para colores, espaciado, tipografía,
-   sombras, radios y motion. Cualquier cambio visual sistémico
-   ocurre aquí, no en archivos de componentes.
-   ============================================================ */
 
 :root {
   /* ---------- Color · Surfaces ---------- */
@@ -26,6 +20,73 @@
   --c-brand-glow: rgba(0, 216, 255, 0.18);
   --c-violet: #8b7dff;
   --c-violet-glow: rgba(139, 125, 255, 0.18);
+
+  /* ---------- Color · Scales (primary / secondary / tertiary) ----------
+     Tres familias semánticas con escala 50–900 para componer matices y
+     gradientes. 50–200: highlights y fondos suaves. 300–500: acentos
+     y bordes vivos. 600–900: profundidades.
+     -------------------------------------------------------------------- */
+
+  /* primary — aqua / cyan (saber, calibración) */
+  --c-primary-50:  #ecfeff;
+  --c-primary-100: #cffafe;
+  --c-primary-200: #a5f3fc;
+  --c-primary-300: #67e8f9;
+  --c-primary-400: #22d3ee;
+  --c-primary-500: #06b6d4;
+  --c-primary-600: #0891b2;
+  --c-primary-700: #0e7490;
+  --c-primary-800: #155e75;
+  --c-primary-900: #164e63;
+
+  /* secondary — fuchsia / magenta (descubrir, IA, insight) */
+  --c-secondary-50:  #fdf4ff;
+  --c-secondary-100: #fae8ff;
+  --c-secondary-200: #f5d0fe;
+  --c-secondary-300: #f0abfc;
+  --c-secondary-400: #e879f9;
+  --c-secondary-500: #d946ef;
+  --c-secondary-600: #c026d3;
+  --c-secondary-700: #a21caf;
+  --c-secondary-800: #86198f;
+  --c-secondary-900: #701a75;
+
+  /* tertiary — emerald (dominar, crecimiento, mastery) */
+  --c-tertiary-50:  #ecfdf5;
+  --c-tertiary-100: #d1fae5;
+  --c-tertiary-200: #a7f3d0;
+  --c-tertiary-300: #6ee7b7;
+  --c-tertiary-400: #34d399;
+  --c-tertiary-500: #10b981;
+  --c-tertiary-600: #059669;
+  --c-tertiary-700: #047857;
+  --c-tertiary-800: #065f46;
+  --c-tertiary-900: #064e3b;
+
+  /* ---------- Gradients ----------
+     Las escalas se consumen vía estos tokens cuando el uso es
+     decorativo (orbes, hero, fondos). */
+  --g-primary:    linear-gradient(135deg, var(--c-primary-400), var(--c-primary-700));
+  --g-secondary:  linear-gradient(135deg, var(--c-secondary-300), var(--c-secondary-700));
+  --g-tertiary:   linear-gradient(135deg, var(--c-tertiary-300), var(--c-tertiary-700));
+  --g-aurora:     linear-gradient(
+                    135deg,
+                    var(--c-primary-400) 0%,
+                    var(--c-secondary-400) 50%,
+                    var(--c-tertiary-400) 100%
+                  );
+
+  --g-orb-primary:   radial-gradient(circle at 30% 30%,
+                       var(--c-primary-300), var(--c-primary-800) 70%);
+  --g-orb-secondary: radial-gradient(circle at 70% 30%,
+                       var(--c-secondary-300), var(--c-secondary-800) 70%);
+  --g-orb-tertiary:  radial-gradient(circle at 50% 70%,
+                       var(--c-tertiary-300), var(--c-tertiary-800) 70%);
+  --g-orb-aurora:
+      radial-gradient(circle at 25% 30%, var(--c-secondary-400), transparent 55%),
+      radial-gradient(circle at 80% 25%, var(--c-primary-400), transparent 55%),
+      radial-gradient(circle at 60% 80%, var(--c-tertiary-400), transparent 55%),
+      var(--c-bg-elevated);
 
   /* ---------- Color · Semantic (cognitive states) ---------- */
   --c-calibrated: #34d399;

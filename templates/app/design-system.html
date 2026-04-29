@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Design System CogniRoom — solo los primitivos que se usan en el producto.">
+    <title>CogniRoom · Design System</title>
+    <link rel="preconnect" href="https://rsms.me">
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'app/css/tokens.css' %}">
+    <link rel="stylesheet" href="{% static 'app/css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'app/css/design-system.css' %}">
+</head>
+<body>
+
+<header class="ds-topbar" role="banner">
+    <a class="ds-topbar__brand" href="#top">CogniRoom <span>· DS</span></a>
+    <nav class="ds-topbar__nav" aria-label="Secciones">
+        <a href="#tipografia">Tipografía</a>
+        <a href="#color">Color</a>
+        <a href="#componentes">Componentes</a>
+        <a href="#etiquetas">Etiquetas</a>
+        <a href="#mensajes">Mensajes</a>
+    </nav>
+    <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Cambiar tema">
+        <span class="theme-toggle__dot" aria-hidden="true"></span>
+        <span class="theme-toggle__label">Oscuro</span>
+    </button>
+</header>
+
+<main class="ds-main" id="top">
+
+    <section class="ds-hero" aria-labelledby="hero">
+        <p class="ds-eyebrow">v1.0</p>
+        <h1 class="ds-hero__title" id="hero">Sistema de diseño</h1>
+        <p class="ds-hero__lead">
+            Solo lo que CogniRoom usa de verdad. Los tokens viven en
+            <code>tokens.css</code>, los componentes en <code>styles.css</code>, esta página
+            los muestra. Click en un token para copiarlo.
+        </p>
+    </section>
+
+    {# ============================================================
+       1. TIPOGRAFÍA
+       ============================================================ #}
+    <section class="ds-section" id="tipografia" aria-labelledby="t-tipografia">
+        <header class="ds-section__head">
+            <h2 id="t-tipografia">Tipografía</h2>
+            <p>Inter para UI, JetBrains Mono para datos y código. Una escala, cuatro pesos.</p>
+        </header>
+
+        <div class="ds-demo ds-stack">
+            <p class="ds-type-display">Aa</p>
+            <p class="ds-type-2xl">Saber lo que crees saber</p>
+            <p class="ds-type-xl">Diagnóstico cognitivo</p>
+            <p class="ds-type-lg">Encabezado de sección</p>
+            <p class="ds-type-md">Subtítulo o lead introductorio</p>
+            <p class="ds-type-base">Cuerpo. Para prosa, descripciones de preguntas y respuestas.</p>
+            <p class="ds-type-sm">Texto secundario y captions.</p>
+            <p class="ds-type-xs">Eyebrow · meta · breadcrumb</p>
+            <p class="ds-type-mono">ICC 0.78 · BKT 0.62 · gap +0.16</p>
+        </div>
+
+        <details class="ds-source">
+            <summary>Tokens</summary>
+<pre><code>--fs-display 64 · --fs-2xl 40 · --fs-xl 28 · --fs-lg 22
+--fs-md 18 · --fs-base 16 · --fs-sm 14 · --fs-xs 12
+--fw-regular 400 · --fw-medium 500 · --fw-semibold 600 · --fw-bold 700</code></pre>
+        </details>
+    </section>
+
+    {# ============================================================
+       2. COLOR — solo semántico, sin los 30 stops de las escalas
+       ============================================================ #}
+    <section class="ds-section" id="color" aria-labelledby="t-color">
+        <header class="ds-section__head">
+            <h2 id="t-color">Color</h2>
+            <p>
+                Cada color comunica un estado. Las escalas <code>--c-primary-*</code>,
+                <code>--c-secondary-*</code> y <code>--c-tertiary-*</code> existen en
+                <code>tokens.css</code> para componer matices, pero el día a día
+                usa estos tokens semánticos.
+            </p>
+        </header>
+
+        <div class="ds-demo">
+            <ul class="ds-swatches" role="list">
+                <li><button class="ds-swatch" data-copy="var(--c-bg)"             style="--swatch: var(--c-bg)">             <span>Background</span><code>--c-bg</code></button></li>
+                <li><button class="ds-swatch" data-copy="var(--c-surface)"        style="--swatch: var(--c-surface)">        <span>Surface</span><code>--c-surface</code></button></li>
+                <li><button class="ds-swatch" data-copy="var(--c-border)"         style="--swatch: var(--c-border)">         <span>Border</span><code>--c-border</code></button></li>
+                <li><button class="ds-swatch" data-copy="var(--c-brand)"          style="--swatch: var(--c-brand)">          <span>Brand</span><code>--c-brand</code></button></li>
+                <li><button class="ds-swatch" data-copy="var(--c-violet)"         style="--swatch: var(--c-violet)">         <span>Violet</span><code>--c-violet</code></button></li>
+                <li><button class="ds-swatch" data-copy="var(--c-calibrated)"     style="--swatch: var(--c-calibrated)">     <span>Calibrado</span><code>--c-calibrated</code></button></li>
+                <li><button class="ds-swatch" data-copy="var(--c-overconfident)"  style="--swatch: var(--c-overconfident)">  <span>Sobreconfiado</span><code>--c-overconfident</code></button></li>
+                <li><button class="ds-swatch" data-copy="var(--c-underconfident)" style="--swatch: var(--c-underconfident)"> <span>Subconfiado</span><code>--c-underconfident</code></button></li>
+                <li><button class="ds-swatch" data-copy="var(--c-success)"        style="--swatch: var(--c-success)">        <span>Success</span><code>--c-success</code></button></li>
+                <li><button class="ds-swatch" data-copy="var(--c-warning)"        style="--swatch: var(--c-warning)">        <span>Warning</span><code>--c-warning</code></button></li>
+                <li><button class="ds-swatch" data-copy="var(--c-danger)"         style="--swatch: var(--c-danger)">         <span>Danger</span><code>--c-danger</code></button></li>
+                <li><button class="ds-swatch" data-copy="var(--c-info)"           style="--swatch: var(--c-info)">           <span>Info</span><code>--c-info</code></button></li>
+            </ul>
+        </div>
+    </section>
+
+    {# ============================================================
+       3. COMPONENTES — botones + campos (formularios)
+       ============================================================ #}
+    <section class="ds-section" id="componentes" aria-labelledby="t-componentes">
+        <header class="ds-section__head">
+            <h2 id="t-componentes">Componentes</h2>
+            <p>Las dos superficies interactivas básicas: botones y campos.</p>
+        </header>
+
+        <div class="ds-twocol">
+
+            <article class="ds-demo">
+                <h3 class="ds-eyebrow">Botones</h3>
+                <div class="ds-row">
+                    <button class="btn btn--primary" type="button">Primario</button>
+                    <button class="btn btn--ghost"   type="button">Ghost</button>
+                    <button class="btn btn--danger"  type="button">Peligro</button>
+                </div>
+                <div class="ds-row">
+                    <button class="btn btn--primary" type="button" disabled>Deshabilitado</button>
+                    <button class="btn btn--ghost"   type="button">Con icono ↗</button>
+                </div>
+            </article>
+
+            <article class="ds-demo">
+                <h3 class="ds-eyebrow">Campos</h3>
+                <div class="field">
+                    <label class="field-label" for="ds-email">Correo</label>
+                    <input class="field-input" id="ds-email" type="email" placeholder="tu@institucion.edu">
+                </div>
+                <div class="field">
+                    <label class="field-label" for="ds-pwd">Contraseña (estado error)</label>
+                    <input class="field-input" id="ds-pwd" type="password" aria-invalid="true" value="123">
+                </div>
+            </article>
+
+        </div>
+
+        <details class="ds-source">
+            <summary>Código</summary>
+<pre><code>&lt;button class="btn btn--primary"&gt;Primario&lt;/button&gt;
+
+&lt;div class="field"&gt;
+  &lt;label class="field-label" for="email"&gt;Correo&lt;/label&gt;
+  &lt;input class="field-input" id="email" type="email"
+         aria-invalid="true"&gt;  &lt;!-- borde rojo automático --&gt;
+&lt;/div&gt;</code></pre>
+        </details>
+    </section>
+
+    {# ============================================================
+       4. ETIQUETAS
+       ============================================================ #}
+    <section class="ds-section" id="etiquetas" aria-labelledby="t-etiquetas">
+        <header class="ds-section__head">
+            <h2 id="t-etiquetas">Etiquetas</h2>
+            <p>
+                Cada etiqueta lleva el estado en un atributo
+                <code>data-*</code>; el color sale del token, no del autor.
+            </p>
+        </header>
+
+        <div class="ds-demo ds-stack">
+            <div class="ds-row">
+                <span class="pill" data-profile="calibrated">Calibrado</span>
+                <span class="pill" data-profile="overconfident">Sobreconfiado</span>
+                <span class="pill" data-profile="underconfident">Subconfiado</span>
+            </div>
+            <div class="ds-row">
+                <span class="pill" data-risk="low">Riesgo bajo</span>
+                <span class="pill" data-risk="medium">Riesgo medio</span>
+                <span class="pill" data-risk="high">Riesgo alto</span>
+            </div>
+            <div class="ds-row">
+                <span class="role-badge" data-role="student">Estudiante</span>
+                <span class="role-badge" data-role="teacher">Docente</span>
+                <span class="role-badge" data-role="coordinator">Coordinador</span>
+            </div>
+        </div>
+    </section>
+
+    {# ============================================================
+       5. MENSAJES (TOASTS)
+       ============================================================ #}
+    <section class="ds-section" id="mensajes" aria-labelledby="t-mensajes">
+        <header class="ds-section__head">
+            <h2 id="t-mensajes">Mensajes</h2>
+            <p>
+                Una sola superficie para feedback transitorio: errores de validación,
+                confirmaciones, fallos de red. Arriba a la derecha. Nunca usamos
+                <code>alert()</code>, <code>confirm()</code> ni los bubbles nativos del navegador.
+            </p>
+        </header>
+
+        <div class="ds-demo ds-row">
+            <button class="btn btn--ghost"   type="button" data-toast="info">Info</button>
+            <button class="btn btn--primary" type="button" data-toast="success">Success</button>
+            <button class="btn btn--danger"  type="button" data-toast="error">Error</button>
+            <button class="btn btn--ghost"   type="button" data-toast="stack">Apilar 3</button>
+        </div>
+
+        <details class="ds-source" open>
+            <summary>Reglas</summary>
+            <ul class="ds-rules">
+                <li>Una idea por toast. Si tienes que decir dos cosas, son dos toasts.</li>
+                <li>Mensaje en español natural, no códigos de log.</li>
+                <li>Duración: 4 s default · 1.5 s para confirmaciones cortas.</li>
+                <li>El form lleva <code>novalidate</code>; los errores nativos del navegador van por toast.</li>
+            </ul>
+        </details>
+
+        <details class="ds-source">
+            <summary>API</summary>
+<pre><code>import { toast } from '/static/app/js/toast.js';
+
+toast('Sesión sincronizada');                              // info
+toast('Hola, María', { kind: 'success', duration: 1500 }); // verde
+toast('Credenciales inválidas.', { kind: 'error' });       // rojo</code></pre>
+        </details>
+    </section>
+
+</main>
+
+<div id="copy-hint" class="copy-hint" role="status" aria-live="polite"></div>
+<div class="toast-host" id="toast-host" aria-live="polite" aria-atomic="true"></div>
+
+<script type="module" src="{% static 'app/js/design-system.js' %}"></script>
+</body>
+</html>
