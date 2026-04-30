@@ -14,178 +14,270 @@
 </head>
 <body class="landing-body">
 
-    <!-- Navigation -->
-    <nav class="landing-nav">
-        <div class="landing-container landing-nav__inner">
-            <a href="/" class="landing-brand">
-                CogniRoom <span>AI</span>
-            </a>
-            <div class="landing-nav__actions">
-                <a href="/app/design-system/" class="landing-nav__link">Design System</a>
-                <a href="/app/" class="btn btn--primary">Acceder</a>
-            </div>
-        </div>
-    </nav>
 
     <!-- Hero Section -->
     <header class="landing-hero">
+        <canvas id="plexus-canvas" class="landing-hero__canvas"></canvas>
+        
+        <!-- Brand & Design System Badge -->
+        <a href="/app/design-system/" class="landing-ds-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            Design System
+        </a>
+
         <div class="landing-aurora" aria-hidden="true"></div>
-        <div class="landing-container landing-hero__inner">
-            <div class="landing-hero__badge">
-                <span class="landing-hero__dot"></span>
-                v1.0 Ahora disponible para instituciones
+        <div class="landing-container hero-split-layout">
+            
+            <!-- Left Side: Main Brand & CTA -->
+            <div class="hero-main-side">
+                <div class="landing-brand-main">
+                    CogniRoom <span>AI</span>
+                </div>
+                
+                <h1 class="landing-hero__title" id="main-title">
+                    Saber lo que <span>crees saber</span>
+                </h1>
+                
+                <p class="landing-hero__subtitle" id="main-subtitle">Eliminando la ilusión de competencia</p>
+                
+                <div class="landing-hero__actions">
+                    <a href="/app/" class="landing-btn-primary">
+                        Empezar ahora
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                    </a>
+                </div>
             </div>
-            
-            <h1 class="landing-hero__title">
-                Saber lo que <span>crees saber</span>.
-            </h1>
-            
-            <p class="landing-hero__lead">
-                CogniRoom utiliza Inteligencia Artificial y Bayesian Knowledge Tracing para medir tu dominio real y eliminar la ilusión de competencia. Descubre tu verdadero potencial cognitivo.
-            </p>
-            
-            <div class="landing-hero__actions">
-                <a href="/app/" class="landing-btn-primary">
-                    Empezar ahora
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-                </a>
-                <a href="#funciona" class="btn btn--ghost">Cómo funciona</a>
+
+            <!-- Right Side: Info Card & Orbital Controls -->
+            <div class="hero-info-side">
+                <div class="glass-info-card">
+                    <div class="card-pillar-label" id="pillar-label">INTRODUCCIÓN</div>
+                    <h2 class="card-pillar-title" id="pillar-title">Saber lo que crees saber</h2>
+                    <p class="card-pillar-desc" id="pillar-desc">
+                        CogniRoom utiliza Inteligencia Artificial y Bayesian Knowledge Tracing para medir tu dominio real basándose en datos científicos.
+                    </p>
+                    
+                    <div class="pillar-selectors">
+                        <button class="p-dot active" style="--dot-color: var(--c-brand);" onclick="selectPillar(0)"></button>
+                        <button class="p-dot" style="--dot-color: #f59e0b;" onclick="selectPillar(1)"></button>
+                        <button class="p-dot" style="--dot-color: #8b7dff;" onclick="selectPillar(2)"></button>
+                        <button class="p-dot" style="--dot-color: #34d399;" onclick="selectPillar(3)"></button>
+                    </div>
+                </div>
             </div>
+
         </div>
     </header>
 
-    <!-- Showcase Section -->
-    <section class="landing-showcase">
-        <div class="landing-container">
-            <div class="landing-showcase__frame">
-                <div class="landing-showcase__header">
-                    <div class="landing-showcase__dots"><span></span><span></span><span></span></div>
-                    <div class="landing-showcase__url">cogniroom.ai/app/dashboard</div>
-                </div>
-                <div class="landing-showcase__content">
-                    <!-- Representación visual del dashboard simplificada -->
-                    <div class="ls-preview">
-                        <div class="ls-sidebar"></div>
-                        <div class="ls-main">
-                            <div class="ls-grid">
-                                <div class="ls-card ls-card--main"></div>
-                                <div class="ls-card"></div>
-                                <div class="ls-card"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Features Section -->
-    <section class="landing-features" id="funciona">
-        <div class="landing-container">
-            <div class="landing-section-head">
-                <h2 class="landing-section-title">Tecnología de vanguardia</h2>
-                <p class="landing-section-lead">Tres pilares diseñados para optimizar la curva de aprendizaje de forma científica.</p>
-            </div>
-            
-            <div class="landing-features__grid">
-                <article class="feature-card">
-                    <div class="feature-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-                    </div>
-                    <h3 class="feature-title">BKT Dinámico</h3>
-                    <p class="feature-desc">
-                        Rastreo de Conocimiento Bayesiano en tiempo real. Medimos tu probabilidad de dominio basándonos en tu historial interactivo.
-                    </p>
-                </article>
-
-                <article class="feature-card">
-                    <div class="feature-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                    </div>
-                    <h3 class="feature-title">Índice ICC</h3>
-                    <p class="feature-desc">
-                        Identificamos si estás calibrado, sobreconfiado o subconfiado. Ajusta tu percepción de la realidad con datos precisos.
-                    </p>
-                </article>
-
-                <article class="feature-card">
-                    <div class="feature-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                    </div>
-                    <h3 class="feature-title">IA Predictiva</h3>
-                    <p class="feature-desc">
-                        Intervenciones generadas por Claude (Anthropic). Obtén explicaciones precisas justo cuando tu curva de aprendizaje empieza a caer.
-                    </p>
-                </article>
-            </div>
-        </div>
-    </section>
-
-    <!-- Steps Section -->
-    <section class="landing-steps">
-        <div class="landing-container">
-            <div class="landing-steps__grid">
-                <div class="landing-steps__content">
-                    <h2 class="landing-section-title">Tres pasos hacia el dominio real</h2>
-                    <div class="landing-step-list">
-                        <div class="landing-step-item">
-                            <span class="landing-step-num">01</span>
-                            <div>
-                                <h4>Evaluación inicial</h4>
-                                <p>Sube tus PDFs y genera nodos de conocimiento automáticamente con nuestra IA.</p>
-                            </div>
-                        </div>
-                        <div class="landing-step-item">
-                            <span class="landing-step-num">02</span>
-                            <div>
-                                <h4>Práctica calibrada</h4>
-                                <p>Responde preguntas y registra tu nivel de confianza en cada una.</p>
-                            </div>
-                        </div>
-                        <div class="landing-step-item">
-                            <span class="landing-step-num">03</span>
-                            <div>
-                                <h4>Análisis profundo</h4>
-                                <p>Revisa tu perfil cognitivo y descubre tus puntos ciegos antes del examen.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="landing-steps__visual">
-                    <div class="ls-orb"></div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- CTA Section -->
-    <section class="landing-cta">
-        <div class="landing-container">
-            <div class="landing-cta__box">
-                <h2>¿Listo para dejar de adivinar?</h2>
-                <p>Únete a las instituciones que ya están midiendo el dominio real de sus estudiantes.</p>
-                <div class="landing-cta__actions">
-                    <a href="/app/" class="landing-btn-primary">Empezar gratis</a>
-                    <a href="mailto:hola@cogniroom.ai" class="btn btn--ghost">Contactar ventas</a>
-                </div>
-            </div>
-        </div>
-    </section>
 
     <!-- Footer -->
+    <!-- Footer Minimal -->
     <footer class="landing-footer">
         <div class="landing-container landing-footer__inner">
-            <div class="landing-footer__brand">
-                <p class="landing-brand">CogniRoom <span>AI</span></p>
-                <p class="landing-footer__copy">&copy; 2026 CogniRoom Lab. Todos los derechos reservados.</p>
-            </div>
-            <div class="landing-footer__links">
+            <div class="footer-names">Ing Jaione Cherres & Ing Dulce Villacis</div>
+            <div class="footer-min-links">
                 <a href="#">Privacidad</a>
                 <a href="#">Términos</a>
-                <a href="https://github.com/Eneritzch/Cogniroom">GitHub</a>
+                <a href="#">Cookies</a>
             </div>
+            <div class="footer-min-copy">&copy; 2026 CogniRoom AI</div>
         </div>
     </footer>
 
+    <script>
+        /**
+         * Plexus Effect for CogniRoom Landing
+         */
+        class Plexus {
+            constructor(canvasId) {
+                this.canvas = document.getElementById(canvasId);
+                this.ctx = this.canvas.getContext('2d');
+                this.particles = [];
+                this.mouse = { x: null, y: null, radius: 150 };
+                this.numberOfParticles = 100;
+                this.offsetX = 0;
+                this.targetOffsetX = 0;
+                
+                this.init();
+                this.animate();
+                this.bindEvents();
+            }
+
+            setOffset(index) {
+                // Shift background based on current pillar (index: 0, 1, 2, 3)
+                this.targetOffsetX = (index - 1.5) * (this.canvas.width * 0.12);
+            }
+
+            init() {
+                this.resize();
+                this.particles = [];
+                for (let i = 0; i < this.numberOfParticles; i++) {
+                    // Create particles in a wider area to allow panning
+                    this.particles.push(new Particle(this.canvas.width * 2, this.canvas.height));
+                }
+            }
+
+            resize() {
+                this.canvas.width = this.canvas.offsetWidth;
+                this.canvas.height = this.canvas.offsetHeight;
+            }
+
+            bindEvents() {
+                window.addEventListener('resize', () => this.init());
+                window.addEventListener('mousemove', (e) => {
+                    const rect = this.canvas.getBoundingClientRect();
+                    this.mouse.x = e.clientX - rect.left;
+                    this.mouse.y = e.clientY - rect.top;
+                });
+                window.addEventListener('mouseout', () => {
+                    this.mouse.x = null;
+                    this.mouse.y = null;
+                });
+            }
+
+            animate() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Smooth transition for background offset
+                this.offsetX += (this.targetOffsetX - this.offsetX) * 0.05;
+
+                this.ctx.save();
+                this.ctx.translate(-this.offsetX - (this.canvas.width * 0.25), 0);
+
+                for (let i = 0; i < this.particles.length; i++) {
+                    this.particles[i].update();
+                    this.particles[i].draw(this.ctx);
+                    
+                    for (let j = i; j < this.particles.length; j++) {
+                        const dx = this.particles[i].x - this.particles[j].x;
+                        const dy = this.particles[i].y - this.particles[j].y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance < 120) {
+                            const opacity = 1 - (distance / 120);
+                            this.ctx.strokeStyle = `rgba(0, 216, 255, ${opacity * 0.15})`;
+                            this.ctx.lineWidth = 1;
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(this.particles[i].x, this.particles[i].y);
+                            this.ctx.lineTo(this.particles[j].x, this.particles[j].y);
+                            this.ctx.stroke();
+                        }
+                    }
+
+                    if (this.mouse.x != null) {
+                        const dx = (this.particles[i].x - this.offsetX - (this.canvas.width * 0.25)) - this.mouse.x;
+                        const dy = this.particles[i].y - this.mouse.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        if (distance < this.mouse.radius) {
+                            const opacity = 1 - (distance / this.mouse.radius);
+                            this.ctx.strokeStyle = `rgba(139, 125, 255, ${opacity * 0.3})`;
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(this.particles[i].x, this.particles[i].y);
+                            this.ctx.lineTo(this.mouse.x + this.offsetX + (this.canvas.width * 0.25), this.mouse.y);
+                            this.ctx.stroke();
+                        }
+                    }
+                }
+                this.ctx.restore();
+                requestAnimationFrame(() => this.animate());
+            }
+        }
+
+        class Particle {
+            constructor(width, height) {
+                this.width = width;
+                this.height = height;
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.4;
+                this.vy = (Math.random() - 0.5) * 0.4;
+                this.size = Math.random() * 2 + 1;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0 || this.x > this.width) this.vx *= -1;
+                if (this.y < 0 || this.y > this.height) this.vy *= -1;
+            }
+
+            draw(ctx) {
+                ctx.fillStyle = '#00d8ff';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        const pillars = [
+            {
+                label: "INTRODUCCIÓN",
+                title: "Saber lo que crees saber",
+                desc: "CogniRoom utiliza Inteligencia Artificial y Bayesian Knowledge Tracing para medir tu dominio real basándose en datos científicos.",
+                mainTitle: "Saber lo que <span>crees saber</span>",
+                mainSubtitle: "Eliminando la ilusión de competencia"
+            },
+            {
+                label: "TECNOLOGÍA BKT",
+                title: "BKT Dinámico",
+                desc: "Rastreo de conocimiento bayesiano en tiempo real. Medimos tu probabilidad de dominio basándonos en tu historial interactivo.",
+                mainTitle: "Real-Time <span>Tracing</span>",
+                mainSubtitle: "Probabilidad de dominio real"
+            },
+            {
+                label: "MÉTRICA ICC",
+                title: "Índice ICC",
+                desc: "Identificamos si estás calibrado, sobreconfiado o subconfiado. Ajusta tu percepción de la realidad con datos precisos.",
+                mainTitle: "Calibrated <span>Learning</span>",
+                mainSubtitle: "Ajuste de percepción cognitiva"
+            },
+            {
+                label: "IA PREDICTIVA",
+                title: "Claude AI",
+                desc: "Intervenciones inteligentes que actúan justo cuando tu curva de aprendizaje decae, proporcionando explicaciones precisas.",
+                mainTitle: "Predictive <span>Insights</span>",
+                mainSubtitle: "Intervenciones inteligentes con Claude"
+            }
+        ];
+
+        let currentPillar = 0;
+        let plexusInstance;
+
+        function selectPillar(index) {
+            currentPillar = index;
+            
+            // Update Card and Left Title with fade effect
+            const card = document.querySelector('.glass-info-card');
+            const mainTitle = document.getElementById('main-title');
+            const mainSubtitle = document.getElementById('main-subtitle');
+            
+            card.style.opacity = '0.5';
+            mainTitle.style.opacity = '0.5';
+            
+            setTimeout(() => {
+                document.getElementById('pillar-label').innerText = pillars[index].label;
+                document.getElementById('pillar-title').innerText = pillars[index].title;
+                document.getElementById('pillar-desc').innerText = pillars[index].desc;
+                
+                mainTitle.innerHTML = pillars[index].mainTitle;
+                mainSubtitle.innerText = pillars[index].mainSubtitle;
+                
+                card.style.opacity = '1';
+                mainTitle.style.opacity = '1';
+                
+                // Update dots
+                document.querySelectorAll('.p-dot').forEach((dot, i) => {
+                    dot.classList.toggle('active', i === index);
+                });
+
+                // Background shift disabled as requested
+            }, 200);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            plexusInstance = new Plexus('plexus-canvas');
+        });
+    </script>
 </body>
 </html>
