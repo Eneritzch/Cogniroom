@@ -1,15 +1,4 @@
-/**
- * Design System JS — v2.0
- *
- *   1. Copy-to-clipboard de tokens (botones [data-copy]).
- *   2. Theme toggle dark ↔ light.
- *   3. Scroll-spy del sidebar.
- *   4. Demos de toast.
- */
-
 import { toast } from './toast.js';
-
-/* ---------- 1. Copy Logic ---------- */
 
 const hint = document.getElementById('copy-hint');
 
@@ -35,8 +24,6 @@ document.querySelectorAll('[data-copy]').forEach((el) => {
     });
 });
 
-/* ---------- 2. Theme Toggle ---------- */
-
 const themeBtn = document.getElementById('theme-toggle');
 if (themeBtn) {
     const stored = localStorage.getItem('cogniroom:theme');
@@ -61,7 +48,6 @@ if (themeBtn) {
     });
 }
 
-/* ---------- 3. Scroll-Spy (Sidebar) ---------- */
 
 const navLinks = document.querySelectorAll('.ds-nav-link');
 const sections = [...document.querySelectorAll('.ds-section[id]')];
@@ -93,7 +79,6 @@ if (navLinks.length && sections.length && 'IntersectionObserver' in window) {
     sections.forEach((s) => io.observe(s));
 }
 
-/* ---------- 4. Toast Demos ---------- */
 
 document.querySelectorAll('[data-toast]').forEach((btn) => {
     btn.addEventListener('click', () => {

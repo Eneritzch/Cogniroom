@@ -1,6 +1,3 @@
-/**
- * Toast — feedback no-bloqueante. Auto-desaparece, accesible (aria-live).
- */
 
 const HOST_ID = 'toast-host';
 const DEFAULT_DURATION = 4000;
@@ -10,7 +7,7 @@ export function toast(message, { kind = 'info', duration = DEFAULT_DURATION } = 
     if (!host) return;
 
     const el = document.createElement('div');
-    el.className = 'toast';
+    el.className = 'cogni-toast';
     el.dataset.kind = kind;
     el.role = 'status';
     el.textContent = message;

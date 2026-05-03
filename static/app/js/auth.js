@@ -18,7 +18,6 @@ const $form = document.getElementById('login-form');
 const $email = document.getElementById('email');
 const $password = document.getElementById('password');
 const $submit = document.getElementById('login-submit');
-const $chips = document.querySelectorAll('[data-demo]');
 
 const FIELDS = [$email, $password];
 
@@ -33,10 +32,6 @@ function messageFor(input) {
 function setInvalid(input, isInvalid) {
     if (isInvalid) input.setAttribute('aria-invalid', 'true');
     else input.removeAttribute('aria-invalid');
-}
-
-function clearAllInvalid() {
-    FIELDS.forEach((i) => setInvalid(i, false));
 }
 
 /* Limpiar el estado inválido en cuanto el usuario corrige */
@@ -56,17 +51,6 @@ FIELDS.forEach((input) => {
         tokens.clear();
     }
 })();
-
-/* ---- Quick-fill demo ---- */
-$chips.forEach((chip) => {
-    chip.addEventListener('click', (e) => {
-        e.preventDefault();
-        $email.value = chip.dataset.demo;
-        $password.value = 'password123';
-        clearAllInvalid();
-        $email.focus();
-    });
-});
 
 /* ---- Submit ---- */
 $form.addEventListener('submit', async (event) => {

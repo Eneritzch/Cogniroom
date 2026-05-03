@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="CogniRoom — Revolucionando el aprendizaje con Inteligencia Artificial y métricas cognitivas reales.">
-    <title>CogniRoom · Aprende inteligentemente</title>
+    <title>CogniRoom</title>
     <link rel="preconnect" href="https://rsms.me">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     {% load static %}
     <link rel="stylesheet" href="{% static 'app/css/tokens.css' %}">
     <link rel="stylesheet" href="{% static 'app/css/styles.css' %}">
@@ -51,17 +53,20 @@
             <!-- Right Side: Info Card & Orbital Controls -->
             <div class="hero-info-side">
                 <div class="glass-info-card">
-                    <div class="card-pillar-label" id="pillar-label">INTRODUCCIÓN</div>
                     <h2 class="card-pillar-title" id="pillar-title">Saber lo que crees saber</h2>
                     <p class="card-pillar-desc" id="pillar-desc">
                         CogniRoom utiliza Inteligencia Artificial y Bayesian Knowledge Tracing para medir tu dominio real basándose en datos científicos.
                     </p>
                     
-                    <div class="pillar-selectors">
-                        <button class="p-dot active" style="--dot-color: var(--c-brand);" onclick="selectPillar(0)"></button>
-                        <button class="p-dot" style="--dot-color: #f59e0b;" onclick="selectPillar(1)"></button>
-                        <button class="p-dot" style="--dot-color: #8b7dff;" onclick="selectPillar(2)"></button>
-                        <button class="p-dot" style="--dot-color: #34d399;" onclick="selectPillar(3)"></button>
+                    <div class="pillar-selectors" role="tablist" aria-label="Pilares de CogniRoom">
+                        <button class="p-dot p-dot--primary active" type="button" role="tab"
+                                data-pillar="0" aria-label="Introducción" aria-selected="true"></button>
+                        <button class="p-dot p-dot--warning" type="button" role="tab"
+                                data-pillar="1" aria-label="Tecnología BKT" aria-selected="false"></button>
+                        <button class="p-dot p-dot--secondary" type="button" role="tab"
+                                data-pillar="2" aria-label="Métrica ICC" aria-selected="false"></button>
+                        <button class="p-dot p-dot--success" type="button" role="tab"
+                                data-pillar="3" aria-label="IA predictiva" aria-selected="false"></button>
                     </div>
                 </div>
             </div>
@@ -74,7 +79,7 @@
     <!-- Footer Minimal -->
     <footer class="landing-footer">
         <div class="landing-container landing-footer__inner">
-            <div class="footer-names">Ing Jaione Cherres & Ing Dulce Villacis</div>
+            <div class="footer-names">Jaione Cherres & Dulce Villacis</div>
             <div class="footer-min-links">
                 <a href="#">Privacidad</a>
                 <a href="#">Términos</a>
@@ -84,200 +89,7 @@
         </div>
     </footer>
 
-    <script>
-        /**
-         * Plexus Effect for CogniRoom Landing
-         */
-        class Plexus {
-            constructor(canvasId) {
-                this.canvas = document.getElementById(canvasId);
-                this.ctx = this.canvas.getContext('2d');
-                this.particles = [];
-                this.mouse = { x: null, y: null, radius: 150 };
-                this.numberOfParticles = 100;
-                this.offsetX = 0;
-                this.targetOffsetX = 0;
-                
-                this.init();
-                this.animate();
-                this.bindEvents();
-            }
-
-            setOffset(index) {
-                // Shift background based on current pillar (index: 0, 1, 2, 3)
-                this.targetOffsetX = (index - 1.5) * (this.canvas.width * 0.12);
-            }
-
-            init() {
-                this.resize();
-                this.particles = [];
-                for (let i = 0; i < this.numberOfParticles; i++) {
-                    // Create particles in a wider area to allow panning
-                    this.particles.push(new Particle(this.canvas.width * 2, this.canvas.height));
-                }
-            }
-
-            resize() {
-                this.canvas.width = this.canvas.offsetWidth;
-                this.canvas.height = this.canvas.offsetHeight;
-            }
-
-            bindEvents() {
-                window.addEventListener('resize', () => this.init());
-                window.addEventListener('mousemove', (e) => {
-                    const rect = this.canvas.getBoundingClientRect();
-                    this.mouse.x = e.clientX - rect.left;
-                    this.mouse.y = e.clientY - rect.top;
-                });
-                window.addEventListener('mouseout', () => {
-                    this.mouse.x = null;
-                    this.mouse.y = null;
-                });
-            }
-
-            animate() {
-                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                
-                // Smooth transition for background offset
-                this.offsetX += (this.targetOffsetX - this.offsetX) * 0.05;
-
-                this.ctx.save();
-                this.ctx.translate(-this.offsetX - (this.canvas.width * 0.25), 0);
-
-                for (let i = 0; i < this.particles.length; i++) {
-                    this.particles[i].update();
-                    this.particles[i].draw(this.ctx);
-                    
-                    for (let j = i; j < this.particles.length; j++) {
-                        const dx = this.particles[i].x - this.particles[j].x;
-                        const dy = this.particles[i].y - this.particles[j].y;
-                        const distance = Math.sqrt(dx * dx + dy * dy);
-                        
-                        if (distance < 120) {
-                            const opacity = 1 - (distance / 120);
-                            this.ctx.strokeStyle = `rgba(0, 216, 255, ${opacity * 0.15})`;
-                            this.ctx.lineWidth = 1;
-                            this.ctx.beginPath();
-                            this.ctx.moveTo(this.particles[i].x, this.particles[i].y);
-                            this.ctx.lineTo(this.particles[j].x, this.particles[j].y);
-                            this.ctx.stroke();
-                        }
-                    }
-
-                    if (this.mouse.x != null) {
-                        const dx = (this.particles[i].x - this.offsetX - (this.canvas.width * 0.25)) - this.mouse.x;
-                        const dy = this.particles[i].y - this.mouse.y;
-                        const distance = Math.sqrt(dx * dx + dy * dy);
-                        if (distance < this.mouse.radius) {
-                            const opacity = 1 - (distance / this.mouse.radius);
-                            this.ctx.strokeStyle = `rgba(139, 125, 255, ${opacity * 0.3})`;
-                            this.ctx.beginPath();
-                            this.ctx.moveTo(this.particles[i].x, this.particles[i].y);
-                            this.ctx.lineTo(this.mouse.x + this.offsetX + (this.canvas.width * 0.25), this.mouse.y);
-                            this.ctx.stroke();
-                        }
-                    }
-                }
-                this.ctx.restore();
-                requestAnimationFrame(() => this.animate());
-            }
-        }
-
-        class Particle {
-            constructor(width, height) {
-                this.width = width;
-                this.height = height;
-                this.x = Math.random() * width;
-                this.y = Math.random() * height;
-                this.vx = (Math.random() - 0.5) * 0.4;
-                this.vy = (Math.random() - 0.5) * 0.4;
-                this.size = Math.random() * 2 + 1;
-            }
-
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-
-                if (this.x < 0 || this.x > this.width) this.vx *= -1;
-                if (this.y < 0 || this.y > this.height) this.vy *= -1;
-            }
-
-            draw(ctx) {
-                ctx.fillStyle = '#00d8ff';
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-
-        const pillars = [
-            {
-                label: "INTRODUCCIÓN",
-                title: "Saber lo que crees saber",
-                desc: "CogniRoom utiliza Inteligencia Artificial y Bayesian Knowledge Tracing para medir tu dominio real basándose en datos científicos.",
-                mainTitle: "Saber lo que <span>crees saber</span>",
-                mainSubtitle: "Eliminando la ilusión de competencia"
-            },
-            {
-                label: "TECNOLOGÍA BKT",
-                title: "BKT Dinámico",
-                desc: "Rastreo de conocimiento bayesiano en tiempo real. Medimos tu probabilidad de dominio basándonos en tu historial interactivo.",
-                mainTitle: "Real-Time <span>Tracing</span>",
-                mainSubtitle: "Probabilidad de dominio real"
-            },
-            {
-                label: "MÉTRICA ICC",
-                title: "Índice ICC",
-                desc: "Identificamos si estás calibrado, sobreconfiado o subconfiado. Ajusta tu percepción de la realidad con datos precisos.",
-                mainTitle: "Calibrated <span>Learning</span>",
-                mainSubtitle: "Ajuste de percepción cognitiva"
-            },
-            {
-                label: "IA PREDICTIVA",
-                title: "Claude AI",
-                desc: "Intervenciones inteligentes que actúan justo cuando tu curva de aprendizaje decae, proporcionando explicaciones precisas.",
-                mainTitle: "Predictive <span>Insights</span>",
-                mainSubtitle: "Intervenciones inteligentes con Claude"
-            }
-        ];
-
-        let currentPillar = 0;
-        let plexusInstance;
-
-        function selectPillar(index) {
-            currentPillar = index;
-            
-            // Update Card and Left Title with fade effect
-            const card = document.querySelector('.glass-info-card');
-            const mainTitle = document.getElementById('main-title');
-            const mainSubtitle = document.getElementById('main-subtitle');
-            
-            card.style.opacity = '0.5';
-            mainTitle.style.opacity = '0.5';
-            
-            setTimeout(() => {
-                document.getElementById('pillar-label').innerText = pillars[index].label;
-                document.getElementById('pillar-title').innerText = pillars[index].title;
-                document.getElementById('pillar-desc').innerText = pillars[index].desc;
-                
-                mainTitle.innerHTML = pillars[index].mainTitle;
-                mainSubtitle.innerText = pillars[index].mainSubtitle;
-                
-                card.style.opacity = '1';
-                mainTitle.style.opacity = '1';
-                
-                // Update dots
-                document.querySelectorAll('.p-dot').forEach((dot, i) => {
-                    dot.classList.toggle('active', i === index);
-                });
-
-                // Background shift disabled as requested
-            }, 200);
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            plexusInstance = new Plexus('plexus-canvas');
-        });
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script type="module" src="{% static 'app/js/landing.js' %}"></script>
 </body>
 </html>

@@ -1,7 +1,3 @@
-/**
- * Dashboard controller — pinta el perfil cognitivo, los nodos y el último diagnóstico IA.
- * Vinculado a templates/app/dashboard.html
- */
 
 import { auth, cognitive, tokens, ApiError } from './api.js';
 import { toast } from './toast.js';
@@ -18,7 +14,6 @@ const $riskPill = document.getElementById('risk-pill');
 const $nodesGrid = document.getElementById('nodes-grid');
 const $diagCard = document.getElementById('diagnosis-card');
 
-/* ---------- guard ---------- */
 if (!tokens.access) {
     location.replace('/app/');
 }
@@ -28,7 +23,6 @@ $logout.addEventListener('click', () => {
     location.replace('/app/');
 });
 
-/* ---------- helpers ---------- */
 function fmt(n, digits = 2) {
     if (n == null || Number.isNaN(n)) return '—';
     return Number(n).toFixed(digits);
@@ -63,7 +57,6 @@ function animateNumber(el, target, digits = 2) {
     requestAnimationFrame(tick);
 }
 
-/* ---------- card builder for nodes ---------- */
 function nodeCardHTML(node) {
     const profile = node.profile || 'calibrated';
     const icc = node.icc != null ? fmt(node.icc) : null;
@@ -72,28 +65,30 @@ function nodeCardHTML(node) {
         ? Math.max(0, Math.min(1, mastery + (Math.random() * 0 /* approximated, see note */)))
         : null;
     return `
-      <article class="card" aria-labelledby="n-${node.node_id}">
-        <header style="display:flex; justify-content:space-between; align-items:flex-start; gap: var(--s-3);">
-          <div>
-            <p class="card-eyebrow">${escapeHTML(node.trend || 'estable')} ${trendIcon(node.trend)}</p>
-            <h3 id="n-${node.node_id}" class="card-title">${escapeHTML(node.node_name)}</h3>
-          </div>
-          <span class="pill" data-profile="${profile}">${profileLabel(profile)}</span>
-        </header>
+      <div class="col">
+        <article class="card h-100" aria-labelledby="n-${node.node_id}">
+          <header class="d-flex justify-content-between align-items-start gap-3">
+            <div>
+              <p class="card-eyebrow">${escapeHTML(node.trend || 'estable')} ${trendIcon(node.trend)}</p>
+              <h3 id="n-${node.node_id}" class="card-title">${escapeHTML(node.node_name)}</h3>
+            </div>
+            <span class="pill" data-profile="${profile}">${profileLabel(profile)}</span>
+          </header>
 
-        <div class="dual-bar" aria-label="Comparación confianza vs dominio">
-          <div class="dual-bar__row">
-            <span class="dual-bar__label">Dominio</span>
-            <div class="dual-bar__track"><div class="dual-bar__fill dual-bar__fill--reality" style="--value: ${mastery}"></div></div>
-            <span class="dual-bar__value">${fmt(mastery)}</span>
+          <div class="dual-bar" aria-label="Comparación confianza vs dominio">
+            <div class="dual-bar__row">
+              <span class="dual-bar__label">Dominio</span>
+              <div class="dual-bar__track"><div class="dual-bar__fill dual-bar__fill--reality" style="--value: ${mastery}"></div></div>
+              <span class="dual-bar__value">${fmt(mastery)}</span>
+            </div>
+            <div class="dual-bar__row">
+              <span class="dual-bar__label">ICC</span>
+              <div class="dual-bar__track"><div class="dual-bar__fill" style="--value: ${node.icc ?? 0}"></div></div>
+              <span class="dual-bar__value">${icc ?? '—'}</span>
+            </div>
           </div>
-          <div class="dual-bar__row">
-            <span class="dual-bar__label">ICC</span>
-            <div class="dual-bar__track"><div class="dual-bar__fill" style="--value: ${node.icc ?? 0}"></div></div>
-            <span class="dual-bar__value">${icc ?? '—'}</span>
-          </div>
-        </div>
-      </article>
+        </article>
+      </div>
     `;
 }
 
@@ -105,7 +100,6 @@ function escapeHTML(s) {
         .replaceAll('"', '&quot;');
 }
 
-/* ---------- bootstrap ---------- */
 async function bootstrap() {
     try {
         const [user, profile, nodes] = await Promise.all([
@@ -149,8 +143,8 @@ function renderProfile(profile) {
 function renderNodes(nodes) {
     if (!nodes || nodes.length === 0) {
         $nodesGrid.innerHTML = `
-          <div class="empty" style="grid-column: 1/-1;">
-            Aún no hay nodos rastreados. Inicia una sesión para empezar a registrar tu dominio.
+          <div class="col-12">
+            <p class="empty mb-0">Aún no hay nodos rastreados. Inicia una sesión para empezar a registrar tu dominio.</p>
           </div>`;
         return;
     }
@@ -169,7 +163,7 @@ function renderDiagnosis(diag) {
     $riskPill.dataset.risk = diag.risk_level;
 
     $diagCard.innerHTML = `
-      <header style="display:flex; gap: var(--s-3); align-items:center; margin-bottom: var(--s-4);">
+      <header class="d-flex flex-wrap gap-3 align-items-center mb-4">
         <span class="pill" data-profile="${escapeHTML(diag.profile)}">${profileLabel(diag.profile)}</span>
         <span class="pill" data-risk="${escapeHTML(diag.risk_level)}">Riesgo ${escapeHTML(diag.risk_level)}</span>
         <span class="card-meta">predicción de fallo: ${fmt(diag.prediction)}</span>
@@ -178,11 +172,11 @@ function renderDiagnosis(diag) {
       <h3 class="card-title">Razonamiento</h3>
       <p>${escapeHTML(diag.reasoning) || '—'}</p>
 
-      <h3 class="card-title" style="margin-top: var(--s-5);">Recomendación</h3>
+      <h3 class="card-title mt-4">Recomendación</h3>
       <p>${escapeHTML(diag.recommendation) || '—'}</p>
 
       ${diag.risk_nodes?.length ? `
-        <h3 class="card-title" style="margin-top: var(--s-5);">Nodos en riesgo</h3>
+        <h3 class="card-title mt-4">Nodos en riesgo</h3>
         <ul>${diag.risk_nodes.map(n => `<li>${escapeHTML(n)}</li>`).join('')}</ul>
       ` : ''}
     `;

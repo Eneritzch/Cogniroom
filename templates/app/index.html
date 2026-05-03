@@ -6,7 +6,9 @@
     <meta name="description" content="CogniRoom — el sistema que sabe cuándo crees saber.">
     <title>CogniRoom · Iniciar sesión</title>
     <link rel="preconnect" href="https://rsms.me">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     {% load static %}
     <link rel="stylesheet" href="{% static 'app/css/tokens.css' %}">
     <link rel="stylesheet" href="{% static 'app/css/styles.css' %}">
@@ -45,7 +47,7 @@
                 </svg>
             </figure>
 
-            <ul class="brand-features">
+            <ul class="brand-features list-unstyled m-0 d-grid gap-3">
                 <li class="brand-feature">
                     <span class="brand-feature-marker" aria-hidden="true"></span>
                     <span><strong>BKT</strong> mide tu dominio real, no solo tus aciertos.</span>
@@ -64,17 +66,17 @@
         <section class="auth-panel" aria-labelledby="login-heading">
             <article class="auth-card">
                 <header>
-                    <h2 id="login-heading">Bienvenido</h2>
-                    <p>Inicia sesión para entrar a tu espacio cognitivo.</p>
+                    <h2 id="login-heading" class="h4 mb-2">Bienvenido</h2>
+                    <p class="text-secondary small mb-0">Inicia sesión para entrar a tu espacio cognitivo.</p>
                 </header>
 
-                <form id="login-form" class="form-stack" autocomplete="on" novalidate>
-                    <fieldset class="form-stack" style="border:0; padding:0; margin:0;">
+                <form id="login-form" autocomplete="on" novalidate>
+                    <fieldset class="border-0 p-0 m-0">
                         <legend class="visually-hidden">Credenciales</legend>
 
-                        <div class="field">
-                            <label class="field-label" for="email">Correo</label>
-                            <input class="field-input"
+                        <div class="mb-3">
+                            <label class="form-label" for="email">Correo</label>
+                            <input class="form-control"
                                    type="email"
                                    id="email"
                                    name="email"
@@ -87,9 +89,9 @@
                                    placeholder="tu@institucion.edu">
                         </div>
 
-                        <div class="field">
-                            <label class="field-label" for="password">Contraseña</label>
-                            <input class="field-input"
+                        <div class="mb-4">
+                            <label class="form-label" for="password">Contraseña</label>
+                            <input class="form-control"
                                    type="password"
                                    id="password"
                                    name="password"
@@ -100,20 +102,10 @@
                         </div>
                     </fieldset>
 
-                    <button type="submit" class="btn btn--primary btn--block" id="login-submit">
+                    <button type="submit" class="btn btn-primary w-100" id="login-submit">
                         Entrar
                     </button>
                 </form>
-
-                <details class="demo-block">
-                    <summary>Cuentas de demostración</summary>
-                    <div class="demo-chips" role="group" aria-label="Cuentas demo">
-                        <button class="chip" data-demo="teacher@cogniroom.com">teacher</button>
-                        <button class="chip" data-demo="student1@cogniroom.com">student1</button>
-                        <button class="chip" data-demo="student2@cogniroom.com">student2</button>
-                        <button class="chip" data-demo="student3@cogniroom.com">student3</button>
-                    </div>
-                </details>
             </article>
         </section>
 
@@ -121,6 +113,7 @@
 
     <div class="toast-host" id="toast-host" aria-live="polite" aria-atomic="true"></div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script type="module" src="{% static 'app/js/auth.js' %}"></script>
 </body>
 </html>

@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CogniRoom · Dashboard</title>
     <link rel="preconnect" href="https://rsms.me">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     {% load static %}
     <link rel="stylesheet" href="{% static 'app/css/tokens.css' %}">
     <link rel="stylesheet" href="{% static 'app/css/styles.css' %}">
@@ -13,97 +15,97 @@
 <body>
 
     <header class="app-header" role="banner">
-        <div class="app-header__inner">
+        <div class="app-header__inner container-fluid d-flex align-items-center gap-4">
             <a href="/app/dashboard/" class="app-header__brand" aria-label="CogniRoom · inicio">CogniRoom</a>
 
-            <nav class="app-nav" aria-label="Principal">
+            <nav class="app-nav d-flex gap-1 flex-grow-1" aria-label="Principal">
                 <a class="app-nav__link" href="/app/dashboard/" aria-current="page">Resumen</a>
                 <a class="app-nav__link" href="#nodes-section">Nodos</a>
                 <a class="app-nav__link" href="#diagnosis-section">Diagnóstico</a>
             </nav>
 
-            <div class="app-user">
+            <div class="d-flex align-items-center gap-3">
                 <span id="user-name" class="card-meta">—</span>
                 <span id="user-role" class="role-badge" data-role="">—</span>
-                <button class="btn btn--ghost" id="logout-btn" type="button">Salir</button>
+                <button class="btn btn-outline-secondary btn-sm" id="logout-btn" type="button">Salir</button>
             </div>
         </div>
     </header>
 
-    <main class="app-main">
+    <main class="app-main container-xl py-5">
 
         <!-- ===== HERO: Calibración cognitiva global ===== -->
-        <section class="section" aria-labelledby="hero-heading">
-            <div class="section-heading">
-                <div>
-                    <h2 id="hero-heading">Tu calibración cognitiva</h2>
-                    <p>Qué tan alineada está tu autopercepción con tu dominio real.</p>
+        <section class="mb-5" aria-labelledby="hero-heading">
+            <header class="mb-4">
+                <h2 id="hero-heading" class="section-title">Tu calibración cognitiva</h2>
+                <p class="text-secondary mb-0">Qué tan alineada está tu autopercepción con tu dominio real.</p>
+            </header>
+
+            <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+
+                <div class="col col-xl-6">
+                    <article class="card card--feature h-100" aria-labelledby="icc-heading">
+                        <p class="card-eyebrow">ICC global</p>
+                        <h3 id="icc-heading" class="visually-hidden">Índice de Calibración Cognitiva</h3>
+
+                        <div class="metric">
+                            <p class="metric-value" id="icc-value">—</p>
+                            <span class="metric-suffix">/ 1.0</span>
+                        </div>
+                        <p class="metric-caption" id="icc-caption">Promedio de todas tus respuestas hasta ahora.</p>
+
+                        <p class="mt-4 mb-0">
+                            <span class="pill" data-profile="" id="profile-pill">—</span>
+                        </p>
+                    </article>
                 </div>
-            </div>
 
-            <div class="bento">
+                <div class="col">
+                    <article class="card h-100" aria-labelledby="nodes-tracked">
+                        <p class="card-eyebrow">Nodos rastreados</p>
+                        <h3 id="nodes-tracked" class="visually-hidden">Cantidad de nodos</h3>
+                        <p class="metric-value metric-value--sm" id="nodes-count">—</p>
+                        <p class="metric-caption">Temas con datos BKT registrados.</p>
+                    </article>
+                </div>
 
-                <article class="card card--feature" aria-labelledby="icc-heading">
-                    <p class="card-eyebrow">ICC global</p>
-                    <h3 id="icc-heading" class="visually-hidden">Índice de Calibración Cognitiva</h3>
-
-                    <div class="metric">
-                        <p class="metric-value" id="icc-value">—</p>
-                        <span class="metric-suffix">/ 1.0</span>
-                    </div>
-                    <p class="metric-caption" id="icc-caption">Promedio de todas tus respuestas hasta ahora.</p>
-
-                    <p style="margin-top: var(--s-4);">
-                        <span class="pill" data-profile="" id="profile-pill">—</span>
-                    </p>
-                </article>
-
-                <article class="card" aria-labelledby="nodes-tracked">
-                    <p class="card-eyebrow">Nodos rastreados</p>
-                    <h3 id="nodes-tracked" class="visually-hidden">Cantidad de nodos</h3>
-                    <p class="metric-value" id="nodes-count" style="font-size: var(--fs-xl);">—</p>
-                    <p class="metric-caption">Temas con datos BKT registrados.</p>
-                </article>
-
-                <article class="card" aria-labelledby="last-diag">
-                    <p class="card-eyebrow">Último diagnóstico IA</p>
-                    <h3 id="last-diag" class="visually-hidden">Diagnóstico IA</h3>
-                    <p class="card-meta" id="last-diag-text">Aún no hay diagnóstico generado.</p>
-                    <p style="margin-top: var(--s-3);">
-                        <span class="pill" data-risk="" id="risk-pill" hidden>—</span>
-                    </p>
-                </article>
+                <div class="col">
+                    <article class="card h-100" aria-labelledby="last-diag">
+                        <p class="card-eyebrow">Último diagnóstico IA</p>
+                        <h3 id="last-diag" class="visually-hidden">Diagnóstico IA</h3>
+                        <p class="card-meta" id="last-diag-text">Aún no hay diagnóstico generado.</p>
+                        <p class="mt-3 mb-0">
+                            <span class="pill" data-risk="" id="risk-pill" hidden>—</span>
+                        </p>
+                    </article>
+                </div>
 
             </div>
         </section>
 
         <!-- ===== KNOWLEDGE NODES ===== -->
-        <section class="section" id="nodes-section" aria-labelledby="nodes-heading">
-            <div class="section-heading">
-                <div>
-                    <h2 id="nodes-heading">Mis nodos de conocimiento</h2>
-                    <p>Comparación entre tu confianza declarada y tu dominio BKT real.</p>
-                </div>
-            </div>
+        <section class="mb-5" id="nodes-section" aria-labelledby="nodes-heading">
+            <header class="mb-4">
+                <h2 id="nodes-heading" class="section-title">Mis nodos de conocimiento</h2>
+                <p class="text-secondary mb-0">Comparación entre tu confianza declarada y tu dominio BKT real.</p>
+            </header>
 
-            <div class="bento" id="nodes-grid">
-                <article class="card skeleton" style="height: 200px;" aria-hidden="true"></article>
-                <article class="card skeleton" style="height: 200px;" aria-hidden="true"></article>
-                <article class="card skeleton" style="height: 200px;" aria-hidden="true"></article>
+            <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4" id="nodes-grid">
+                <div class="col"><article class="card skeleton" aria-hidden="true" style="height: 200px;"></article></div>
+                <div class="col"><article class="card skeleton" aria-hidden="true" style="height: 200px;"></article></div>
+                <div class="col"><article class="card skeleton" aria-hidden="true" style="height: 200px;"></article></div>
             </div>
         </section>
 
         <!-- ===== DIAGNOSIS ===== -->
-        <section class="section" id="diagnosis-section" aria-labelledby="diagnosis-heading">
-            <div class="section-heading">
-                <div>
-                    <h2 id="diagnosis-heading">Análisis IA</h2>
-                    <p>Razonamiento y recomendación personalizada.</p>
-                </div>
-            </div>
+        <section class="mb-5" id="diagnosis-section" aria-labelledby="diagnosis-heading">
+            <header class="mb-4">
+                <h2 id="diagnosis-heading" class="section-title">Análisis IA</h2>
+                <p class="text-secondary mb-0">Razonamiento y recomendación personalizada.</p>
+            </header>
 
             <article class="card" id="diagnosis-card">
-                <p class="empty">Responde algunas preguntas para que la IA genere un diagnóstico.</p>
+                <p class="empty mb-0">Responde algunas preguntas para que la IA genere un diagnóstico.</p>
             </article>
         </section>
 
@@ -111,6 +113,7 @@
 
     <div class="toast-host" id="toast-host" aria-live="polite" aria-atomic="true"></div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script type="module" src="{% static 'app/js/dashboard.js' %}"></script>
 </body>
 </html>

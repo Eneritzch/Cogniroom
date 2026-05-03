@@ -1,5 +1,7 @@
 # CogniRoom — Contexto del proyecto
 
+> **Reglas operativas obligatorias en [.claude/CLAUDE.md](.claude/CLAUDE.md)** — diseño mobile-first, sin emojis (solo SVG inline), colores y gradientes desde `tokens.css`, tipografía Inter + JetBrains Mono, MVT y buenas prácticas backend. Léelas antes de escribir código.
+
 Sistema de evaluación cognitiva adaptativa para detectar **sobreconfianza académica** en estudiantes universitarios. Mide la brecha entre lo que el estudiante **cree saber** (confianza declarada) y lo que **realmente sabe** (BKT), usando IA para diagnóstico y predicción de riesgo.
 
 ## Stack

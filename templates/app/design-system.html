@@ -6,7 +6,9 @@
     <meta name="description" content="Design System CogniRoom — los primitivos y componentes que dan vida al producto.">
     <title>CogniRoom · Design System</title>
     <link rel="preconnect" href="https://rsms.me">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     {% load static %}
     <link rel="stylesheet" href="{% static 'app/css/tokens.css' %}">
     <link rel="stylesheet" href="{% static 'app/css/styles.css' %}">
@@ -107,18 +109,18 @@
 
             <div class="ds-demo">
                 <ul class="ds-swatches" role="list">
-                    <li><button class="ds-swatch" data-copy="var(--c-bg)"             style="--swatch: var(--c-bg)">             <span>Background</span><code>--c-bg</code></button></li>
-                    <li><button class="ds-swatch" data-copy="var(--c-surface)"        style="--swatch: var(--c-surface)">        <span>Surface</span><code>--c-surface</code></button></li>
-                    <li><button class="ds-swatch" data-copy="var(--c-border)"         style="--swatch: var(--c-border)">         <span>Border</span><code>--c-border</code></button></li>
-                    <li><button class="ds-swatch" data-copy="var(--c-brand)"          style="--swatch: var(--c-brand)">          <span>Brand</span><code>--c-brand</code></button></li>
-                    <li><button class="ds-swatch" data-copy="var(--c-violet)"         style="--swatch: var(--c-violet)">         <span>Violet</span><code>--c-violet</code></button></li>
-                    <li><button class="ds-swatch" data-copy="var(--c-calibrated)"     style="--swatch: var(--c-calibrated)">     <span>Calibrado</span><code>--c-calibrated</code></button></li>
-                    <li><button class="ds-swatch" data-copy="var(--c-overconfident)"  style="--swatch: var(--c-overconfident)">  <span>Sobreconfiado</span><code>--c-overconfident</code></button></li>
-                    <li><button class="ds-swatch" data-copy="var(--c-underconfident)" style="--swatch: var(--c-underconfident)"> <span>Subconfiado</span><code>--c-underconfident</code></button></li>
-                    <li><button class="ds-swatch" data-copy="var(--c-success)"        style="--swatch: var(--c-success)">        <span>Success</span><code>--c-success</code></button></li>
-                    <li><button class="ds-swatch" data-copy="var(--c-warning)"        style="--swatch: var(--c-warning)">        <span>Warning</span><code>--c-warning</code></button></li>
-                    <li><button class="ds-swatch" data-copy="var(--c-danger)"         style="--swatch: var(--c-danger)">         <span>Danger</span><code>--c-danger</code></button></li>
-                    <li><button class="ds-swatch" data-copy="var(--c-info)"           style="--swatch: var(--c-info)">           <span>Info</span><code>--c-info</code></button></li>
+                    <li><button class="ds-swatch" data-copy="var(--color-bg)"             style="--swatch: var(--color-bg)">             <span>Background</span><code>--color-bg</code></button></li>
+                    <li><button class="ds-swatch" data-copy="var(--color-surface)"        style="--swatch: var(--color-surface)">        <span>Surface</span><code>--color-surface</code></button></li>
+                    <li><button class="ds-swatch" data-copy="var(--color-border)"         style="--swatch: var(--color-border)">         <span>Border</span><code>--color-border</code></button></li>
+                    <li><button class="ds-swatch" data-copy="var(--color-primary)"          style="--swatch: var(--color-primary)">          <span>Primary</span><code>--color-primary</code></button></li>
+                    <li><button class="ds-swatch" data-copy="var(--color-secondary)"         style="--swatch: var(--color-secondary)">         <span>Secondary</span><code>--color-secondary</code></button></li>
+                    <li><button class="ds-swatch" data-copy="var(--color-calibrated)"     style="--swatch: var(--color-calibrated)">     <span>Calibrado</span><code>--color-calibrated</code></button></li>
+                    <li><button class="ds-swatch" data-copy="var(--color-overconfident)"  style="--swatch: var(--color-overconfident)">  <span>Sobreconfiado</span><code>--color-overconfident</code></button></li>
+                    <li><button class="ds-swatch" data-copy="var(--color-underconfident)" style="--swatch: var(--color-underconfident)"> <span>Subconfiado</span><code>--color-underconfident</code></button></li>
+                    <li><button class="ds-swatch" data-copy="var(--color-success)"        style="--swatch: var(--color-success)">        <span>Success</span><code>--color-success</code></button></li>
+                    <li><button class="ds-swatch" data-copy="var(--color-warning)"        style="--swatch: var(--color-warning)">        <span>Warning</span><code>--color-warning</code></button></li>
+                    <li><button class="ds-swatch" data-copy="var(--color-danger)"         style="--swatch: var(--color-danger)">         <span>Danger</span><code>--color-danger</code></button></li>
+                    <li><button class="ds-swatch" data-copy="var(--color-info)"           style="--swatch: var(--color-info)">           <span>Info</span><code>--color-info</code></button></li>
                 </ul>
             </div>
         </section>
@@ -136,9 +138,14 @@
                     </header>
                     <div class="ds-demo-card__body">
                         <div class="ds-row">
-                            <button class="btn btn--primary" type="button">Primario</button>
-                            <button class="btn btn--ghost"   type="button">Ghost</button>
-                            <button class="btn btn--danger"  type="button">Peligro</button>
+                            <button class="btn btn-primary"          type="button">Primario</button>
+                            <button class="btn btn-outline-secondary" type="button">Ghost</button>
+                            <button class="btn btn-danger"            type="button">Peligro</button>
+                        </div>
+                        <div class="ds-row mt-3">
+                            <button class="btn btn-primary btn-sm"            type="button">Pequeño</button>
+                            <button class="btn btn-outline-secondary btn-lg"  type="button">Grande</button>
+                            <button class="btn btn-primary"                   type="button" disabled>Deshabilitado</button>
                         </div>
                     </div>
                 </article>
@@ -148,12 +155,28 @@
                         <h3>Campos</h3>
                     </header>
                     <div class="ds-demo-card__body">
-                        <div class="form-stack">
-                            <div class="field">
-                                <label class="field-label" for="ds-email">Correo</label>
-                                <input class="field-input" id="ds-email" type="email" placeholder="tu@institucion.edu">
-                            </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="ds-email">Correo</label>
+                            <input class="form-control" id="ds-email" type="email" placeholder="tu@institucion.edu">
                         </div>
+                        <div class="mb-0">
+                            <label class="form-label" for="ds-select">Rol</label>
+                            <select class="form-select" id="ds-select">
+                                <option>Estudiante</option>
+                                <option>Docente</option>
+                            </select>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="ds-demo-card">
+                    <header class="ds-demo-card__header">
+                        <h3>Alertas Bootstrap</h3>
+                    </header>
+                    <div class="ds-demo-card__body">
+                        <div class="alert alert-primary py-2 mb-2" role="alert">Calibración óptima detectada.</div>
+                        <div class="alert alert-warning py-2 mb-2" role="alert">Sobreconfianza en Recursividad.</div>
+                        <div class="alert alert-danger  py-2 mb-0" role="alert">Riesgo alto de fallo.</div>
                     </div>
                 </article>
             </div>
@@ -186,9 +209,9 @@
 
             <div class="ds-demo">
                 <div class="ds-row">
-                    <button class="btn btn--ghost"   type="button" data-toast="info">Info</button>
-                    <button class="btn btn--primary" type="button" data-toast="success">Success</button>
-                    <button class="btn btn--danger"  type="button" data-toast="error">Error</button>
+                    <button class="btn btn-outline-secondary" type="button" data-toast="info">Info</button>
+                    <button class="btn btn-primary"           type="button" data-toast="success">Success</button>
+                    <button class="btn btn-danger"            type="button" data-toast="error">Error</button>
                 </div>
             </div>
         </section>
@@ -198,6 +221,7 @@
 <div id="copy-hint" class="copy-hint" role="status" aria-live="polite"></div>
 <div class="toast-host" id="toast-host" aria-live="polite" aria-atomic="true"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 <script type="module" src="{% static 'app/js/design-system.js' %}"></script>
 </body>
 </html>

@@ -57,7 +57,6 @@ urlpatterns = [
     path('app/', TemplateView.as_view(template_name='app/index.html')),
     path('app/dashboard/', TemplateView.as_view(template_name='app/dashboard.html')),
     path('app/design-system/', TemplateView.as_view(template_name='app/design-system.html')),
-    path('demo/', TemplateView.as_view(template_name='demo.html')),
     path('api/', api_root),
     path('api/auth/', include('apps.users.urls')),
     path('api/rooms/', include('apps.rooms.urls')),
