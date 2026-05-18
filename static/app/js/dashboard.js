@@ -59,11 +59,8 @@ function animateNumber(el, target, digits = 2) {
 
 function nodeCardHTML(node) {
     const profile = node.profile || 'calibrated';
-    const icc = node.icc != null ? fmt(node.icc) : null;
+    const icc = node.icc_value != null ? fmt(node.icc_value) : null;
     const mastery = node.p_mastery ?? 0;
-    const confidence = icc != null && node.icc != null
-        ? Math.max(0, Math.min(1, mastery + (Math.random() * 0 /* approximated, see note */)))
-        : null;
     return `
       <div class="col">
         <article class="card h-100" aria-labelledby="n-${node.node_id}">
@@ -83,7 +80,7 @@ function nodeCardHTML(node) {
             </div>
             <div class="dual-bar__row">
               <span class="dual-bar__label">ICC</span>
-              <div class="dual-bar__track"><div class="dual-bar__fill" style="--value: ${node.icc ?? 0}"></div></div>
+              <div class="dual-bar__track"><div class="dual-bar__fill" style="--value: ${node.icc_value ?? 0}"></div></div>
               <span class="dual-bar__value">${icc ?? '—'}</span>
             </div>
           </div>
@@ -164,9 +161,9 @@ function renderDiagnosis(diag) {
 
     $diagCard.innerHTML = `
       <header class="d-flex flex-wrap gap-3 align-items-center mb-4">
-        <span class="pill" data-profile="${escapeHTML(diag.profile)}">${profileLabel(diag.profile)}</span>
+        <span class="pill" data-profile="${escapeHTML(diag.classification)}">${profileLabel(diag.classification)}</span>
         <span class="pill" data-risk="${escapeHTML(diag.risk_level)}">Riesgo ${escapeHTML(diag.risk_level)}</span>
-        <span class="card-meta">predicción de fallo: ${fmt(diag.prediction)}</span>
+        <span class="card-meta">predicción de fallo: ${fmt(diag.failure_probability)}</span>
       </header>
 
       <h3 class="card-title">Razonamiento</h3>
@@ -175,9 +172,9 @@ function renderDiagnosis(diag) {
       <h3 class="card-title mt-4">Recomendación</h3>
       <p>${escapeHTML(diag.recommendation) || '—'}</p>
 
-      ${diag.risk_nodes?.length ? `
+      ${diag.risk_node?.length ? `
         <h3 class="card-title mt-4">Nodos en riesgo</h3>
-        <ul>${diag.risk_nodes.map(n => `<li>${escapeHTML(n)}</li>`).join('')}</ul>
+        <ul>${diag.risk_node.map(n => `<li>${escapeHTML(n)}</li>`).join('')}</ul>
       ` : ''}
     `;
 }

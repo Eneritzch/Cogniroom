@@ -48,7 +48,7 @@ class Question(models.Model):
     ]
 
     node = models.ForeignKey(KnowledgeNode, on_delete=models.CASCADE, related_name='questions')
-    text = models.TextField()
+    statement = models.TextField()
     difficulty = models.CharField(max_length=10, choices=DIFFICULTY_CHOICES)
     options = models.JSONField()
     correct_index = models.IntegerField()

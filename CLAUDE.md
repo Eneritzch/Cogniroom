@@ -79,10 +79,10 @@ Si `ANTHROPIC_API_KEY` no está configurada, los métodos del servicio devuelven
 
 ### Métricas (definiciones canónicas)
 - **BKT**: Bayes manual, fórmula Corbett & Anderson 1994. `p_mastery` clamped [0,1], redondeado a 4 decimales.
-- **ICC** = `1 − |declared_confidence − bkt_mastery|`.
-- **Gap** = `declared_confidence − bkt_mastery`.
-- **Perfil**: `gap > 0.2` → overconfident · `gap < −0.2` → underconfident · resto → calibrated.
-- **IPC** = promedio de ICC de todos los estudiantes en un nodo. Si `< 0.5` → punto ciego colectivo.
+- **ICC** (`icc_value`) = `1 − |metacognitive_gap|`.
+- **Metacognitive gap** = `avg_confidence − bkt_mastery`.
+- **Perfil**: `metacognitive_gap > 0.2` → overconfident · `< −0.2` → underconfident · resto → calibrated.
+- **IPC** (`ipc_value`) = promedio de ICC de todos los estudiantes en un nodo. Si `< 0.5` → punto ciego colectivo.
 
 ## Comandos comunes
 

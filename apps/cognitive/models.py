@@ -47,12 +47,12 @@ class CognitiveIndex(models.Model):
         on_delete=models.SET_NULL,
         related_name='cognitive_indices',
     )
-    declared_confidence = models.FloatField()
+    avg_confidence = models.FloatField()
     bkt_mastery = models.FloatField()
-    icc = models.FloatField()
-    gap = models.FloatField()
+    icc_value = models.FloatField()
+    metacognitive_gap = models.FloatField()
     profile = models.CharField(max_length=20, choices=PROFILE_CHOICES)
-    created_at = models.DateTimeField(auto_now_add=True)
+    calculated_at = models.DateTimeField(auto_now_add=True)
 
 
 class BlindSpotIndex(models.Model):
@@ -66,8 +66,8 @@ class BlindSpotIndex(models.Model):
         on_delete=models.CASCADE,
         related_name='blind_spots',
     )
-    ipc = models.FloatField()
-    students_count = models.IntegerField()
+    ipc_value = models.FloatField()
+    total_student = models.IntegerField()
     calculated_at = models.DateTimeField(auto_now=True)
 
 
@@ -92,10 +92,10 @@ class AIDiagnosis(models.Model):
         on_delete=models.SET_NULL,
         related_name='ai_diagnoses',
     )
-    profile = models.CharField(max_length=20)
+    classification = models.CharField(max_length=20)
     risk_level = models.CharField(max_length=10, choices=RISK_CHOICES)
-    risk_nodes = models.JSONField(default=list)
-    prediction = models.FloatField()
+    risk_node = models.JSONField(default=list)
+    failure_probability = models.FloatField()
     reasoning = models.TextField()
     recommendation = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
+    generated_at = models.DateTimeField(auto_now_add=True)

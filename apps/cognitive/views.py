@@ -25,11 +25,11 @@ class MyProfileView(APIView):
     def get(self, request):
         user = request.user
         last_diag = (
-            AIDiagnosis.objects.filter(student=user).order_by('-created_at').first()
+            AIDiagnosis.objects.filter(student=user).order_by('-generated_at').first()
         )
         icc_avg = (
             CognitiveIndex.objects.filter(student=user)
-            .aggregate(avg=Avg('icc'))['avg']
+            .aggregate(avg=Avg('icc_value'))['avg']
             or 0.0
         )
         bkt_states = BKTState.objects.filter(student=user).select_related('node')
@@ -60,12 +60,12 @@ class MyNodesView(APIView):
         for state in bkt_states:
             indices = list(
                 CognitiveIndex.objects.filter(student=user, node=state.node)
-                .order_by('-created_at')[:3]
+                .order_by('-calculated_at')[:3]
             )
             latest = indices[0] if indices else None
             trend = 'estable'
             if len(indices) >= 2:
-                diff = indices[0].icc - indices[-1].icc
+                diff = indices[0].icc_value - indices[-1].icc_value
                 if diff > 0.05:
                     trend = 'mejorando'
                 elif diff < -0.05:
@@ -75,7 +75,7 @@ class MyNodesView(APIView):
                 'node_id': state.node_id,
                 'node_name': state.node.name,
                 'p_mastery': round(state.p_mastery, 4),
-                'icc': round(latest.icc, 4) if latest else None,
+                'icc_value': round(latest.icc_value, 4) if latest else None,
                 'profile': latest.profile if latest else None,
                 'trend': trend,
             })
@@ -88,12 +88,12 @@ class BlindSpotsView(APIView):
 
     def get(self, request, room_id):
         room = get_object_or_404(Room, id=room_id)
-        if room.owner_id != request.user.id:
+        if room.teacher_id != request.user.id:
             return Response(
                 {'detail': 'Only the room owner can view blind spots.'},
                 status=status.HTTP_403_FORBIDDEN,
             )
-        spots = BlindSpotIndex.objects.filter(room=room).order_by('ipc')
+        spots = BlindSpotIndex.objects.filter(room=room).order_by('ipc_value')
         return Response(BlindSpotIndexSerializer(spots, many=True).data)
 
 
@@ -102,7 +102,7 @@ class AtRiskView(APIView):
 
     def get(self, request, room_id):
         room = get_object_or_404(Room, id=room_id)
-        if room.owner_id != request.user.id:
+        if room.teacher_id != request.user.id:
             return Response(
                 {'detail': 'Only the room owner can view at-risk students.'},
                 status=status.HTTP_403_FORBIDDEN,
@@ -112,7 +112,7 @@ class AtRiskView(APIView):
         diagnoses = (
             AIDiagnosis.objects.filter(session__room=room)
             .select_related('student')
-            .order_by('-created_at')
+            .order_by('-generated_at')
         )
         for diag in diagnoses:
             if diag.student_id not in latest_per_student:

@@ -99,7 +99,7 @@ class Command(BaseCommand):
 
         room, r_created = Room.objects.get_or_create(
             name='Algoritmos I',
-            owner=teacher,
+            teacher=teacher,
             defaults={
                 'subject': 'Programación',
                 'mode': Room.MODE_GROUP,
@@ -136,7 +136,7 @@ class Command(BaseCommand):
             for q_data in SEED_QUESTIONS:
                 Question.objects.create(
                     node=recursividad,
-                    text=q_data['text'],
+                    statement=q_data['text'],
                     options=q_data['options'],
                     correct_index=q_data['correct_index'],
                     difficulty=q_data['difficulty'],

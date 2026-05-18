@@ -2,11 +2,13 @@
 
 Este documento describe el esquema relacional del sistema, los atributos de cada tabla, restricciones y relaciones entre entidades.
 
+> Nomenclatura alineada con el diagrama ER del proyecto. Los nombres de columna aquí coinciden con los campos definidos en `apps/*/models.py`.
+
 ## Diagrama entidad–relación
 
 ```mermaid
 erDiagram
-    USER ||--o{ ROOM : "owns"
+    USER ||--o{ ROOM : "teaches"
     USER ||--o{ ROOM_MEMBERSHIP : "joins"
     USER ||--o{ EVALUATION_SESSION : "takes"
     USER ||--o{ BKT_STATE : "has"
@@ -25,8 +27,8 @@ erDiagram
     KNOWLEDGE_NODE ||--o{ COGNITIVE_INDEX : "scores"
     KNOWLEDGE_NODE ||--o{ BLIND_SPOT_INDEX : "aggregates"
 
-    QUESTION ||--o{ ANSWER : "is answered in"
-    EVALUATION_SESSION ||--o{ ANSWER : "contains"
+    QUESTION ||--o{ STUDENT_RESPONSE : "is answered in"
+    EVALUATION_SESSION ||--o{ STUDENT_RESPONSE : "contains"
     EVALUATION_SESSION ||--o{ COGNITIVE_INDEX : "records"
     EVALUATION_SESSION ||--o{ AI_DIAGNOSIS : "produces"
 ```
@@ -63,7 +65,7 @@ Sala de aprendizaje. Puede ser grupal (con docente) o individual (autoestudio).
 | `id` | BigAutoField | PK | — |
 | `name` | CharField(200) | NOT NULL | Nombre visible |
 | `subject` | CharField(200) | NOT NULL | Materia |
-| `owner_id` | FK → users_user | ON DELETE CASCADE | Dueño (docente si group, alumno si individual) |
+| `teacher_id` | FK → users_user | ON DELETE CASCADE | Docente dueño (en salas individuales, el propio alumno) |
 | `mode` | CharField(20) | CHOICES | `group` / `individual` |
 | `access_code` | CharField(8) | UNIQUE, NULLABLE | Solo para salas `group` |
 | `is_active` | Boolean | default True | — |
@@ -119,7 +121,7 @@ Pregunta de opción múltiple.
 |---|---|---|---|
 | `id` | BigAutoField | PK | — |
 | `node_id` | FK → questions_knowledgenode | ON DELETE CASCADE | — |
-| `text` | TextField | NOT NULL | Enunciado |
+| `statement` | TextField | NOT NULL | Enunciado |
 | `difficulty` | CharField(10) | CHOICES | `easy` / `medium` / `hard` |
 | `options` | JSONField | NOT NULL | Array de exactamente 4 strings |
 | `correct_index` | IntegerField | 0..3 | Índice de la opción correcta |
@@ -146,10 +148,10 @@ Sesión de evaluación activa de un estudiante en una sala.
 | `room_id` | FK → rooms_room | ON DELETE CASCADE | — |
 | `status` | CharField(20) | CHOICES | `active` / `completed` |
 | `started_at` | DateTime | auto_now_add | — |
-| `completed_at` | DateTime | NULLABLE | Se llena al completar |
+| `finished_at` | DateTime | NULLABLE | Se llena al completar |
 
 ### `evaluation_sessions_answer`
-Respuesta individual a una pregunta dentro de una sesión.
+Respuesta individual a una pregunta dentro de una sesión. En el diagrama figura como `student_response`.
 
 | Campo | Tipo | Restricciones | Descripción |
 |---|---|---|---|
@@ -158,10 +160,10 @@ Respuesta individual a una pregunta dentro de una sesión.
 | `question_id` | FK → questions_question | ON DELETE CASCADE | — |
 | `selected_index` | IntegerField | 0..3 | Opción elegida |
 | `is_correct` | Boolean | NOT NULL | Calculado en backend |
-| `declared_confidence` | FloatField | 0.0..1.0 | Confianza declarada |
-| `response_time_seconds` | IntegerField | default 0 | Tiempo de respuesta |
+| `confidence_declared` | FloatField | 0.0..1.0 | Confianza declarada por el estudiante |
+| `response_time_sec` | IntegerField | default 0 | Tiempo de respuesta en segundos |
 | `ai_feedback` | TextField | BLANK | Explicación IA si ICC < 0.5 |
-| `created_at` | DateTime | auto_now_add | — |
+| `answered_at` | DateTime | auto_now_add | — |
 
 ---
 
@@ -193,12 +195,12 @@ Snapshot histórico del ICC por respuesta.
 | `student_id` | FK → users_user | ON DELETE CASCADE | — |
 | `node_id` | FK → questions_knowledgenode | ON DELETE CASCADE | — |
 | `session_id` | FK → evaluation_sessions_evaluationsession | ON DELETE SET NULL, NULLABLE | — |
-| `declared_confidence` | FloatField | 0.0..1.0 | — |
+| `avg_confidence` | FloatField | 0.0..1.0 | Confianza declarada en ese momento |
 | `bkt_mastery` | FloatField | 0.0..1.0 | Snapshot del mastery en ese momento |
-| `icc` | FloatField | 0.0..1.0 | 1 − \|gap\| |
-| `gap` | FloatField | −1.0..1.0 | confianza − mastery |
+| `icc_value` | FloatField | 0.0..1.0 | 1 − \|metacognitive_gap\| |
+| `metacognitive_gap` | FloatField | −1.0..1.0 | `avg_confidence − bkt_mastery` |
 | `profile` | CharField(20) | CHOICES | `overconfident` / `underconfident` / `calibrated` |
-| `created_at` | DateTime | auto_now_add | — |
+| `calculated_at` | DateTime | auto_now_add | — |
 
 ### `cognitive_blindspotindex`
 Índice IPC (Punto Ciego Colectivo) por nodo y sala.
@@ -208,11 +210,11 @@ Snapshot histórico del ICC por respuesta.
 | `id` | BigAutoField | PK | — |
 | `node_id` | FK → questions_knowledgenode | ON DELETE CASCADE | — |
 | `room_id` | FK → rooms_room | ON DELETE CASCADE | — |
-| `ipc` | FloatField | 0.0..1.0 | Promedio de ICC del aula en ese nodo |
-| `students_count` | IntegerField | NOT NULL | Nº estudiantes que contribuyeron |
+| `ipc_value` | FloatField | 0.0..1.0 | Promedio de ICC del aula en ese nodo |
+| `total_student` | IntegerField | NOT NULL | Nº estudiantes que contribuyeron |
 | `calculated_at` | DateTime | auto_now | — |
 
-**Alerta**: si `ipc < 0.5` el nodo es un punto ciego colectivo.
+**Alerta**: si `ipc_value < 0.5` el nodo es un punto ciego colectivo.
 
 ### `cognitive_aidiagnosis`
 Diagnóstico generado por IA cuando hay desalineación grave.
@@ -222,13 +224,13 @@ Diagnóstico generado por IA cuando hay desalineación grave.
 | `id` | BigAutoField | PK | — |
 | `student_id` | FK → users_user | ON DELETE CASCADE | — |
 | `session_id` | FK → evaluation_sessions_evaluationsession | ON DELETE SET NULL, NULLABLE | — |
-| `profile` | CharField(20) | — | `overconfident` / `underconfident` / `calibrated` |
+| `classification` | CharField(20) | — | `overconfident` / `underconfident` / `calibrated` |
 | `risk_level` | CharField(10) | CHOICES | `high` / `medium` / `low` |
-| `risk_nodes` | JSONField | default [] | Array de nombres de nodos en riesgo |
-| `prediction` | FloatField | 0.0..1.0 | Probabilidad predicha de fallo |
+| `risk_node` | JSONField | default [] | Array de nombres de nodos en riesgo |
+| `failure_probability` | FloatField | 0.0..1.0 | Probabilidad predicha de fallo |
 | `reasoning` | TextField | — | Razonamiento del modelo |
 | `recommendation` | TextField | — | Acción sugerida |
-| `created_at` | DateTime | auto_now_add | — |
+| `generated_at` | DateTime | auto_now_add | — |
 
 ---
 
@@ -236,7 +238,7 @@ Diagnóstico generado por IA cuando hay desalineación grave.
 
 | De | Relación | A |
 |---|---|---|
-| User | 1 ─ N | Room (como owner) |
+| User | 1 ─ N | Room (como teacher) |
 | User | N ─ N | Room (vía RoomMembership) |
 | Room | 1 ─ N | KnowledgeNode |
 | Room | 1 ─ N | PDFDocument |
@@ -258,7 +260,7 @@ CREATE INDEX idx_answer_session ON evaluation_sessions_answer(session_id);
 CREATE INDEX idx_cogindex_student_node ON cognitive_cognitiveindex(student_id, node_id);
 CREATE INDEX idx_bktstate_student ON cognitive_bktstate(student_id);
 CREATE INDEX idx_question_node_approved ON questions_question(node_id, is_approved);
-CREATE INDEX idx_diagnosis_student_created ON cognitive_aidiagnosis(student_id, created_at DESC);
+CREATE INDEX idx_diagnosis_student_generated ON cognitive_aidiagnosis(student_id, generated_at DESC);
 ```
 
 Django crea automáticamente índices sobre todas las FK. Los de arriba son complementarios para las consultas más frecuentes (listar respuestas de sesión, obtener último diagnóstico, filtrar preguntas aprobadas por nodo).

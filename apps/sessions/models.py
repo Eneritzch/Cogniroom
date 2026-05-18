@@ -22,7 +22,7 @@ class EvaluationSession(models.Model):
     )
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_ACTIVE)
     started_at = models.DateTimeField(auto_now_add=True)
-    completed_at = models.DateTimeField(null=True, blank=True)
+    finished_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f'Session#{self.pk} {self.student.username} @ {self.room.name}'
@@ -41,7 +41,7 @@ class Answer(models.Model):
     )
     selected_index = models.IntegerField()
     is_correct = models.BooleanField()
-    declared_confidence = models.FloatField()
-    response_time_seconds = models.IntegerField(default=0)
+    confidence_declared = models.FloatField()
+    response_time_sec = models.IntegerField(default=0)
     ai_feedback = models.TextField(blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    answered_at = models.DateTimeField(auto_now_add=True)

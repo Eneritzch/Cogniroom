@@ -14,18 +14,16 @@ class QuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
         fields = [
-            'id', 'node', 'text', 'difficulty', 'options',
+            'id', 'node', 'statement', 'difficulty', 'options',
             'correct_index', 'source', 'is_approved', 'created_at',
         ]
         read_only_fields = ['id', 'source', 'is_approved', 'created_at']
 
 
 class QuestionPublicSerializer(serializers.ModelSerializer):
-    """Excludes correct_index — used for the student-facing endpoint."""
-
     class Meta:
         model = Question
-        fields = ['id', 'node', 'text', 'difficulty', 'options']
+        fields = ['id', 'node', 'statement', 'difficulty', 'options']
 
 
 class GenerateQuestionsSerializer(serializers.Serializer):
@@ -45,7 +43,7 @@ class GenerateQuestionsSerializer(serializers.Serializer):
 
 class ManualQuestionSerializer(serializers.Serializer):
     node_id = serializers.IntegerField()
-    text = serializers.CharField()
+    statement = serializers.CharField()
     options = serializers.ListField(
         child=serializers.CharField(), min_length=4, max_length=4
     )

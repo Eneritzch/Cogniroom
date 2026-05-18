@@ -20,10 +20,10 @@ class Room(models.Model):
 
     name = models.CharField(max_length=200)
     subject = models.CharField(max_length=200)
-    owner = models.ForeignKey(
+    teacher = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name='owned_rooms',
+        related_name='teacher_rooms',
     )
     mode = models.CharField(max_length=20, choices=MODE_CHOICES, default=MODE_GROUP)
     access_code = models.CharField(max_length=8, unique=True, blank=True, null=True)

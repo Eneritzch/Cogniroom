@@ -30,10 +30,10 @@ from .serializers import (
 
 
 def _is_member(user, room):
-    if room.owner_id == user.id:
+    if room.teacher_id == user.id:
         return True
     if room.mode == 'individual':
-        return room.owner_id == user.id
+        return room.teacher_id == user.id
     return RoomMembership.objects.filter(room=room, student=user).exists()
 
 
@@ -46,11 +46,11 @@ def _gather_student_data(user, room):
 
     cog_indices = CognitiveIndex.objects.filter(
         student=user, node__room=room
-    ).select_related('node').order_by('-created_at')
+    ).select_related('node').order_by('-calculated_at')
 
-    icc_avg = cog_indices.aggregate(avg=Avg('icc'))['avg'] or 0.0
+    icc_avg = cog_indices.aggregate(avg=Avg('icc_value'))['avg'] or 0.0
     confidence_avg = cog_indices.aggregate(
-        avg=Avg('declared_confidence')
+        avg=Avg('avg_confidence')
     )['avg'] or 0.0
 
     overconfident_nodes = list(
@@ -64,7 +64,7 @@ def _gather_student_data(user, room):
     answers = (
         Answer.objects.filter(session__student=user, session__room=room)
         .select_related('question__node')
-        .order_by('-created_at')[:50]
+        .order_by('-answered_at')[:50]
     )
     for ans in answers:
         node_name = ans.question.node.name
@@ -85,16 +85,16 @@ def _gather_student_data(user, room):
 def _recalc_blind_spot(node, room):
     avg_icc = (
         CognitiveIndex.objects.filter(node=node)
-        .aggregate(avg=Avg('icc'))['avg']
+        .aggregate(avg=Avg('icc_value'))['avg']
         or 0.0
     )
-    students_count = (
+    total_student = (
         CognitiveIndex.objects.filter(node=node)
         .values('student').distinct().count()
     )
     bsi, _ = BlindSpotIndex.objects.get_or_create(node=node, room=room)
-    bsi.ipc = round(float(avg_icc), 4)
-    bsi.students_count = students_count
+    bsi.ipc_value = round(float(avg_icc), 4)
+    bsi.total_student = total_student
     bsi.save()
     return bsi
 
@@ -205,16 +205,16 @@ class SubmitAnswerView(APIView):
         bkt_state.save()
 
         calc = ICCCalculator()
-        icc_result = calc.calculate(data['declared_confidence'], new_mastery)
+        icc_result = calc.calculate(data['confidence_declared'], new_mastery)
 
         CognitiveIndex.objects.create(
             student=request.user,
             node=question.node,
             session=session,
-            declared_confidence=data['declared_confidence'],
+            avg_confidence=data['confidence_declared'],
             bkt_mastery=new_mastery,
-            icc=icc_result['icc'],
-            gap=icc_result['gap'],
+            icc_value=icc_result['icc'],
+            metacognitive_gap=icc_result['gap'],
             profile=icc_result['profile'],
         )
 
@@ -223,8 +223,8 @@ class SubmitAnswerView(APIView):
             question=question,
             selected_index=data['selected_index'],
             is_correct=is_correct,
-            declared_confidence=data['declared_confidence'],
-            response_time_seconds=data.get('response_time_seconds', 0),
+            confidence_declared=data['confidence_declared'],
+            response_time_sec=data.get('response_time_sec', 0),
             ai_feedback='',
         )
 
@@ -241,7 +241,7 @@ class SubmitAnswerView(APIView):
                 selected_answer = ''
 
             ai_feedback = claude.explain_error(
-                question.text,
+                question.statement,
                 selected_answer,
                 correct_answer,
                 {'p_mastery': new_mastery, 'node': question.node.name},
@@ -255,10 +255,10 @@ class SubmitAnswerView(APIView):
             ai_diag = AIDiagnosis.objects.create(
                 student=request.user,
                 session=session,
-                profile=diagnosis.get('profile', 'calibrated'),
+                classification=diagnosis.get('profile', 'calibrated'),
                 risk_level=diagnosis.get('risk_level', 'low'),
-                risk_nodes=diagnosis.get('risk_nodes', []) or [],
-                prediction=float(diagnosis.get('prediction', 0.5) or 0.5),
+                risk_node=diagnosis.get('risk_nodes', []) or [],
+                failure_probability=float(diagnosis.get('prediction', 0.5) or 0.5),
                 reasoning=diagnosis.get('reasoning', '') or '',
                 recommendation=diagnosis.get('recommendation', '') or '',
             )
@@ -269,8 +269,8 @@ class SubmitAnswerView(APIView):
 
         return Response({
             'is_correct': is_correct,
-            'icc': icc_result['icc'],
-            'gap': icc_result['gap'],
+            'icc_value': icc_result['icc'],
+            'metacognitive_gap': icc_result['gap'],
             'profile': icc_result['profile'],
             'bkt_mastery': new_mastery,
             'ai_feedback': ai_feedback,
@@ -288,6 +288,6 @@ class CompleteSessionView(APIView):
                 {'detail': 'Forbidden.'}, status=status.HTTP_403_FORBIDDEN
             )
         session.status = EvaluationSession.STATUS_COMPLETED
-        session.completed_at = timezone.now()
-        session.save(update_fields=['status', 'completed_at'])
+        session.finished_at = timezone.now()
+        session.save(update_fields=['status', 'finished_at'])
         return Response(EvaluationSessionSerializer(session).data)

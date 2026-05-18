@@ -6,15 +6,15 @@ from .models import Room, RoomMembership
 
 
 class RoomSerializer(serializers.ModelSerializer):
-    owner = UserSerializer(read_only=True)
+    teacher = UserSerializer(read_only=True)
 
     class Meta:
         model = Room
         fields = [
-            'id', 'name', 'subject', 'owner', 'mode',
+            'id', 'name', 'subject', 'teacher', 'mode',
             'access_code', 'is_active', 'created_at',
         ]
-        read_only_fields = ['id', 'owner', 'access_code', 'created_at']
+        read_only_fields = ['id', 'teacher', 'access_code', 'created_at']
 
 
 class RoomCreateSerializer(serializers.ModelSerializer):

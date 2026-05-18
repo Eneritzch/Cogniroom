@@ -20,13 +20,13 @@ class RoomListCreateView(APIView):
     def get(self, request):
         user = request.user
         if user.role == 'teacher':
-            qs = Room.objects.filter(owner=user)
+            qs = Room.objects.filter(teacher=user)
         else:
             membership_room_ids = RoomMembership.objects.filter(
                 student=user
             ).values_list('room_id', flat=True)
             qs = Room.objects.filter(
-                Q(id__in=membership_room_ids) | Q(owner=user, mode='individual')
+                Q(id__in=membership_room_ids) | Q(teacher=user, mode='individual')
             )
         qs = qs.order_by('-created_at').distinct()
         return Response(RoomSerializer(qs, many=True).data)
@@ -43,7 +43,7 @@ class RoomListCreateView(APIView):
             )
 
         room = Room.objects.create(
-            owner=request.user,
+            teacher=request.user,
             name=serializer.validated_data['name'],
             subject=serializer.validated_data['subject'],
             mode=mode,
@@ -88,7 +88,7 @@ class RoomMembersView(APIView):
 
     def get(self, request, room_id):
         room = get_object_or_404(Room, id=room_id)
-        if room.owner_id != request.user.id:
+        if room.teacher_id != request.user.id:
             return Response(
                 {'detail': 'Only the owner can list members.'},
                 status=status.HTTP_403_FORBIDDEN,

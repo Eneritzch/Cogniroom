@@ -21,10 +21,10 @@ class IsStudent(BasePermission):
 
 class IsRoomOwner(BasePermission):
     def has_object_permission(self, request, view, obj):
-        room = obj if hasattr(obj, 'owner') else getattr(obj, 'room', None)
+        room = obj if hasattr(obj, 'teacher') else getattr(obj, 'room', None)
         if room is None:
             return False
-        return room.owner_id == request.user.id
+        return room.teacher_id == request.user.id
 
 
 class IsRoomMember(BasePermission):
@@ -35,7 +35,7 @@ class IsRoomMember(BasePermission):
         if room is None:
             return False
         if room.mode == 'individual':
-            return room.owner_id == request.user.id
-        if room.owner_id == request.user.id:
+            return room.teacher_id == request.user.id
+        if room.teacher_id == request.user.id:
             return True
         return RoomMembership.objects.filter(room=room, student=request.user).exists()

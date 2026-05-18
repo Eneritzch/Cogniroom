@@ -23,10 +23,10 @@ from .serializers import (
 
 
 def _is_member(user, room):
-    if room.owner_id == user.id:
+    if room.teacher_id == user.id:
         return True
     if room.mode == 'individual':
-        return room.owner_id == user.id
+        return room.teacher_id == user.id
     return RoomMembership.objects.filter(room=room, student=user).exists()
 
 
@@ -45,7 +45,7 @@ class NodeListCreateView(APIView):
 
     def post(self, request, room_id):
         room = get_object_or_404(Room, id=room_id)
-        if room.owner_id != request.user.id:
+        if room.teacher_id != request.user.id:
             return Response(
                 {'detail': 'Only the room owner can create nodes.'},
                 status=status.HTTP_403_FORBIDDEN,
@@ -65,7 +65,7 @@ class GenerateQuestionsView(APIView):
 
     def post(self, request, room_id):
         room = get_object_or_404(Room, id=room_id)
-        if room.owner_id != request.user.id:
+        if room.teacher_id != request.user.id:
             return Response(
                 {'detail': 'Only the room owner can generate questions.'},
                 status=status.HTTP_403_FORBIDDEN,
@@ -106,7 +106,7 @@ class GenerateQuestionsView(APIView):
                     continue
                 q = Question.objects.create(
                     node=node,
-                    text=item.get('text', ''),
+                    statement=item.get('text', ''),
                     difficulty=item.get('difficulty', data['difficulty']),
                     options=options,
                     correct_index=correct_index,
@@ -130,7 +130,7 @@ class ManualQuestionView(APIView):
 
     def post(self, request, room_id):
         room = get_object_or_404(Room, id=room_id)
-        if room.owner_id != request.user.id:
+        if room.teacher_id != request.user.id:
             return Response(
                 {'detail': 'Only the room owner can create manual questions.'},
                 status=status.HTTP_403_FORBIDDEN,
@@ -149,7 +149,7 @@ class ManualQuestionView(APIView):
 
         question = Question.objects.create(
             node=node,
-            text=data['text'],
+            statement=data['statement'],
             difficulty=data['difficulty'],
             options=data['options'],
             correct_index=data['correct_index'],
@@ -168,7 +168,7 @@ class ApproveQuestionsView(APIView):
                 {'detail': 'Approval applies only to group rooms.'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        if room.owner_id != request.user.id:
+        if room.teacher_id != request.user.id:
             return Response(
                 {'detail': 'Only the room owner can approve questions.'},
                 status=status.HTTP_403_FORBIDDEN,
@@ -197,7 +197,7 @@ class QuestionListView(APIView):
             )
         qs = Question.objects.filter(node__room=room, is_approved=True).order_by('id')
 
-        if request.user.id == room.owner_id:
+        if request.user.id == room.teacher_id:
             return Response(QuestionSerializer(qs, many=True).data)
         return Response(QuestionPublicSerializer(qs, many=True).data)
 
@@ -230,7 +230,7 @@ class PDFUploadListView(APIView):
 
     def post(self, request, room_id):
         room = get_object_or_404(Room, id=room_id)
-        if room.owner_id != request.user.id:
+        if room.teacher_id != request.user.id:
             return Response(
                 {'detail': 'Only the room owner can upload PDFs.'},
                 status=status.HTTP_403_FORBIDDEN,
@@ -294,7 +294,7 @@ class PDFDetailView(APIView):
 
     def delete(self, request, room_id, pdf_id):
         room = get_object_or_404(Room, id=room_id)
-        if room.owner_id != request.user.id:
+        if room.teacher_id != request.user.id:
             return Response(
                 {'detail': 'Only the room owner can delete PDFs.'},
                 status=status.HTTP_403_FORBIDDEN,
