@@ -13,29 +13,103 @@ Sistema de evaluación cognitiva adaptativa para detectar **sobreconfianza acad�
 - **pdfplumber** para extracción de texto de PDFs
 - **python-decouple** para variables de entorno
 - **django-cors-headers** para CORS
+- **Front**: HTML semántico + Bootstrap 5.3 (vía CDN) + design tokens propios + JS módulos ES (vanilla, sin framework)
 
 Sin Docker, sin Redis, sin Celery — todo síncrono, una sola instancia.
 
 ## Arquitectura
 
-**Monolito modular** sobre Django. Cinco apps independientes + capa de servicios transversales. NO microservicios — la justificación está en [docs/architecture.md](docs/architecture.md).
+**Monolito modular Django con MVT + REST API**. Cinco apps independientes + capa de servicios transversales. NO microservicios — la justificación está en [docs/architecture.md](docs/architecture.md).
 
 ```
-config/           → settings, urls raíz, /api/ root view
+config/           → settings, urls raíz, /api/v1/ root view
 apps/
-  users/          → User (AbstractUser + role/institution), JWT auth
-  rooms/          → Room (group/individual), RoomMembership
-  questions/      → KnowledgeNode, Question, PDFDocument
-  sessions/       → EvaluationSession, Answer  (label='evaluation_sessions')
-  cognitive/      → BKTState, CognitiveIndex, BlindSpotIndex, AIDiagnosis
-services/
-  bkt_engine.py   → Fórmula Corbett & Anderson 1994 (sin libs externas)
+  users/          → User (AbstractUser + role), JWT auth          → /api/v1/auth/
+  rooms/          → Room (group/individual), RoomMembership       → /api/v1/rooms/
+  questions/      → KnowledgeNode, Question, PDFDocument          → montado bajo rooms
+  sessions/       → EvaluationSession, Answer (label='evaluation_sessions') → /api/v1/sessions/
+  cognitive/      → BKTState, CognitiveIndex, BlindSpotIndex,
+                    AIDiagnosis                                   → /api/v1/me/ + rooms/{id}/metrics/
+services/         → lógica de cálculo sin ORM (primitivos → primitivos)
+  bkt_engine.py        → Fórmula Corbett & Anderson 1994
   icc_calculator.py
-  claude_service.py → CognitiveAnalysisService (Claude SDK)
-templates/
-  demo.html       → UI de prueba single-file servida en /demo/
+  claude_service.py    → CognitiveAnalysisService (Claude SDK)
+templates/app/    → landing.html, index.html (login), dashboard.html,
+                    diagnoses.html, room.html, session.html, design-system.html
+static/app/       → css/ (tokens + page-specific), js/ (módulos ES)
 docs/             → database.md, architecture.md
 ```
+
+## URL map (versión final)
+
+**Dos espacios separados**: `/` para HTML (TemplateView), `/api/v1/` para JSON (DRF).
+
+### HTML (renderizado por Django)
+
+| Ruta | Vista | Audiencia |
+|---|---|---|
+| `/` | landing | público |
+| `/app/` | login | público (auth en cliente) |
+| `/app/dashboard/` | dashboard (detecta rol vía JWT) | teacher / student |
+| `/app/diagnoses/` | historial de diagnósticos IA | teacher / student |
+| `/app/room/` | sala demo (mock data) | cualquiera autenticado |
+| `/app/room/<id>/` | sala real (fetch backend) | teacher (dueño) |
+| `/app/session/` | sesión demo (mock, sin backend) | cualquiera autenticado |
+| `/app/session/<id>/` | sesión real (BKT/ICC/Claude) | student inscripto |
+| `/app/design-system/` | showcase de componentes | público |
+
+### API REST `/api/v1/`
+
+**Cuatro familias de recursos.** Plural, sin verbos (excepción `/auth/` y acciones especiales).
+
+```
+/api/v1/auth/             ← identidad
+  POST   /register
+  POST   /login
+  POST   /refresh
+  GET    /me
+
+/api/v1/me/               ← datos del usuario actual (lectura propia)
+  GET    /profile         ← ICC promedio, BKT states, perfil predominante, último diagnóstico
+  GET    /nodes           ← BKT por nodo + ICC + tendencia
+  GET    /diagnoses       ← historial de AIDiagnosis ordenado por -generated_at
+
+/api/v1/rooms/            ← aulas y todo lo room-scoped
+  GET    /
+  POST   /
+  POST   /join
+  GET    /{id}/members
+
+  GET    /{id}/nodes
+  POST   /{id}/nodes
+
+  GET    /{id}/questions
+  POST   /{id}/questions/manual
+  POST   /{id}/questions/generate       ← acción Claude
+  POST   /{id}/questions/approve        ← acción batch
+
+  GET    /{id}/pdfs
+  POST   /{id}/pdfs                     ← multipart, field "file"
+  GET    /{id}/pdfs/{pdf_id}
+  DELETE /{id}/pdfs/{pdf_id}
+
+  GET    /{id}/metrics/blind-spots      ← solo teacher dueño
+  GET    /{id}/metrics/at-risk          ← solo teacher dueño
+
+/api/v1/sessions/         ← ciclo de vida de evaluación
+  POST   /                              ← crear, body {room_id}
+  GET    /{id}/next-question            ← selección adaptativa por p_mastery
+  POST   /{id}/answers                  ← submit answer (flujo BKT→ICC→Claude)
+  POST   /{id}/complete                 ← cerrar sesión
+```
+
+Mountpoints en [config/urls.py](config/urls.py):
+- `apps.users.urls` → `/api/v1/auth/`
+- `apps.cognitive.urls` → `/api/v1/me/` (usa `urlpatterns` default)
+- `apps.rooms.urls` → `/api/v1/rooms/` (incluye internamente `apps.questions.urls` y `apps.cognitive.urls.room_urlpatterns`)
+- `apps.sessions.urls` → `/api/v1/sessions/`
+
+> El app `apps.cognitive` expone **dos** grupos de rutas desde un único `urls.py`: `urlpatterns` (datos del usuario actual, montados en `/me/`) y `room_urlpatterns` (métricas grupales, montados como sub-rutas de `/rooms/<id>/` desde `apps.rooms.urls`).
 
 ## Detalles críticos a recordar
 
@@ -52,7 +126,7 @@ Para evitar choque con `django.contrib.sessions`, su `AppConfig` define `label =
 | `ai` | `individual` | True (auto) |
 | `ai` | `group` | False (requiere batch del docente) |
 
-### Flujo del endpoint `POST /api/sessions/{id}/answer/`
+### Flujo del endpoint `POST /api/v1/sessions/{id}/answers/`
 Está en [apps/sessions/views.py:148](apps/sessions/views.py). Orden estricto:
 1. Valida sesión y pertenencia.
 2. Calcula `is_correct`.
@@ -84,6 +158,14 @@ Si `ANTHROPIC_API_KEY` no está configurada, los métodos del servicio devuelven
 - **Perfil**: `metacognitive_gap > 0.2` → overconfident · `< −0.2` → underconfident · resto → calibrated.
 - **IPC** (`ipc_value`) = promedio de ICC de todos los estudiantes en un nodo. Si `< 0.5` → punto ciego colectivo.
 
+### Cliente JS (cache-busting de módulos)
+Todos los módulos ES bajo `static/app/js/` propagan el cache-buster del template (`?v={% now "U" %}`) a sus imports vía:
+```js
+const _v = new URL(import.meta.url).searchParams.get('v') || '';
+const { auth, tokens } = await import(`./api.js?v=${_v}`);
+```
+Sin esto el browser cachea `api.js` aunque el wrapper (`auth.js`) tenga query string fresca.
+
 ## Comandos comunes
 
 ```powershell
@@ -107,9 +189,9 @@ python manage.py seed_demo
 python manage.py runserver
 
 # Acceso
-# - http://127.0.0.1:8000/        → demo UI
-# - http://127.0.0.1:8000/api/    → catálogo de endpoints
-# - http://127.0.0.1:8000/admin/  → admin Django
+# - http://127.0.0.1:8000/             → landing
+# - http://127.0.0.1:8000/api/v1/      → catálogo de endpoints
+# - http://127.0.0.1:8000/admin/       → admin Django
 ```
 
 ## Credenciales seed
@@ -131,6 +213,7 @@ Sala demo: **Algoritmos I** (group), nodos: `Recursividad`, `Complejidad algorí
 - **Permisos**: clases en [apps/users/permissions.py](apps/users/permissions.py) (`IsTeacher`, `IsStudent`, `IsRoomOwner`, `IsRoomMember`).
 - **Serializers**: separar lectura, creación, y acciones (ej. `RoomSerializer`, `RoomCreateSerializer`, `JoinRoomSerializer`).
 - **Servicios externos**: en `services/`, sin dependencia de Django ORM. Reciben primitivos, devuelven primitivos.
+- **URLs**: REST plural (`/rooms/`, `/answers/`), sin verbos salvo acciones explícitas (`/questions/approve/`, `/sessions/{id}/complete/`) y `/auth/`.
 
 ## Ramas git
 
@@ -143,18 +226,3 @@ Remoto: https://github.com/Eneritzch/Cogniroom
 
 - [docs/database.md](docs/database.md) — esquema completo de BD con diagrama Mermaid.
 - [docs/architecture.md](docs/architecture.md) — decisión arquitectónica + stack.
-
-## Lo que falta por construir
-
-1. Frontend real (React + Vite recomendado, alternativa Django + HTMX).
-2. Dashboards con visualización (Chart.js o Recharts) de ICC histórico, IPC por nodo, predicción de riesgo.
-3. Análisis estadístico avanzado con `pandas`/`NumPy` (opcional — el ORM cubre el caso base).
-
-## Endpoints de PDF (recientes)
-
-- `POST /api/rooms/{room_id}/pdfs/` — multipart con campo `file`. Sube + extrae texto con `pdfplumber` + marca `processed=True`. Solo owner.
-- `GET /api/rooms/{room_id}/pdfs/` — lista PDFs de la sala (sin `extracted_text`). Members.
-- `GET /api/rooms/{room_id}/pdfs/{pdf_id}/` — detalle con `extracted_text` completo. Members.
-- `DELETE /api/rooms/{room_id}/pdfs/{pdf_id}/` — elimina PDF y archivo físico. Solo owner.
-
-`POST /api/rooms/{room_id}/questions/generate/` ahora acepta `pdf_id` en lugar de `content` raw — usa el `extracted_text` ya guardado.

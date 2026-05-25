@@ -3,7 +3,7 @@
  * Todos los módulos UI llaman aquí, no directamente a fetch.
  */
 
-const API_BASE = '/api';
+const API_BASE = '/api/v1';
 const TOKEN_KEY = 'cogniroom.access';
 const REFRESH_KEY = 'cogniroom.refresh';
 
@@ -59,37 +59,44 @@ export const auth = {
     logout: () => tokens.clear(),
 };
 
+/* ---------- Me (datos del usuario actual) ---------- */
+export const me = {
+    profile:   () => request('/me/profile/'),
+    nodes:     () => request('/me/nodes/'),
+    diagnoses: () => request('/me/diagnoses/'),
+};
+
 /* ---------- Rooms ---------- */
 export const rooms = {
-    list: () => request('/rooms/'),
-    create: (data) => request('/rooms/', { method: 'POST', body: data }),
-    join: (access_code) => request('/rooms/join/', { method: 'POST', body: { access_code } }),
-    members: (roomId) => request(`/rooms/${roomId}/members/`),
-    blindSpots: (roomId) => request(`/rooms/${roomId}/blind-spots/`),
-    atRisk: (roomId) => request(`/rooms/${roomId}/at-risk/`),
+    list:        () => request('/rooms/'),
+    create:      (data) => request('/rooms/', { method: 'POST', body: data }),
+    join:        (access_code) => request('/rooms/join/', { method: 'POST', body: { access_code } }),
+    members:     (roomId) => request(`/rooms/${roomId}/members/`),
+    blindSpots:  (roomId) => request(`/rooms/${roomId}/metrics/blind-spots/`),
+    atRisk:      (roomId) => request(`/rooms/${roomId}/metrics/at-risk/`),
 };
 
 /* ---------- Questions ---------- */
 export const questions = {
-    listNodes: (roomId) => request(`/rooms/${roomId}/nodes/`),
+    listNodes:  (roomId) => request(`/rooms/${roomId}/nodes/`),
     createNode: (roomId, name) => request(`/rooms/${roomId}/nodes/`, {
         method: 'POST', body: { name },
     }),
-    list: (roomId) => request(`/rooms/${roomId}/questions/`),
+    list:     (roomId) => request(`/rooms/${roomId}/questions/`),
     generate: (roomId, payload) => request(`/rooms/${roomId}/questions/generate/`, {
         method: 'POST', body: payload,
     }),
-    manual: (roomId, payload) => request(`/rooms/${roomId}/questions/manual/`, {
+    manual:   (roomId, payload) => request(`/rooms/${roomId}/questions/manual/`, {
         method: 'POST', body: payload,
     }),
-    approve: (roomId, ids) => request(`/rooms/${roomId}/questions/approve/`, {
+    approve:  (roomId, ids) => request(`/rooms/${roomId}/questions/approve/`, {
         method: 'POST', body: { question_ids: ids },
     }),
 };
 
 /* ---------- PDFs ---------- */
 export const pdfs = {
-    list: (roomId) => request(`/rooms/${roomId}/pdfs/`),
+    list:   (roomId) => request(`/rooms/${roomId}/pdfs/`),
     detail: (roomId, pdfId) => request(`/rooms/${roomId}/pdfs/${pdfId}/`),
     upload: (roomId, file) => {
         const fd = new FormData();
@@ -103,16 +110,10 @@ export const pdfs = {
 
 /* ---------- Sessions ---------- */
 export const sessions = {
-    create: (roomId) => request('/sessions/', { method: 'POST', body: { room_id: roomId } }),
+    create:       (roomId) => request('/sessions/', { method: 'POST', body: { room_id: roomId } }),
     nextQuestion: (sessionId) => request(`/sessions/${sessionId}/next-question/`),
-    answer: (sessionId, payload) => request(`/sessions/${sessionId}/answer/`, {
+    answer:       (sessionId, payload) => request(`/sessions/${sessionId}/answers/`, {
         method: 'POST', body: payload,
     }),
-    complete: (sessionId) => request(`/sessions/${sessionId}/complete/`, { method: 'POST' }),
-};
-
-/* ---------- Cognitive ---------- */
-export const cognitive = {
-    myProfile: () => request('/cognitive/my-profile/'),
-    myNodes: () => request('/cognitive/my-nodes/'),
+    complete:     (sessionId) => request(`/sessions/${sessionId}/complete/`, { method: 'POST' }),
 };

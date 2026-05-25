@@ -1,0 +1,85 @@
+.diagnoses-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.diagnoses-title {
+  margin: var(--s-2) 0 0;
+  font-size: 28px;
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--lh-tight);
+  color: var(--ink);
+}
+
+@media (min-width: 768px) {
+  .diagnoses-title { font-size: 40px; }
+}
+
+.diagnoses-lead {
+  max-width: 640px;
+  margin: var(--s-3) 0 0;
+  font-size: 14px;
+  color: var(--ink-muted);
+  line-height: var(--lh-base);
+}
+
+
+.diagnoses-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-4);
+  margin-top: var(--s-10);
+}
+
+.diagnoses-summary__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  flex: 1 1 200px;
+  padding: var(--s-5);
+  background: var(--paper-elevated);
+  border: 1px solid var(--paper-border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.diagnoses-summary__k { font-size: 10px; }
+
+.diagnoses-summary__v {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: var(--fw-medium);
+  color: var(--ink);
+}
+
+
+.diagnoses-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+  margin-top: var(--s-10);
+}
+
+.diagnoses-list .ai-diagnosis {
+  position: relative;
+}
+
+.diagnoses-item__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3);
+  margin-top: var(--s-4);
+  padding-top: var(--s-3);
+  border-top: 1px solid var(--paper-border);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-faint);
+}
+
+.diagnoses-item__meta .num { color: var(--ink); }
+
+
+.diagnoses-empty { margin-top: var(--s-10); }

@@ -1,0 +1,58 @@
+{% load static %}<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Historial de diagnósticos del tutor cognitivo IA de CogniRoom.">
+    <title>Diagnósticos · CogniRoom</title>
+    {% include 'app/partials/_styles.html' %}
+    <link rel="stylesheet" href="{% static 'css/app/diagnoses.css' %}?v={% now "U" %}">
+</head>
+<body class="diagnoses-page">
+
+    {% include 'app/partials/_app-header.html' with active='diagnoses' %}
+
+    <main class="app-main">
+        <span class="eyebrow">Tutor cognitivo</span>
+        <h1 class="diagnoses-title display">Diagnósticos de Claude</h1>
+        <p class="diagnoses-lead">
+            Historial de intervenciones generadas cuando tu calibración se desvía.
+            Cada nota está pensada para ayudarte a entender la brecha y cerrarla.
+        </p>
+
+        <section class="diagnoses-summary" id="diag-summary" hidden>
+            <article class="diagnoses-summary__card">
+                <span class="diagnoses-summary__k eyebrow">Total recibidos</span>
+                <span class="diagnoses-summary__v num" id="diag-total">0</span>
+            </article>
+            <article class="diagnoses-summary__card">
+                <span class="diagnoses-summary__k eyebrow">Último riesgo</span>
+                <span class="pill" data-risk="low" id="diag-last-risk">—</span>
+            </article>
+            <article class="diagnoses-summary__card">
+                <span class="diagnoses-summary__k eyebrow">Perfil dominante</span>
+                <span class="pill" data-profile="calibrated" id="diag-profile">—</span>
+            </article>
+        </section>
+
+        <section class="diagnoses-list" id="diag-list">
+            <article class="ai-diagnosis skeleton" aria-hidden="true" style="height:200px;"></article>
+        </section>
+
+        <section class="diagnoses-empty" id="diag-empty" hidden>
+            <p class="empty">
+                Aún no hay diagnósticos generados.
+                Cuando tu ICC baje de 0.5 en una pregunta, Claude prepara una nota personalizada.
+            </p>
+        </section>
+    </main>
+
+    {% include 'app/partials/_app-footer.html' %}
+
+    <div class="toast-host" id="toast-host" aria-live="polite" aria-atomic="true"></div>
+
+    {% include 'app/partials/_bootstrap-bundle.html' %}
+    <script type="module" src="{% static 'js/app/nav-auth.js' %}?v={% now "U" %}"></script>
+    <script type="module" src="{% static 'js/app/diagnoses.js' %}?v={% now "U" %}"></script>
+</body>
+</html>

@@ -1,0 +1,190 @@
+{% load static %}<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Responde, declara tu confianza y recibe feedback inmediato.">
+    <title>Sesión de evaluación · CogniRoom</title>
+    {% include 'app/partials/_styles.html' %}
+    <link rel="stylesheet" href="{% static 'css/app/session.css' %}?v={% now "U" %}">
+</head>
+<body class="session-page">
+
+    <header class="session-header">
+        <div class="session-header__inner">
+            <a href="/" class="session-header__brand">
+                <svg width="20" height="20" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+                    <circle cx="16" cy="16" r="13" stroke="var(--ink)" stroke-width="1.5"/>
+                    <circle cx="16" cy="16" r="7" stroke="var(--sage)" stroke-width="1.5"/>
+                    <circle cx="16" cy="16" r="1.8" fill="var(--terracotta)"/>
+                </svg>
+                CogniRoom
+            </a>
+            <div class="session-header__meta">
+                <span class="session-header__context" id="session-context">Sesión activa</span>
+                <span class="session-header__progress">
+                    <span class="num" id="session-current">0</span>
+                    <span>/</span>
+                    <span id="session-total">—</span>
+                </span>
+                <a href="/app/dashboard/" class="session-header__close" aria-label="Salir">
+                    <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                        <line x1="18" y1="6"  x2="6"  y2="18"></line>
+                        <line x1="6"  y1="6"  x2="18" y2="18"></line>
+                    </svg>
+                </a>
+            </div>
+        </div>
+        <div class="session-progress" aria-hidden="true">
+            <div class="session-progress__fill" id="session-progress-fill" style="width:0%;"></div>
+        </div>
+    </header>
+
+    <main class="session-main">
+
+        <section class="session-stage" data-stage="question">
+            <article>
+                <div class="session-question__eyebrow eyebrow" id="question-eyebrow">Pregunta · —</div>
+                <h1 class="session-question__title" id="question-text">Cargando pregunta…</h1>
+            </article>
+
+            <section class="session-confidence">
+                <div class="session-confidence__head">
+                    <div>
+                        <div class="eyebrow">Paso 1</div>
+                        <h2 class="session-confidence__title">¿Qué tan seguro estás?</h2>
+                        <p class="session-confidence__lead">
+                            Antes de ver las opciones a fondo, declará tu confianza inicial.
+                        </p>
+                    </div>
+                    <div class="session-confidence__value" id="confidence-value">75</div>
+                </div>
+                <input
+                    type="range" min="0" max="100" value="75"
+                    class="session-confidence__slider" id="confidence-slider"
+                    aria-label="Confianza"
+                >
+                <div class="session-confidence__scale">
+                    <span>0 · Adivinando</span>
+                    <span>50 · Algo seguro</span>
+                    <span>100 · Totalmente seguro</span>
+                </div>
+            </section>
+
+            <section>
+                <div class="session-options-head eyebrow">Paso 2 · Tu respuesta</div>
+                <div class="session-options" id="options-list" role="radiogroup" aria-label="Opciones"></div>
+            </section>
+
+            <div class="session-actions">
+                <span class="session-actions__hint">
+                    Confianza declarada: <span class="num" id="hint-confidence">75</span>
+                </span>
+                <button type="button" class="session-submit" id="submit-answer" disabled>
+                    Enviar respuesta
+                    <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+            </div>
+        </section>
+
+        <section class="session-stage" data-stage="feedback" hidden>
+            <article>
+                <div class="session-feedback__eyebrow eyebrow">
+                    <span class="session-feedback__status" id="feedback-status">—</span>
+                    <span style="color:var(--ink-muted);">· Pregunta <span id="feedback-q-num">—</span></span>
+                </div>
+                <h1 class="session-feedback__title" id="feedback-title">—</h1>
+                <p class="session-feedback__explanation" id="feedback-explanation"></p>
+            </article>
+
+            <section class="paper-card" style="padding:var(--s-6);">
+                <div class="eyebrow" style="margin-bottom:var(--s-3);">Calibración de esta pregunta</div>
+                <div class="dual-bar">
+                    <div class="dual-bar__header">
+                        <span class="dual-bar__title">Confianza declarada vs. mastery actualizado (BKT)</span>
+                        <span class="dual-bar__gap" id="feedback-gap" data-tone="moss">+0 pts</span>
+                    </div>
+                    <div class="dual-bar__rows">
+                        <div class="dual-bar__row">
+                            <span class="dual-bar__num" id="feedback-decl-num">0</span>
+                            <div class="dual-bar__track">
+                                <div class="dual-bar__fill dual-bar__fill--declared" id="feedback-decl-fill" style="width:0%;"></div>
+                            </div>
+                        </div>
+                        <div class="dual-bar__row">
+                            <span class="dual-bar__num" id="feedback-mast-num">0</span>
+                            <div class="dual-bar__track">
+                                <div class="dual-bar__fill dual-bar__fill--mastery" id="feedback-mast-fill" style="width:0%;"></div>
+                                <div class="dual-bar__gap-hatch" id="feedback-gap-hatch" style="display:none;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dual-bar__legend">
+                        <span class="dual-bar__legend-item">
+                            <span class="dual-bar__legend-swatch dual-bar__legend-swatch--declared"></span>
+                            Confianza declarada
+                        </span>
+                        <span class="dual-bar__legend-item">
+                            <span class="dual-bar__legend-swatch dual-bar__legend-swatch--mastery"></span>
+                            Mastery real
+                        </span>
+                    </div>
+                </div>
+                <div class="session-tile-row">
+                    <div class="session-tile">
+                        <div class="session-tile__k" data-tone="terracotta" id="tile-confidence">—</div>
+                        <div class="session-tile__v">Confianza</div>
+                    </div>
+                    <div class="session-tile">
+                        <div class="session-tile__k" data-tone="sage" id="tile-mastery">—</div>
+                        <div class="session-tile__v">Mastery</div>
+                    </div>
+                    <div class="session-tile">
+                        <div class="session-tile__k" id="tile-gap" data-tone="moss">—</div>
+                        <div class="session-tile__v">Gap</div>
+                    </div>
+                </div>
+            </section>
+
+            <article class="ai-diagnosis" id="feedback-diagnosis" hidden>
+                <header class="ai-diagnosis__head eyebrow">
+                    <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path>
+                    </svg>
+                    Tutor cognitivo · Claude
+                </header>
+                <h3 class="ai-diagnosis__title" id="feedback-diag-title"></h3>
+                <p class="ai-diagnosis__body" id="feedback-diag-body"></p>
+                <div class="ai-diagnosis__suggestion" id="feedback-diag-sug" hidden role="note">
+                    <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                    <span id="feedback-diag-sug-text"></span>
+                </div>
+            </article>
+
+            <div class="session-actions">
+                <button type="button" class="session-back" id="next-question">
+                    Cargar siguiente pregunta →
+                </button>
+                <button type="button" class="session-next" id="complete-session">
+                    Terminar sesión
+                    <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <div class="toast-host" id="toast-host" aria-live="polite" aria-atomic="true"></div>
+
+    {% include 'app/partials/_bootstrap-bundle.html' %}
+    <script type="module" src="{% static 'js/app/session.js' %}?v={% now "U" %}"></script>
+</body>
+</html>

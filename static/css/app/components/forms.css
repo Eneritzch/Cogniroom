@@ -1,0 +1,40 @@
+.form-control,
+.form-select {
+  background-color: var(--paper-surface);
+  border-color: var(--paper-border-strong);
+  color: var(--ink);
+  border-radius: 0;
+}
+
+.form-control::placeholder { color: var(--ink-faint); }
+
+.form-control:hover,
+.form-select:hover { border-color: var(--ink-faint); }
+
+.form-control:focus,
+.form-select:focus {
+  background-color: var(--paper-surface);
+  border-color: var(--ink);
+  box-shadow: none;
+  color: var(--ink);
+}
+
+.form-control[aria-invalid='true'],
+.form-select[aria-invalid='true'] {
+  border-color: var(--color-danger);
+}
+
+.form-control[aria-invalid='true']:focus,
+.form-select[aria-invalid='true']:focus {
+  border-color: var(--color-danger);
+  box-shadow: none;
+}
+
+.form-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: var(--s-2);
+}

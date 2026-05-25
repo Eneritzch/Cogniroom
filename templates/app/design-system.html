@@ -1,227 +1,350 @@
-<!DOCTYPE html>
+{% load static %}<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Design System CogniRoom — los primitivos y componentes que dan vida al producto.">
-    <title>CogniRoom · Design System</title>
-    <link rel="preconnect" href="https://rsms.me">
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'app/css/tokens.css' %}">
-    <link rel="stylesheet" href="{% static 'app/css/styles.css' %}">
-    <link rel="stylesheet" href="{% static 'app/css/design-system.css' %}">
+    <meta name="description" content="Sistema de diseño paper-tech de CogniRoom — tokens, componentes y patrones.">
+    <title>Sistema de diseño · CogniRoom</title>
+    {% include 'app/partials/_styles.html' %}
+    <link rel="stylesheet" href="{% static 'css/app/design-system.css' %}?v={% now "U" %}">
 </head>
-<body class="ds-body">
+<body class="ds-page">
 
-<div class="ds-layout">
-    <aside class="ds-sidebar" role="complementary">
-        <div class="ds-sidebar__inner">
-            <header class="ds-sidebar__header">
-                <a class="ds-sidebar__brand" href="#top">
-                    CogniRoom <span>DS</span>
-                </a>
-                <p class="ds-sidebar__version">v1.0</p>
-            </header>
-
-            <nav class="ds-sidebar__nav" aria-label="Navegación principal">
-                <a href="#tipografia" class="ds-nav-link">
-                    <svg class="ds-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
-                    <span>Tipografía</span>
-                </a>
-                <a href="#color" class="ds-nav-link">
-                    <svg class="ds-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.92 0 1.5-.58 1.5-1.5 0-.43-.17-.83-.44-1.14-.27-.31-.44-.73-.44-1.19 0-.92.75-1.67 1.67-1.67h1.9c3.02 0 5.5-2.48 5.5-5.5C22 6.5 17.5 2 12 2z"/></svg>
-                    <span>Color</span>
-                </a>
-                <a href="#componentes" class="ds-nav-link">
-                    <svg class="ds-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
-                    <span>Componentes</span>
-                </a>
-                <a href="#etiquetas" class="ds-nav-link">
-                    <svg class="ds-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-                    <span>Etiquetas</span>
-                </a>
-                <a href="#mensajes" class="ds-nav-link">
-                    <svg class="ds-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                    <span>Mensajes</span>
-                </a>
+    <header class="app-header" role="banner">
+        <div class="app-header__inner">
+            <a href="/" class="app-header__brand">
+                <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+                    <circle cx="16" cy="16" r="13" stroke="var(--ink)" stroke-width="1.5"/>
+                    <circle cx="16" cy="16" r="7" stroke="var(--sage)" stroke-width="1.5"/>
+                    <circle cx="16" cy="16" r="1.8" fill="var(--terracotta)"/>
+                </svg>
+                CogniRoom
+                <span class="app-header__version num">v0.4 — 2026.05</span>
+            </a>
+            <nav class="app-nav" aria-label="Principal">
+                <a class="app-nav__link" href="/" data-show-for="public"><span class="app-nav__link-num">01</span> Inicio</a>
+                <a class="app-nav__link" href="/app/dashboard/" data-show-for="teacher,student"><span class="app-nav__link-num">02</span> Resumen</a>
+                <a class="app-nav__link" href="/app/diagnoses/" data-show-for="teacher,student"><span class="app-nav__link-num">03</span> Diagnósticos</a>
+                <a class="app-nav__link" href="/app/room/" data-show-for="teacher"><span class="app-nav__link-num">04</span> Sala</a>
+                <a class="app-nav__link" href="/app/session/" data-show-for="student"><span class="app-nav__link-num">05</span> Sesión</a>
+                <a class="app-nav__link" href="/app/design-system/" data-show-for="public" aria-current="page"><span class="app-nav__link-num">06</span> Sistema</a>
             </nav>
-
-            <footer class="ds-sidebar__footer">
-                <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Cambiar tema">
-                    <span class="theme-toggle__dot" aria-hidden="true"></span>
-                    <span class="theme-toggle__label">Oscuro</span>
-                </button>
-            </footer>
+            <a href="/app/" class="app-header__cta" data-auth-cta>
+                <span class="app-header__cta-pulse" aria-hidden="true"></span>
+                Entrar
+            </a>
         </div>
-    </aside>
+    </header>
 
-    <main class="ds-main" id="top">
-        <div class="ds-aurora" aria-hidden="true"></div>
+    <main class="app-main">
+        <span class="eyebrow">v0.4 · Working draft</span>
+        <header class="ds-intro">
+            <h1 class="ds-intro__title display">Sistema de diseño</h1>
+            <p class="ds-intro__body">
+                Paper-tech. Una hoja beige envejecida sobre la que flotan datos vivos.
+                85% papel y tinta, 15% acentos cuidadosamente reservados para datos.
+            </p>
+        </header>
 
-        <section class="ds-hero">
-            <header class="ds-hero__header">
-                <h1 class="ds-hero__title">Sistema de Diseño</h1>
-                <p class="ds-hero__lead">
-                    Primitivos y componentes core de CogniRoom. Cada token y superficie está diseñado para la claridad cognitiva y la eficiencia operativa.
+        <section class="ds-section" aria-labelledby="ds-color">
+            <header class="ds-section__head">
+                <span class="eyebrow">01 · Color</span>
+                <h2 id="ds-color" class="ds-section__title">Paleta</h2>
+            </header>
+
+            <div class="ds-swatches-group">
+                <div class="ds-swatches-group__title">Papel</div>
+                <div class="ds-swatches">
+                    <article class="ds-swatch"><div class="ds-swatch__color" style="background:#F5EFE3;"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">paper</div><div class="ds-swatch__hex">#F5EFE3</div><div class="ds-swatch__role">Base</div></div></article>
+                    <article class="ds-swatch"><div class="ds-swatch__color" style="background:#EFE7D6;"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">paper-elevated</div><div class="ds-swatch__hex">#EFE7D6</div><div class="ds-swatch__role">Tarjetas</div></div></article>
+                    <article class="ds-swatch"><div class="ds-swatch__color" style="background:#FAF6EC;"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">paper-surface</div><div class="ds-swatch__hex">#FAF6EC</div><div class="ds-swatch__role">Inputs</div></div></article>
+                    <article class="ds-swatch"><div class="ds-swatch__color" style="background:#E1D7C0;"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">border</div><div class="ds-swatch__hex">#E1D7C0</div><div class="ds-swatch__role">Borde sutil</div></div></article>
+                    <article class="ds-swatch"><div class="ds-swatch__color" style="background:#C9BCA0;"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">border-strong</div><div class="ds-swatch__hex">#C9BCA0</div><div class="ds-swatch__role">Borde fuerte</div></div></article>
+                </div>
+            </div>
+
+            <div class="ds-swatches-group">
+                <div class="ds-swatches-group__title">Tinta</div>
+                <div class="ds-swatches">
+                    <article class="ds-swatch"><div class="ds-swatch__color" style="background:#2B2620;"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">ink</div><div class="ds-swatch__hex">#2B2620</div><div class="ds-swatch__role">Principal</div></div></article>
+                    <article class="ds-swatch"><div class="ds-swatch__color" style="background:#6B6357;"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">ink-muted</div><div class="ds-swatch__hex">#6B6357</div><div class="ds-swatch__role">Medio</div></div></article>
+                    <article class="ds-swatch"><div class="ds-swatch__color" style="background:#9A8F7E;"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">ink-faint</div><div class="ds-swatch__hex">#9A8F7E</div><div class="ds-swatch__role">Tenue</div></div></article>
+                </div>
+            </div>
+
+            <div class="ds-swatches-group">
+                <div class="ds-swatches-group__title">Acentos</div>
+                <div class="ds-swatches">
+                    <article class="ds-swatch"><div class="ds-swatch__color" style="background:#5B7A6E;"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">sage</div><div class="ds-swatch__hex">#5B7A6E</div><div class="ds-swatch__role">Marca</div></div></article>
+                    <article class="ds-swatch"><div class="ds-swatch__color" style="background:#9B6B3F;"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">terracotta</div><div class="ds-swatch__hex">#9B6B3F</div><div class="ds-swatch__role">Secundario</div></div></article>
+                    <article class="ds-swatch"><div class="ds-swatch__color" style="background:#4F7A4A;"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">moss</div><div class="ds-swatch__hex">#4F7A4A</div><div class="ds-swatch__role">Calibrado</div></div></article>
+                    <article class="ds-swatch"><div class="ds-swatch__color" style="background:#B8804A;"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">amber</div><div class="ds-swatch__hex">#B8804A</div><div class="ds-swatch__role">Sobreconfianza</div></div></article>
+                    <article class="ds-swatch"><div class="ds-swatch__color" style="background:#A14B3D;"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">rust</div><div class="ds-swatch__hex">#A14B3D</div><div class="ds-swatch__role">Riesgo alto</div></div></article>
+                    <article class="ds-swatch"><div class="ds-swatch__color" style="background:#6B7A95;"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">stone</div><div class="ds-swatch__hex">#6B7A95</div><div class="ds-swatch__role">Subconfianza</div></div></article>
+                </div>
+            </div>
+        </section>
+
+        <section class="ds-section">
+            <header class="ds-section__head">
+                <span class="eyebrow">02 · Type</span>
+                <h2 class="ds-section__title">Tipografía</h2>
+            </header>
+            <div class="ds-card">
+                <div>
+                    <span class="eyebrow">Inter · 700 · −0.03em</span>
+                    <p class="ds-type-display">Display 48</p>
+                </div>
+                <div>
+                    <span class="eyebrow">Inter · 600</span>
+                    <p class="ds-type-h">Heading 22</p>
+                </div>
+                <div>
+                    <span class="eyebrow">Inter · 400</span>
+                    <p class="ds-type-body">
+                        Body 16 · Una evaluación bayesiana adaptativa que detecta sobreconfianza
+                        académica antes de que se convierta en una calificación reprobatoria.
+                    </p>
+                </div>
+                <div>
+                    <span class="eyebrow">JetBrains Mono · 500</span>
+                    <p class="ds-type-num">ICC 0.78 · BKT 0.62 · IPC 0.34</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="ds-section">
+            <header class="ds-section__head">
+                <span class="eyebrow">03 · Estado</span>
+                <h2 class="ds-section__title">Pills semánticas</h2>
+            </header>
+            <div class="ds-card">
+                <div class="ds-row">
+                    <span class="ds-row__label">Perfil cognitivo</span>
+                    <div class="ds-row__items">
+                        <span class="pill" data-profile="calibrated">Calibrado</span>
+                        <span class="pill" data-profile="overconfident">Sobreconfiado</span>
+                        <span class="pill" data-profile="underconfident">Subconfiado</span>
+                    </div>
+                </div>
+                <div class="ds-row">
+                    <span class="ds-row__label">Riesgo del estudiante</span>
+                    <div class="ds-row__items">
+                        <span class="pill" data-risk="low">Riesgo bajo</span>
+                        <span class="pill" data-risk="medium">Riesgo medio</span>
+                        <span class="pill" data-risk="high">Riesgo alto</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="ds-section">
+            <header class="ds-section__head">
+                <span class="eyebrow">04 · Acciones</span>
+                <h2 class="ds-section__title">Botones</h2>
+            </header>
+            <div class="ds-card ds-buttons">
+                <button class="ds-btn ds-btn--ink">Primario</button>
+                <button class="ds-btn ds-btn--sage">Marca</button>
+                <button class="ds-btn ds-btn--secondary">Secundario</button>
+                <button class="ds-btn ds-btn--ghost">Ghost</button>
+                <button class="ds-btn ds-btn--danger">Destructivo</button>
+            </div>
+        </section>
+
+        <section class="ds-section">
+            <header class="ds-section__head">
+                <span class="eyebrow">05 · Signature</span>
+                <h2 class="ds-section__title">Barra dual de calibración</h2>
+            </header>
+            <div class="ds-card ds-stack">
+                <div class="dual-bar">
+                    <div class="dual-bar__header">
+                        <span class="dual-bar__title">Sobreconfianza pronunciada</span>
+                        <span class="dual-bar__gap" data-tone="amber">+31 pts</span>
+                    </div>
+                    <div class="dual-bar__rows">
+                        <div class="dual-bar__row"><span class="dual-bar__num">82</span><div class="dual-bar__track"><div class="dual-bar__fill dual-bar__fill--declared" style="width:82%;"></div></div></div>
+                        <div class="dual-bar__row"><span class="dual-bar__num">51</span><div class="dual-bar__track"><div class="dual-bar__fill dual-bar__fill--mastery" style="width:51%;"></div><div class="dual-bar__gap-hatch" style="left:51%;width:31%;"></div></div></div>
+                    </div>
+                    <div class="dual-bar__legend">
+                        <span class="dual-bar__legend-item"><span class="dual-bar__legend-swatch dual-bar__legend-swatch--declared"></span>Confianza declarada</span>
+                        <span class="dual-bar__legend-item"><span class="dual-bar__legend-swatch dual-bar__legend-swatch--mastery"></span>Mastery real</span>
+                    </div>
+                </div>
+                <div class="dual-bar">
+                    <div class="dual-bar__header">
+                        <span class="dual-bar__title">Calibración cercana</span>
+                        <span class="dual-bar__gap" data-tone="moss">-4 pts</span>
+                    </div>
+                    <div class="dual-bar__rows">
+                        <div class="dual-bar__row"><span class="dual-bar__num">64</span><div class="dual-bar__track"><div class="dual-bar__fill dual-bar__fill--declared" style="width:64%;"></div></div></div>
+                        <div class="dual-bar__row"><span class="dual-bar__num">68</span><div class="dual-bar__track"><div class="dual-bar__fill dual-bar__fill--mastery" style="width:68%;"></div></div></div>
+                    </div>
+                </div>
+                <div class="dual-bar">
+                    <div class="dual-bar__header">
+                        <span class="dual-bar__title">Subconfianza</span>
+                        <span class="dual-bar__gap" data-tone="stone">-30 pts</span>
+                    </div>
+                    <div class="dual-bar__rows">
+                        <div class="dual-bar__row"><span class="dual-bar__num">42</span><div class="dual-bar__track"><div class="dual-bar__fill dual-bar__fill--declared" style="width:42%;"></div></div></div>
+                        <div class="dual-bar__row"><span class="dual-bar__num">72</span><div class="dual-bar__track"><div class="dual-bar__fill dual-bar__fill--mastery" style="width:72%;"></div><div class="dual-bar__gap-hatch" style="left:42%;width:30%;"></div></div></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="ds-section">
+            <header class="ds-section__head">
+                <span class="eyebrow">06 · Signature</span>
+                <h2 class="ds-section__title">Anillo de calibración</h2>
+            </header>
+            <div class="ds-card ds-ring-row">
+                <div class="calibration-ring" data-profile="calibrated" style="width:140px;height:140px;">
+                    <svg class="calibration-ring__svg" width="140" height="140"><circle class="calibration-ring__track" cx="70" cy="70" r="65.1" stroke-width="9.8"/><circle class="calibration-ring__fill" cx="70" cy="70" r="65.1" stroke-width="9.8" stroke-dasharray="408.86" stroke-dashoffset="73.59"/></svg>
+                    <div class="calibration-ring__center"><span class="calibration-ring__value" style="font-size:36.4px;">0.82</span><span class="calibration-ring__label eyebrow">ICC</span></div>
+                </div>
+                <div class="calibration-ring" data-profile="overconfident" style="width:140px;height:140px;">
+                    <svg class="calibration-ring__svg" width="140" height="140"><circle class="calibration-ring__track" cx="70" cy="70" r="65.1" stroke-width="9.8"/><circle class="calibration-ring__fill" cx="70" cy="70" r="65.1" stroke-width="9.8" stroke-dasharray="408.86" stroke-dashoffset="220.78"/></svg>
+                    <div class="calibration-ring__center"><span class="calibration-ring__value" style="font-size:36.4px;">0.46</span><span class="calibration-ring__label eyebrow">ICC</span></div>
+                </div>
+                <div class="calibration-ring" data-profile="underconfident" style="width:140px;height:140px;">
+                    <svg class="calibration-ring__svg" width="140" height="140"><circle class="calibration-ring__track" cx="70" cy="70" r="65.1" stroke-width="9.8"/><circle class="calibration-ring__fill" cx="70" cy="70" r="65.1" stroke-width="9.8" stroke-dasharray="408.86" stroke-dashoffset="171.72"/></svg>
+                    <div class="calibration-ring__center"><span class="calibration-ring__value" style="font-size:36.4px;">0.58</span><span class="calibration-ring__label eyebrow">ICC</span></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="ds-section">
+            <header class="ds-section__head">
+                <span class="eyebrow">07 · Signature</span>
+                <h2 class="ds-section__title">Tarjeta de nodo</h2>
+            </header>
+            <div class="ds-row-cards">
+                <article class="node-card">
+                    <header class="node-card__head">
+                        <div style="min-width:0;">
+                            <div class="node-card__topic eyebrow">Termodinámica I</div>
+                            <h3 class="node-card__name">1ª ley · sistemas abiertos</h3>
+                        </div>
+                        <div class="node-card__mastery">
+                            <span class="node-card__mastery-value num">47<span class="node-card__mastery-value-unit">%</span></span>
+                            <span class="node-card__mastery-label eyebrow">mastery</span>
+                        </div>
+                    </header>
+                    <div class="dual-bar">
+                        <div class="dual-bar__rows">
+                            <div class="dual-bar__row"><span class="dual-bar__num">84</span><div class="dual-bar__track"><div class="dual-bar__fill dual-bar__fill--declared" style="width:84%;"></div></div></div>
+                            <div class="dual-bar__row"><span class="dual-bar__num">47</span><div class="dual-bar__track"><div class="dual-bar__fill dual-bar__fill--mastery" style="width:47%;"></div><div class="dual-bar__gap-hatch" style="left:47%;width:37%;"></div></div></div>
+                        </div>
+                    </div>
+                    <footer class="node-card__meta">
+                        <span><span class="num">14</span> intentos</span>
+                        <span>BKT <span class="num">0.47</span></span>
+                        <span>gap <span class="num node-card__gap" data-tone="amber">+37</span></span>
+                    </footer>
+                </article>
+                <article class="node-card">
+                    <header class="node-card__head">
+                        <div style="min-width:0;">
+                            <div class="node-card__topic eyebrow">Cinética</div>
+                            <h3 class="node-card__name">Reacciones de 2° orden</h3>
+                        </div>
+                        <div class="node-card__mastery">
+                            <span class="node-card__mastery-value num">74<span class="node-card__mastery-value-unit">%</span></span>
+                            <span class="node-card__mastery-label eyebrow">mastery</span>
+                        </div>
+                    </header>
+                    <div class="dual-bar">
+                        <div class="dual-bar__rows">
+                            <div class="dual-bar__row"><span class="dual-bar__num">58</span><div class="dual-bar__track"><div class="dual-bar__fill dual-bar__fill--declared" style="width:58%;"></div></div></div>
+                            <div class="dual-bar__row"><span class="dual-bar__num">74</span><div class="dual-bar__track"><div class="dual-bar__fill dual-bar__fill--mastery" style="width:74%;"></div><div class="dual-bar__gap-hatch" style="left:58%;width:16%;"></div></div></div>
+                        </div>
+                    </div>
+                    <footer class="node-card__meta">
+                        <span><span class="num">12</span> intentos</span>
+                        <span>BKT <span class="num">0.72</span></span>
+                        <span>gap <span class="num node-card__gap" data-tone="stone">-16</span></span>
+                    </footer>
+                </article>
+            </div>
+        </section>
+
+        <section class="ds-section">
+            <header class="ds-section__head">
+                <span class="eyebrow">08 · Signature</span>
+                <h2 class="ds-section__title">Diagnóstico IA</h2>
+            </header>
+            <article class="ai-diagnosis">
+                <header class="ai-diagnosis__head eyebrow">
+                    <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path>
+                    </svg>
+                    Tutor cognitivo · Claude
+                </header>
+                <h3 class="ai-diagnosis__title">«Estás confundiendo familiaridad con dominio.»</h3>
+                <p class="ai-diagnosis__body">
+                    Reconocés los conceptos, pero al aplicarlos perdés terreno. Tu confianza promedio (78%)
+                    está sistemáticamente por encima de tu probabilidad real de acierto (47%).
                 </p>
-                <div class="ds-hero__meta">
-                    <code>tokens.css</code> &bull; <code>styles.css</code>
+                <div class="ai-diagnosis__suggestion" role="note">
+                    <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                    <span>Probá explicar el ejercicio guiado #7 en voz alta antes de revisar la solución.</span>
                 </div>
-            </header>
+            </article>
         </section>
 
-        <section class="ds-section" id="tipografia">
+        <section class="ds-section">
             <header class="ds-section__head">
-                <h2>Tipografía</h2>
-                <p>Inter para interfaces fluidas, JetBrains Mono para precisión en datos. Una escala balanceada para cualquier contexto.</p>
+                <span class="eyebrow">09 · Feedback</span>
+                <h2 class="ds-section__title">Toasts</h2>
             </header>
-
-            <div class="ds-demo ds-stack">
-                <div class="ds-type-showcase">
-                    <p class="ds-type-display">Aa</p>
-                    <div class="ds-type-samples">
-                        <p class="ds-type-2xl">Saber lo que crees saber</p>
-                        <p class="ds-type-xl">Diagnóstico cognitivo</p>
-                        <p class="ds-type-lg">Encabezado de sección</p>
-                        <p class="ds-type-md">Subtítulo o lead introductorio</p>
-                        <p class="ds-type-base">Cuerpo. Para prosa, descripciones de preguntas y respuestas.</p>
-                        <p class="ds-type-sm">Texto secundario y captions.</p>
-                        <p class="ds-type-xs">Eyebrow · meta · breadcrumb</p>
-                        <p class="ds-type-mono">ICC 0.78 · BKT 0.62 · gap +0.16</p>
+            <div class="ds-toasts">
+                <div class="ds-toast-mock">
+                    <span class="ds-toast-mock__dot" style="background:var(--moss);"></span>
+                    <div>
+                        <p class="ds-toast-mock__title">Respuesta guardada</p>
+                        <p class="ds-toast-mock__body">Tu mastery sobre 1ª ley subió a 0.51.</p>
+                    </div>
+                </div>
+                <div class="ds-toast-mock">
+                    <span class="ds-toast-mock__dot" style="background:var(--amber);"></span>
+                    <div>
+                        <p class="ds-toast-mock__title">Descalibración detectada</p>
+                        <p class="ds-toast-mock__body">Tu tutor cognitivo preparó una nota para vos.</p>
+                    </div>
+                </div>
+                <div class="ds-toast-mock">
+                    <span class="ds-toast-mock__dot" style="background:var(--rust);"></span>
+                    <div>
+                        <p class="ds-toast-mock__title">Sesión interrumpida</p>
+                        <p class="ds-toast-mock__body">No pudimos guardar la última respuesta.</p>
                     </div>
                 </div>
             </div>
-
-            <details class="ds-source">
-                <summary>Tokens de Escala</summary>
-                <pre><code>--fs-display: 64px; --fs-2xl: 40px; --fs-xl: 28px; --fs-lg: 22px; --fs-md: 18px; --fs-base: 16px; --fs-sm: 14px; --fs-xs: 12px;</code></pre>
-            </details>
         </section>
 
-        <section class="ds-section" id="color">
+        <section class="ds-section">
             <header class="ds-section__head">
-                <h2>Color</h2>
-                <p>Paleta semántica optimizada para estados cognitivos. Haz clic en un color para copiar su token.</p>
+                <span class="eyebrow">10 · Forma</span>
+                <h2 class="ds-section__title">Radios</h2>
             </header>
-
-            <div class="ds-demo">
-                <ul class="ds-swatches" role="list">
-                    <li><button class="ds-swatch" data-copy="var(--color-bg)"             style="--swatch: var(--color-bg)">             <span>Background</span><code>--color-bg</code></button></li>
-                    <li><button class="ds-swatch" data-copy="var(--color-surface)"        style="--swatch: var(--color-surface)">        <span>Surface</span><code>--color-surface</code></button></li>
-                    <li><button class="ds-swatch" data-copy="var(--color-border)"         style="--swatch: var(--color-border)">         <span>Border</span><code>--color-border</code></button></li>
-                    <li><button class="ds-swatch" data-copy="var(--color-primary)"          style="--swatch: var(--color-primary)">          <span>Primary</span><code>--color-primary</code></button></li>
-                    <li><button class="ds-swatch" data-copy="var(--color-secondary)"         style="--swatch: var(--color-secondary)">         <span>Secondary</span><code>--color-secondary</code></button></li>
-                    <li><button class="ds-swatch" data-copy="var(--color-calibrated)"     style="--swatch: var(--color-calibrated)">     <span>Calibrado</span><code>--color-calibrated</code></button></li>
-                    <li><button class="ds-swatch" data-copy="var(--color-overconfident)"  style="--swatch: var(--color-overconfident)">  <span>Sobreconfiado</span><code>--color-overconfident</code></button></li>
-                    <li><button class="ds-swatch" data-copy="var(--color-underconfident)" style="--swatch: var(--color-underconfident)"> <span>Subconfiado</span><code>--color-underconfident</code></button></li>
-                    <li><button class="ds-swatch" data-copy="var(--color-success)"        style="--swatch: var(--color-success)">        <span>Success</span><code>--color-success</code></button></li>
-                    <li><button class="ds-swatch" data-copy="var(--color-warning)"        style="--swatch: var(--color-warning)">        <span>Warning</span><code>--color-warning</code></button></li>
-                    <li><button class="ds-swatch" data-copy="var(--color-danger)"         style="--swatch: var(--color-danger)">         <span>Danger</span><code>--color-danger</code></button></li>
-                    <li><button class="ds-swatch" data-copy="var(--color-info)"           style="--swatch: var(--color-info)">           <span>Info</span><code>--color-info</code></button></li>
-                </ul>
-            </div>
-        </section>
-
-        <section class="ds-section" id="componentes">
-            <header class="ds-section__head">
-                <h2>Componentes</h2>
-                <p>Bloques de construcción interactivos. Diseñados para ser predecibles y accesibles.</p>
-            </header>
-
-            <div class="ds-grid">
-                <article class="ds-demo-card">
-                    <header class="ds-demo-card__header">
-                        <h3>Botones</h3>
-                    </header>
-                    <div class="ds-demo-card__body">
-                        <div class="ds-row">
-                            <button class="btn btn-primary"          type="button">Primario</button>
-                            <button class="btn btn-outline-secondary" type="button">Ghost</button>
-                            <button class="btn btn-danger"            type="button">Peligro</button>
-                        </div>
-                        <div class="ds-row mt-3">
-                            <button class="btn btn-primary btn-sm"            type="button">Pequeño</button>
-                            <button class="btn btn-outline-secondary btn-lg"  type="button">Grande</button>
-                            <button class="btn btn-primary"                   type="button" disabled>Deshabilitado</button>
-                        </div>
-                    </div>
-                </article>
-
-                <article class="ds-demo-card">
-                    <header class="ds-demo-card__header">
-                        <h3>Campos</h3>
-                    </header>
-                    <div class="ds-demo-card__body">
-                        <div class="mb-3">
-                            <label class="form-label" for="ds-email">Correo</label>
-                            <input class="form-control" id="ds-email" type="email" placeholder="tu@institucion.edu">
-                        </div>
-                        <div class="mb-0">
-                            <label class="form-label" for="ds-select">Rol</label>
-                            <select class="form-select" id="ds-select">
-                                <option>Estudiante</option>
-                                <option>Docente</option>
-                            </select>
-                        </div>
-                    </div>
-                </article>
-
-                <article class="ds-demo-card">
-                    <header class="ds-demo-card__header">
-                        <h3>Alertas Bootstrap</h3>
-                    </header>
-                    <div class="ds-demo-card__body">
-                        <div class="alert alert-primary py-2 mb-2" role="alert">Calibración óptima detectada.</div>
-                        <div class="alert alert-warning py-2 mb-2" role="alert">Sobreconfianza en Recursividad.</div>
-                        <div class="alert alert-danger  py-2 mb-0" role="alert">Riesgo alto de fallo.</div>
-                    </div>
-                </article>
-            </div>
-        </section>
-
-        <section class="ds-section" id="etiquetas">
-            <header class="ds-section__head">
-                <h2>Etiquetas</h2>
-                <p>Metadatos visuales para clasificación rápida de perfiles y roles.</p>
-            </header>
-
-            <div class="ds-demo ds-stack">
-                <div class="ds-row">
-                    <span class="pill" data-profile="calibrated">Calibrado</span>
-                    <span class="pill" data-profile="overconfident">Sobreconfiado</span>
-                    <span class="pill" data-profile="underconfident">Subconfiado</span>
-                </div>
-                <div class="ds-row">
-                    <span class="role-badge" data-role="student">Estudiante</span>
-                    <span class="role-badge" data-role="teacher">Docente</span>
-                </div>
-            </div>
-        </section>
-
-        <section class="ds-section" id="mensajes">
-            <header class="ds-section__head">
-                <h2>Mensajes</h2>
-                <p>Notificaciones y feedback transitorio (Toasts).</p>
-            </header>
-
-            <div class="ds-demo">
-                <div class="ds-row">
-                    <button class="btn btn-outline-secondary" type="button" data-toast="info">Info</button>
-                    <button class="btn btn-primary"           type="button" data-toast="success">Success</button>
-                    <button class="btn btn-danger"            type="button" data-toast="error">Error</button>
-                </div>
+            <div class="ds-card ds-radii">
+                <div class="ds-radius"><div class="ds-radius__box" style="border-radius:6px;"></div><span class="ds-radius__label num">6px</span></div>
+                <div class="ds-radius"><div class="ds-radius__box" style="border-radius:10px;"></div><span class="ds-radius__label num">10px</span></div>
+                <div class="ds-radius"><div class="ds-radius__box" style="border-radius:16px;"></div><span class="ds-radius__label num">16px</span></div>
+                <div class="ds-radius"><div class="ds-radius__box" style="border-radius:24px;"></div><span class="ds-radius__label num">24px</span></div>
             </div>
         </section>
     </main>
-</div>
 
-<div id="copy-hint" class="copy-hint" role="status" aria-live="polite"></div>
-<div class="toast-host" id="toast-host" aria-live="polite" aria-atomic="true"></div>
+    {% include 'app/partials/_app-footer.html' %}
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-<script type="module" src="{% static 'app/js/design-system.js' %}"></script>
+    {% include 'app/partials/_bootstrap-bundle.html' %}
+    <script type="module" src="{% static 'js/app/nav-auth.js' %}?v={% now "U" %}"></script>
 </body>
 </html>

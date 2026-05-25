@@ -1,4 +1,5 @@
-import { toast } from './toast.js';
+const _v = new URL(import.meta.url).searchParams.get('v') || '';
+const { toast } = await import(`./toast.js?v=${_v}`);
 
 const hint = document.getElementById('copy-hint');
 

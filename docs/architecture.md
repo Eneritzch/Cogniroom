@@ -29,30 +29,49 @@ Adoptar microservicios añadiría: orquestación (Docker/K8s), red interna, obse
 ## Modelo actual: monolito modular
 
 ```
-┌───────────────────────────────────────────────────────────────┐
-│                    Frontend (React / HTMX)                    │
-└──────────────────────────┬────────────────────────────────────┘
-                           │ HTTP + JWT
-┌──────────────────────────▼────────────────────────────────────┐
-│                    Django + DRF (backend)                     │
-│  ┌──────────┬──────────┬──────────┬──────────┬─────────────┐  │
-│  │  users   │  rooms   │questions │ sessions │  cognitive  │  │
-│  │   app    │   app    │   app    │   app    │    app      │  │
-│  └──────────┴──────────┴──────────┴──────────┴─────────────┘  │
-│       │          │          │          │          │          │
-│  ┌────▼──────────▼──────────▼──────────▼──────────▼───────┐   │
-│  │             services/ (lógica transversal)              │  │
-│  │   bkt_engine.py    icc_calculator.py   claude_service.py│  │
-│  └─────────────────────────────────────────────────────────┘  │
-└──────────────────────────┬────────────────────────────────────┘
-                           │
-       ┌───────────────────┴──────────────────┐
-       │                                      │
-┌──────▼──────┐                         ┌─────▼──────────┐
-│ PostgreSQL  │                         │  Claude API    │
-└─────────────┘                         │  (Anthropic)   │
-                                        └────────────────┘
+┌────────────────────────────────────────────────────────────────────┐
+│  Navegador                                                         │
+│  ┌─────────────────────────┐    ┌─────────────────────────────┐    │
+│  │ Templates Django (HTML) │◀──▶│ JS módulos ES (fetch + JWT) │    │
+│  │ tokens.css · Bootstrap  │    │ api.js · auth.js · ...      │    │
+│  └─────────────┬───────────┘    └─────────────┬───────────────┘    │
+└────────────────┼──────────────────────────────┼───────────────────-┘
+                 │ render TemplateView          │ JSON sobre /api/v1/
+┌────────────────▼──────────────────────────────▼────────────────────┐
+│                       Django 5 + DRF (backend)                     │
+│   ┌──────────┬──────────┬───────────┬──────────┬───────────────┐   │
+│   │  users   │  rooms   │ questions │ sessions │   cognitive   │   │
+│   │   app    │   app    │    app    │   app    │     app       │   │
+│   └──────────┴──────────┴───────────┴──────────┴───────────────┘   │
+│        │          │           │           │            │           │
+│   ┌────▼──────────▼───────────▼───────────▼────────────▼────────┐  │
+│   │              services/ (lógica transversal sin ORM)         │  │
+│   │   bkt_engine.py    icc_calculator.py    claude_service.py   │  │
+│   └─────────────────────────────────────────────────────────────┘  │
+└────────────────────────────┬───────────────────────────────────────┘
+                             │
+        ┌────────────────────┴────────────────────┐
+        │                                         │
+ ┌──────▼──────┐                          ┌───────▼──────────┐
+ │ PostgreSQL  │                          │   Claude API     │
+ └─────────────┘                          │   (Anthropic)    │
+                                          └──────────────────┘
 ```
+
+### URL map definitivo (versión 1)
+
+| Familia | Mountpoint | Owner |
+|---|---|---|
+| `/api/v1/auth/` | `apps.users.urls` | identidad (register, login, refresh, me) |
+| `/api/v1/me/` | `apps.cognitive.me_urls` | datos del usuario actual (profile, nodes, diagnoses) |
+| `/api/v1/rooms/` | `apps.rooms.urls` (incluye questions y cognitive room) | aulas + sub-recursos (nodes, questions, pdfs, metrics) |
+| `/api/v1/sessions/` | `apps.sessions.urls` | ciclo de vida de evaluación |
+
+Reglas REST:
+- Plural y sin verbos en URLs (`/rooms/`, `/sessions/{id}/answers/`).
+- Excepciones tipo "acción": `/auth/login/`, `/questions/generate/`, `/questions/approve/`, `/sessions/{id}/complete/`.
+- Datos del usuario actual viven bajo `/me/`, no en un namespace técnico (`/cognitive/`).
+- Métricas grupales bajo `/rooms/{id}/metrics/` para crecer limpio (`metrics/blind-spots`, `metrics/at-risk`, futuras).
 
 ### Apps y responsabilidades
 

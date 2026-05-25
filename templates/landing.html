@@ -1,0 +1,377 @@
+{% load static %}<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="CogniRoom — Plataforma de evaluación cognitiva adaptativa para universidades. BKT, ICC e IPC para detectar sobreconfianza antes de que afecte el rendimiento.">
+    <title>CogniRoom — Mide lo que tus estudiantes creen vs. lo que saben</title>
+    {% include 'app/partials/_styles.html' %}
+    <link rel="stylesheet" href="{% static 'css/landing.css' %}?v={% now "U" %}">
+</head>
+<body class="landing-body">
+
+    <header class="landing-header">
+        <div class="landing-container landing-header__inner">
+            <a href="/" class="landing-brand">
+                <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+                    <circle cx="16" cy="16" r="13" stroke="var(--ink)" stroke-width="1.5"/>
+                    <circle cx="16" cy="16" r="7" stroke="var(--sage)" stroke-width="1.5"/>
+                    <circle cx="16" cy="16" r="1.8" fill="var(--terracotta)"/>
+                </svg>
+                CogniRoom
+                <span class="landing-brand__version">v0.4 — 2026.05</span>
+            </a>
+            <nav class="landing-nav" aria-label="Secciones">
+                <a href="/" class="landing-nav__link" aria-current="page"><span class="landing-nav__link-num">01</span> Inicio</a>
+                <a href="#pilares" class="landing-nav__link"><span class="landing-nav__link-num">02</span> Pilares</a>
+                <a href="#como-funciona" class="landing-nav__link"><span class="landing-nav__link-num">03</span> Cómo funciona</a>
+                <a href="/app/design-system/" class="landing-nav__link"><span class="landing-nav__link-num">04</span> Sistema</a>
+            </nav>
+            <a href="/app/" class="landing-header__cta" data-auth-cta>
+                <span class="landing-header__cta-pulse" aria-hidden="true"></span>
+                Entrar
+            </a>
+        </div>
+    </header>
+
+    <section class="landing-hero">
+        <canvas id="plexus-canvas" class="landing-hero__canvas" aria-hidden="true"></canvas>
+        <div class="landing-container landing-hero__inner">
+
+            <div class="landing-hero__main">
+                <div class="landing-hero__eyebrow eyebrow">
+                    <span class="landing-hero__eyebrow-rule" aria-hidden="true"></span>
+                    CogniRoom · Working paper №01
+                </div>
+                <h1 class="landing-hero__title">
+                    Mide lo que tus estudiantes <em data-accent="terracotta">creen</em> saber<br>
+                    vs. lo que <em data-accent="sage">realmente</em> saben.
+                </h1>
+                <p class="landing-hero__body">
+                    Una evaluación bayesiana adaptativa que detecta sobreconfianza académica
+                    antes de que se convierta en una calificación reprobatoria. Diseñada para
+                    facultades que toman en serio la metacognición.
+                </p>
+                <div class="landing-hero__actions">
+                    <a href="/app/" class="landing-btn landing-btn--primary">
+                        Crear cuenta institucional
+                        <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                            <line x1="7" y1="17" x2="17" y2="7"></line>
+                            <polyline points="7 7 17 7 17 17"></polyline>
+                        </svg>
+                    </a>
+                    <a href="/app/" class="landing-btn landing-btn--secondary">
+                        Iniciar sesión
+                    </a>
+                </div>
+                <dl class="landing-hero__stats">
+                    <div class="landing-hero__stat">
+                        <dt class="landing-hero__stat-k num">BKT</dt>
+                        <dd class="landing-hero__stat-v">Bayesian Knowledge Tracing</dd>
+                    </div>
+                    <div class="landing-hero__stat">
+                        <dt class="landing-hero__stat-k num">ICC</dt>
+                        <dd class="landing-hero__stat-v">Índice de Calibración Cognitiva</dd>
+                    </div>
+                    <div class="landing-hero__stat">
+                        <dt class="landing-hero__stat-k num">IPC</dt>
+                        <dd class="landing-hero__stat-v">Índice de Punto Ciego</dd>
+                    </div>
+                </dl>
+            </div>
+
+            <aside class="landing-hero__metric" aria-label="Vista en vivo de un estudiante">
+                <div class="landing-hero__metric-head">
+                    <span class="landing-hero__metric-eyebrow eyebrow">Vista en vivo · Estudiante A.M.</span>
+                    <span class="pill" data-profile="overconfident">Sobreconfiado</span>
+                </div>
+                <div class="landing-hero__metric-ring">
+                    <div class="calibration-ring" data-profile="overconfident" style="width:180px;height:180px;">
+                        <svg class="calibration-ring__svg" width="180" height="180" aria-hidden="true">
+                            <circle class="calibration-ring__track" cx="90" cy="90" r="83.7" stroke-width="12.6"></circle>
+                            <circle class="calibration-ring__fill" cx="90" cy="90" r="83.7" stroke-width="12.6"
+                                    stroke-dasharray="525.86" stroke-dashoffset="305.0"></circle>
+                        </svg>
+                        <div class="calibration-ring__center">
+                            <span class="calibration-ring__value" style="font-size:46.8px;">0.42</span>
+                            <span class="calibration-ring__label eyebrow">ICC</span>
+                            <span class="calibration-ring__sublabel">Calibración</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="rule" aria-hidden="true"></div>
+                <div class="landing-hero__metric-bars">
+                    <div class="dual-bar">
+                        <div class="dual-bar__header">
+                            <span class="dual-bar__title">Termodinámica · 1ª ley</span>
+                            <span class="dual-bar__gap" data-tone="amber">+31 pts</span>
+                        </div>
+                        <div class="dual-bar__rows">
+                            <div class="dual-bar__row">
+                                <span class="dual-bar__num">82</span>
+                                <div class="dual-bar__track">
+                                    <div class="dual-bar__fill dual-bar__fill--declared" style="width:82%;"></div>
+                                </div>
+                            </div>
+                            <div class="dual-bar__row">
+                                <span class="dual-bar__num">51</span>
+                                <div class="dual-bar__track">
+                                    <div class="dual-bar__fill dual-bar__fill--mastery" style="width:51%;"></div>
+                                    <div class="dual-bar__gap-hatch" style="left:51%;width:31%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dual-bar">
+                        <div class="dual-bar__header">
+                            <span class="dual-bar__title">Cinética química</span>
+                            <span class="dual-bar__gap" data-tone="stone">-9 pts</span>
+                        </div>
+                        <div class="dual-bar__rows">
+                            <div class="dual-bar__row">
+                                <span class="dual-bar__num">64</span>
+                                <div class="dual-bar__track">
+                                    <div class="dual-bar__fill dual-bar__fill--declared" style="width:64%;"></div>
+                                </div>
+                            </div>
+                            <div class="dual-bar__row">
+                                <span class="dual-bar__num">73</span>
+                                <div class="dual-bar__track">
+                                    <div class="dual-bar__fill dual-bar__fill--mastery" style="width:73%;"></div>
+                                    <div class="dual-bar__gap-hatch" style="left:64%;width:9%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p class="landing-hero__metric-note">
+                    La firma del producto: una <strong>barra dual</strong> que superpone lo declarado
+                    y lo inferido. Cada gap es una pregunta abierta.
+                </p>
+            </aside>
+
+        </div>
+    </section>
+
+    <section class="landing-pillars" id="pilares">
+        <div class="landing-container landing-pillars__inner">
+            <header class="landing-pillars__head">
+                <div class="eyebrow">Tres pilares</div>
+                <h2 class="landing-pillars__title display">La metodología, en sus tres letras.</h2>
+            </header>
+            <div class="landing-pillars__list">
+
+                <article class="landing-pillar">
+                    <header class="landing-pillar__head">
+                        <span class="landing-pillar__id">BKT</span>
+                        <svg class="landing-pillar__icon icon-svg" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 2v4"></path>
+                            <path d="M12 18v4"></path>
+                            <path d="m4.93 4.93 2.83 2.83"></path>
+                            <path d="m16.24 16.24 2.83 2.83"></path>
+                            <path d="M2 12h4"></path>
+                            <path d="M18 12h4"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </header>
+                    <div class="landing-pillar__diagram">
+                        <svg viewBox="0 0 220 90" aria-hidden="true">
+                            <defs>
+                                <marker id="arr-bkt" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                                    <path d="M0,0 L6,3 L0,6" fill="var(--ink-faint)"/>
+                                </marker>
+                            </defs>
+                            <g><circle cx="20"  cy="45" r="11" fill="var(--paper-elevated)" stroke="var(--ink-faint)"/><text x="20"  y="48" text-anchor="middle" font-size="9" fill="var(--ink)" font-family="JetBrains Mono">0.30</text><line x1="32"  y1="45" x2="58"  y2="45" stroke="var(--ink-faint)" marker-end="url(#arr-bkt)"/></g>
+                            <g><circle cx="70"  cy="45" r="11" fill="var(--paper-elevated)" stroke="var(--ink-faint)"/><text x="70"  y="48" text-anchor="middle" font-size="9" fill="var(--ink)" font-family="JetBrains Mono">0.45</text><line x1="82"  y1="45" x2="108" y2="45" stroke="var(--ink-faint)" marker-end="url(#arr-bkt)"/></g>
+                            <g><circle cx="120" cy="45" r="11" fill="var(--paper-elevated)" stroke="var(--ink-faint)"/><text x="120" y="48" text-anchor="middle" font-size="9" fill="var(--ink)" font-family="JetBrains Mono">0.60</text><line x1="132" y1="45" x2="158" y2="45" stroke="var(--ink-faint)" marker-end="url(#arr-bkt)"/></g>
+                            <g><circle cx="170" cy="45" r="11" fill="var(--paper-elevated)" stroke="var(--ink-faint)"/><text x="170" y="48" text-anchor="middle" font-size="9" fill="var(--ink)" font-family="JetBrains Mono">0.72</text></g>
+                            <text x="195" y="20" font-size="9" fill="var(--sage)" font-family="JetBrains Mono">P(L)↑</text>
+                        </svg>
+                    </div>
+                    <h3 class="landing-pillar__title">Bayesian Knowledge Tracing</h3>
+                    <p class="landing-pillar__body">
+                        Un modelo probabilístico actualiza, pregunta a pregunta, la creencia de que el
+                        estudiante domina un nodo. No promedios — inferencia.
+                    </p>
+                </article>
+
+                <article class="landing-pillar">
+                    <header class="landing-pillar__head">
+                        <span class="landing-pillar__id">ICC</span>
+                        <svg class="landing-pillar__icon icon-svg" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+                        </svg>
+                    </header>
+                    <div class="landing-pillar__diagram">
+                        <svg viewBox="0 0 220 90" aria-hidden="true">
+                            <line x1="20" y1="75" x2="200" y2="75" stroke="var(--ink-faint)"/>
+                            <line x1="20" y1="10" x2="20"  y2="75" stroke="var(--ink-faint)"/>
+                            <line x1="20" y1="75" x2="200" y2="10" stroke-dasharray="2 3" stroke="var(--ink-faint)"/>
+                            <circle cx="40"  cy="60" r="3.5" fill="var(--moss)"/>
+                            <circle cx="80"  cy="45" r="3.5" fill="var(--moss)"/>
+                            <circle cx="110" cy="25" r="3.5" fill="var(--amber)"/>
+                            <circle cx="150" cy="40" r="3.5" fill="var(--amber)"/>
+                            <circle cx="180" cy="22" r="3.5" fill="var(--rust)"/>
+                            <text x="22"  y="9"  font-size="8" fill="var(--ink-muted)">acierto</text>
+                            <text x="160" y="86" font-size="8" fill="var(--ink-muted)">confianza</text>
+                        </svg>
+                    </div>
+                    <h3 class="landing-pillar__title">Índice de Calibración Cognitiva</h3>
+                    <p class="landing-pillar__body">
+                        Compara confianza declarada con probabilidad real de acierto. Valores cerca de
+                        1 indican un estudiante que se conoce a sí mismo.
+                    </p>
+                </article>
+
+                <article class="landing-pillar">
+                    <header class="landing-pillar__head">
+                        <span class="landing-pillar__id">IPC</span>
+                        <svg class="landing-pillar__icon icon-svg" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                        </svg>
+                    </header>
+                    <div class="landing-pillar__diagram" style="padding-block:var(--s-4);">
+                        <div style="display:flex;flex-direction:column;gap:6px;width:100%;padding-inline:var(--s-2);">
+                            <div style="display:flex;align-items:center;gap:var(--s-2);">
+                                <span style="width:48px;font-size:9px;color:var(--ink-muted);">Nodo A</span>
+                                <div style="position:relative;flex:1;height:8px;background:var(--paper-elevated);border-radius:var(--r-xs);overflow:hidden;">
+                                    <div style="position:absolute;height:100%;width:30%;background:var(--sage);"></div>
+                                    <div style="position:absolute;height:100%;left:30%;width:40%;background:var(--amber);opacity:0.4;"></div>
+                                </div>
+                                <span class="num" style="width:32px;text-align:right;font-size:9px;color:var(--amber);">+40</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:var(--s-2);">
+                                <span style="width:48px;font-size:9px;color:var(--ink-muted);">Nodo B</span>
+                                <div style="position:relative;flex:1;height:8px;background:var(--paper-elevated);border-radius:var(--r-xs);overflow:hidden;">
+                                    <div style="position:absolute;height:100%;width:35%;background:var(--sage);"></div>
+                                    <div style="position:absolute;height:100%;left:35%;width:25%;background:var(--amber);opacity:0.4;"></div>
+                                </div>
+                                <span class="num" style="width:32px;text-align:right;font-size:9px;color:var(--amber);">+25</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:var(--s-2);">
+                                <span style="width:48px;font-size:9px;color:var(--ink-muted);">Nodo C</span>
+                                <div style="position:relative;flex:1;height:8px;background:var(--paper-elevated);border-radius:var(--r-xs);overflow:hidden;">
+                                    <div style="position:absolute;height:100%;width:38%;background:var(--sage);"></div>
+                                    <div style="position:absolute;height:100%;left:38%;width:17%;background:var(--amber);opacity:0.4;"></div>
+                                </div>
+                                <span class="num" style="width:32px;text-align:right;font-size:9px;color:var(--amber);">+17</span>
+                            </div>
+                        </div>
+                    </div>
+                    <h3 class="landing-pillar__title">Índice de Punto Ciego</h3>
+                    <p class="landing-pillar__body">
+                        Nodos donde la confianza promedio del grupo supera al mastery promedio.
+                        La pista más confiable para rediseñar una clase.
+                    </p>
+                </article>
+
+            </div>
+        </div>
+    </section>
+
+    <section class="landing-how" id="como-funciona">
+        <div class="landing-container">
+            <header class="landing-how__head">
+                <div>
+                    <div class="eyebrow">Cómo funciona</div>
+                    <h2 class="landing-how__title display">De un PDF a una conversación honesta sobre lo que se sabe.</h2>
+                </div>
+                <p class="landing-how__aside">
+                    Cuatro pasos. Ningún reemplazo del docente — un instrumento para escuchar mejor a la clase.
+                </p>
+            </header>
+
+            <ol class="landing-how__steps">
+                <li class="landing-how__step">
+                    <span class="landing-how__step-num">01</span>
+                    <h3 class="landing-how__step-title">Subí material</h3>
+                    <p class="landing-how__step-body">El docente carga los PDFs del curso. CogniRoom extrae nodos de conocimiento y los organiza en un grafo.</p>
+                </li>
+                <li class="landing-how__step">
+                    <span class="landing-how__step-num">02</span>
+                    <h3 class="landing-how__step-title">Generá preguntas</h3>
+                    <p class="landing-how__step-body">Claude propone ítems calibrados por dificultad. El docente aprueba, edita o descarta antes de publicar.</p>
+                </li>
+                <li class="landing-how__step">
+                    <span class="landing-how__step-num">03</span>
+                    <h3 class="landing-how__step-title">Estudiantes responden</h3>
+                    <p class="landing-how__step-body">Antes de cada respuesta, el estudiante declara su confianza (0–100). El gap es la materia prima del análisis.</p>
+                </li>
+                <li class="landing-how__step">
+                    <span class="landing-how__step-num">04</span>
+                    <h3 class="landing-how__step-title">Intervení a tiempo</h3>
+                    <p class="landing-how__step-body">El docente ve puntos ciegos colectivos y casos individuales. El estudiante recibe una carta del tutor cuando se descalibra.</p>
+                </li>
+            </ol>
+
+            <div class="landing-how__diagnosis">
+                <article class="ai-diagnosis">
+                    <header class="ai-diagnosis__head eyebrow">
+                        <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path>
+                        </svg>
+                        Tutor cognitivo · Claude
+                    </header>
+                    <h3 class="ai-diagnosis__title">«Tu confianza en cinética está sistemáticamente por encima de tu desempeño.»</h3>
+                    <p class="ai-diagnosis__body">
+                        En las últimas 12 preguntas, declaraste un 78% de confianza promedio sobre cinética química,
+                        pero acertaste el 41%. No es ruido: el patrón es consistente desde el segundo intento.
+                    </p>
+                    <div class="ai-diagnosis__suggestion" role="note">
+                        <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                        <span>Releer §4.2 del apunte y resolver el problema guiado #7 antes de la próxima evaluación parcial.</span>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section class="landing-cta">
+        <div class="landing-container">
+            <div class="landing-cta__inner">
+                <div>
+                    <div class="eyebrow">Empezar</div>
+                    <h2 class="landing-cta__title display">Tu próxima evaluación puede decirte algo nuevo.</h2>
+                    <p class="landing-cta__body">
+                        Activá tu cuenta institucional, importá un curso y publicá una primera sala en menos de 20 minutos.
+                    </p>
+                </div>
+                <a href="/app/" class="landing-btn landing-btn--primary">
+                    Crear cuenta institucional
+                    <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                        <line x1="7" y1="17" x2="17" y2="7"></line>
+                        <polyline points="7 7 17 7 17 17"></polyline>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <footer class="landing-footer">
+        <div class="landing-container landing-footer__inner">
+            <div class="landing-footer__brand">
+                <svg width="18" height="18" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+                    <circle cx="16" cy="16" r="13" stroke="var(--ink)" stroke-width="1.5"/>
+                    <circle cx="16" cy="16" r="7" stroke="var(--sage)" stroke-width="1.5"/>
+                    <circle cx="16" cy="16" r="1.8" fill="var(--terracotta)"/>
+                </svg>
+                <span>CogniRoom · Plataforma de evaluación cognitiva adaptativa</span>
+            </div>
+            <div class="landing-footer__meta">
+                <span>BKT · ICC · IPC</span>
+                <span>© 2026</span>
+            </div>
+            <div class="landing-footer__credits">Jaione Cherres &amp; Dulce Villacis</div>
+        </div>
+    </footer>
+
+    {% include 'app/partials/_bootstrap-bundle.html' %}
+    <script type="module" src="{% static 'js/landing.js' %}?v={% now "U" %}"></script>
+    <script type="module" src="{% static 'js/app/nav-auth.js' %}?v={% now "U" %}"></script>
+</body>
+</html>

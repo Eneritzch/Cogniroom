@@ -11,15 +11,60 @@
  *     aria-invalid="true" para el borde rojo (regla en styles.css).
  */
 
-import { auth, tokens, ApiError } from './api.js';
-import { toast } from './toast.js';
+const _v = new URL(import.meta.url).searchParams.get('v') || '';
+const { auth, tokens, ApiError } = await import(`./api.js?v=${_v}`);
+const { toast } = await import(`./toast.js?v=${_v}`);
 
 const $form = document.getElementById('login-form');
 const $email = document.getElementById('email');
 const $password = document.getElementById('password');
 const $submit = document.getElementById('login-submit');
+const $submitText = document.getElementById('login-submit-text');
 
 const FIELDS = [$email, $password];
+
+
+document.querySelectorAll('.auth-segmented__option').forEach((btn) => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.auth-segmented__option').forEach((b) => {
+            b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+        });
+    });
+});
+
+
+const TERMINAL_LINES = [
+    '> auth.handshake          OK',
+    '> bkt.engine v3.1         READY',
+    '> cohort.load 2026·I      1 284 students',
+    '> calibration.scan        Δ ICC −0.02',
+    '> ai.tutor                claude-3.7 ONLINE',
+    '> session.ready           waiting for input_',
+];
+
+const $terminal = document.getElementById('auth-terminal');
+if ($terminal) {
+    let i = 1;
+    const renderTerminal = () => {
+        $terminal.innerHTML = TERMINAL_LINES.slice(0, i)
+            .map((line, idx) => {
+                const cls = idx === i - 1 ? 'auth-terminal__line--active' : '';
+                return `<span class="${cls}">${line.replace(/</g, '&lt;')}</span>`;
+            })
+            .join('');
+    };
+    renderTerminal();
+    const interval = setInterval(() => {
+        i += 1;
+        renderTerminal();
+        if (i >= TERMINAL_LINES.length) clearInterval(interval);
+    }, 380);
+}
+
+
+document.querySelectorAll('.auth-form__switch-link').forEach((link) => {
+    link.addEventListener('click', (e) => e.preventDefault());
+});
 
 function messageFor(input) {
     const v = input.validity;
@@ -67,7 +112,7 @@ $form.addEventListener('submit', async (event) => {
     }
 
     $submit.disabled = true;
-    $submit.textContent = 'Entrando...';
+    $submitText.textContent = 'Entrando...';
 
     try {
         const data = await auth.login($email.value.trim(), $password.value);
@@ -78,7 +123,7 @@ $form.addEventListener('submit', async (event) => {
     } catch (err) {
         handleServerError(err);
         $submit.disabled = false;
-        $submit.textContent = 'Entrar';
+        $submitText.textContent = 'Entrar';
     }
 });
 

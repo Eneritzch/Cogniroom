@@ -49,6 +49,17 @@ class MyProfileView(APIView):
         })
 
 
+class MyDiagnosesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        diagnoses = (
+            AIDiagnosis.objects.filter(student=request.user)
+            .order_by('-generated_at')
+        )
+        return Response(AIDiagnosisSerializer(diagnoses, many=True).data)
+
+
 class MyNodesView(APIView):
     permission_classes = [IsAuthenticated]
 

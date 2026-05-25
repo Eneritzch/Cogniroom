@@ -1,0 +1,251 @@
+{% load static %}<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Acceso a la plataforma CogniRoom para docentes y estudiantes.">
+    <title>Entrar · CogniRoom</title>
+    {% include 'app/partials/_styles.html' %}
+    <link rel="stylesheet" href="{% static 'css/app/auth.css' %}?v={% now "U" %}">
+</head>
+<body>
+    <main class="auth-shell">
+
+        <svg class="auth-grid-backdrop" aria-hidden="true">
+            <defs>
+                <pattern id="auth-grid" width="32" height="32" patternUnits="userSpaceOnUse">
+                    <path d="M 32 0 L 0 0 0 32" fill="none" stroke="var(--paper-border)" stroke-width="0.5" opacity="0.5"/>
+                </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#auth-grid)"/>
+        </svg>
+
+        <aside class="auth-instrument">
+            <header class="auth-instrument__head">
+                <a href="/" class="auth-instrument__brand">
+                    <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+                        <circle cx="16" cy="16" r="13" stroke="var(--ink)" stroke-width="1.5"/>
+                        <circle cx="16" cy="16" r="7" stroke="var(--sage)" stroke-width="1.5"/>
+                        <circle cx="16" cy="16" r="1.8" fill="var(--terracotta)"/>
+                    </svg>
+                    CogniRoom
+                </a>
+                <div class="auth-instrument__instance">
+                    <span class="auth-instrument__pulse" aria-hidden="true"></span>
+                    INSTANCE · UN-EAFIT-01 / 200ms
+                </div>
+            </header>
+
+            <div class="auth-instrument__coords">
+                <span>§ 01.0 · COGNITIVE ROOM</span>
+                <span>LAT 06.244 · LON −75.581</span>
+            </div>
+
+            <div class="auth-instrument__hero">
+                <h1 class="auth-instrument__title">
+                    <span class="auth-instrument__title-num">001 ·</span>
+                    Un instrumento para<br>
+                    <span class="auth-instrument__title-muted">medir el</span>
+                    <span class="auth-instrument__underlined">autoconocimiento</span><br>
+                    <span class="auth-instrument__title-muted">de una cohorte.</span>
+                </h1>
+                <p class="auth-instrument__body">
+                    // CogniRoom v0.4 — bayesian knowledge tracing + métricas
+                    de calibración cognitiva. Sin gamificación, sin distracciones.
+                </p>
+            </div>
+
+            <section>
+                <div class="auth-framed">
+                    <span class="auth-framed__corner auth-framed__corner--tl" aria-hidden="true"></span>
+                    <span class="auth-framed__corner auth-framed__corner--tr" aria-hidden="true"></span>
+                    <span class="auth-framed__corner auth-framed__corner--bl" aria-hidden="true"></span>
+                    <span class="auth-framed__corner auth-framed__corner--br" aria-hidden="true"></span>
+
+                    <div class="auth-framed__head">
+                        <span>ICC · LIVE / COHORTE 2026·I</span>
+                        <span>X·142</span>
+                    </div>
+
+                    <div class="auth-framed__body">
+                        <div class="auth-crosshair">
+                            <span class="auth-crosshair__axis auth-crosshair__axis--v" aria-hidden="true"></span>
+                            <span class="auth-crosshair__axis auth-crosshair__axis--h" aria-hidden="true"></span>
+                            <span class="auth-crosshair__tick auth-crosshair__tick--tl" aria-hidden="true"></span>
+                            <span class="auth-crosshair__tick auth-crosshair__tick--tr" aria-hidden="true"></span>
+                            <span class="auth-crosshair__tick auth-crosshair__tick--bl" aria-hidden="true"></span>
+                            <span class="auth-crosshair__tick auth-crosshair__tick--br" aria-hidden="true"></span>
+                            <div class="auth-crosshair__center">
+                                <div class="calibration-ring" data-profile="calibrated" style="width:200px;height:200px;">
+                                    <svg class="calibration-ring__svg" width="200" height="200" aria-hidden="true">
+                                        <circle class="calibration-ring__track" cx="100" cy="100" r="93" stroke-width="14"></circle>
+                                        <circle class="calibration-ring__fill" cx="100" cy="100" r="93" stroke-width="14"
+                                                stroke-dasharray="584.34" stroke-dashoffset="128.55"></circle>
+                                    </svg>
+                                    <div class="calibration-ring__center">
+                                        <span class="calibration-ring__value" style="font-size:52px;">0.78</span>
+                                        <span class="calibration-ring__label eyebrow">ICC</span>
+                                        <span class="calibration-ring__sublabel">Cohorte 2026·I</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="auth-readouts">
+                            <div class="auth-readout">
+                                <div class="auth-readout__title">ESTUDIANTES</div>
+                                <div class="auth-readout__value">1 284</div>
+                                <div class="auth-readout__delta">+47 / 7d</div>
+                            </div>
+                            <div class="auth-readout">
+                                <div class="auth-readout__title">SOBRECONFIADOS</div>
+                                <div class="auth-readout__value" data-tone="amber">38 %</div>
+                                <div class="auth-readout__delta">−2.1 pp</div>
+                            </div>
+                            <div class="auth-readout">
+                                <div class="auth-readout__title">DIAGNÓSTICOS IA (24h)</div>
+                                <div class="auth-readout__value">047</div>
+                                <div class="auth-readout__delta">18 abiertos</div>
+                            </div>
+                            <div class="auth-bar-feed" aria-hidden="true">
+                                <span class="auth-bar-feed__bar" style="height:9px;opacity:0.2;"></span>
+                                <span class="auth-bar-feed__bar" style="height:15px;opacity:0.25;"></span>
+                                <span class="auth-bar-feed__bar" style="height:12px;opacity:0.3;"></span>
+                                <span class="auth-bar-feed__bar" style="height:21px;opacity:0.36;"></span>
+                                <span class="auth-bar-feed__bar" style="height:18px;opacity:0.43;"></span>
+                                <span class="auth-bar-feed__bar" style="height:24px;opacity:0.5;"></span>
+                                <span class="auth-bar-feed__bar" style="height:15px;opacity:0.56;"></span>
+                                <span class="auth-bar-feed__bar" style="height:27px;opacity:0.62;"></span>
+                                <span class="auth-bar-feed__bar" style="height:18px;opacity:0.7;"></span>
+                                <span class="auth-bar-feed__bar" style="height:21px;opacity:0.78;"></span>
+                                <span class="auth-bar-feed__bar" style="height:24px;opacity:0.85;"></span>
+                                <span class="auth-bar-feed__bar" style="height:27px;opacity:0.9;"></span>
+                                <span class="auth-bar-feed__bar" style="height:30px;opacity:0.95;"></span>
+                                <span class="auth-bar-feed__label">RESP·15min</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="auth-terminal" id="auth-terminal" aria-hidden="true">
+                    <span data-line>&gt; auth.handshake          OK</span>
+                </div>
+            </section>
+
+            <footer class="auth-instrument__footer">
+                <span>CogniRoom Working Paper №01 / 2026</span>
+                <span>↳ Métodos: BKT · ICC · IPC</span>
+            </footer>
+        </aside>
+
+        <section class="auth-form-shell" aria-labelledby="login-heading">
+            <div class="auth-form">
+                <div class="auth-form__section-head">
+                    <span>§ 02.0 · ACCESO</span>
+                    <span>[ AUTH ]</span>
+                </div>
+
+                <h2 id="login-heading" class="auth-form__title">Identifícate.</h2>
+                <p class="auth-form__lead">
+                    Acceso restringido a usuarios institucionales verificados.
+                </p>
+
+                <div class="auth-form__group">
+                    <span class="auth-form__group-label">ROL · 001</span>
+                    <div class="auth-segmented" role="group" aria-label="Rol del usuario">
+                        <button type="button" class="auth-segmented__option" data-role="teacher" aria-pressed="true">
+                            <span class="auth-segmented__num">01</span>
+                            Docente
+                        </button>
+                        <button type="button" class="auth-segmented__option" data-role="student" aria-pressed="false">
+                            <span class="auth-segmented__num">02</span>
+                            Estudiante
+                        </button>
+                    </div>
+                </div>
+
+                <form id="login-form" class="auth-fields" autocomplete="on" novalidate>
+                    <fieldset class="border-0 p-0 m-0">
+                        <legend class="visually-hidden">Credenciales</legend>
+
+                        <div class="auth-field">
+                            <label class="auth-field__label" for="email">002 · EMAIL</label>
+                            <div class="auth-field__input-wrap">
+                                <svg class="auth-field__icon icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                                    <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                                    <path d="m22 7-10 5L2 7"></path>
+                                </svg>
+                                <input class="auth-field__input"
+                                       type="email"
+                                       id="email"
+                                       name="email"
+                                       required
+                                       autocomplete="email"
+                                       inputmode="email"
+                                       autocapitalize="off"
+                                       spellcheck="false"
+                                       maxlength="254"
+                                       placeholder="ada@universidad.edu">
+                            </div>
+                        </div>
+
+                        <div class="auth-field" style="margin-top:14px;">
+                            <label class="auth-field__label" for="password">003 · CONTRASEÑA</label>
+                            <div class="auth-field__input-wrap">
+                                <svg class="auth-field__icon icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
+                                </svg>
+                                <input class="auth-field__input"
+                                       type="password"
+                                       id="password"
+                                       name="password"
+                                       required
+                                       minlength="6"
+                                       autocomplete="current-password"
+                                       placeholder="••••••••••">
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <button type="submit" class="auth-submit" id="login-submit">
+                        <span class="auth-submit__route">→ /auth/submit</span>
+                        <span class="auth-submit__label">
+                            <span id="login-submit-text">Entrar</span>
+                            <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                <polyline points="12 5 19 12 12 19"></polyline>
+                            </svg>
+                        </span>
+                    </button>
+                </form>
+
+                <div class="auth-divider">
+                    <span class="auth-divider__rule" aria-hidden="true"></span>
+                    <span class="auth-divider__label">O · SSO</span>
+                    <span class="auth-divider__rule" aria-hidden="true"></span>
+                </div>
+
+                <button type="button" class="auth-sso">
+                    <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 11v6"></path>
+                        <path d="M9 18a3 3 0 0 0 6 0"></path>
+                        <path d="M5 14a7 7 0 1 1 14 0"></path>
+                        <path d="M3 11a9 9 0 0 1 18 0"></path>
+                    </svg>
+                    Continuar con SSO institucional
+                </button>
+
+                <p class="auth-form__switch">
+                    ¿Sin instancia activa? <button type="button" class="auth-form__switch-link">Solicitá una →</button>
+                </p>
+            </div>
+        </section>
+
+    </main>
+
+    <div class="toast-host" id="toast-host" aria-live="polite" aria-atomic="true"></div>
+
+    {% include 'app/partials/_bootstrap-bundle.html' %}
+    <script type="module" src="{% static 'js/app/auth.js' %}?v={% now "U" %}"></script>
+</body>
+</html>

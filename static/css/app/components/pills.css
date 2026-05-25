@@ -1,0 +1,49 @@
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--r-pill);
+  font-size: 12px;
+  font-weight: var(--fw-medium);
+}
+
+.pill::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.pill[data-profile='calibrated']     { background: var(--moss-soft);  color: #2f4a2c; }
+.pill[data-profile='overconfident']  { background: var(--amber-soft); color: #6b4a25; }
+.pill[data-profile='underconfident'] { background: var(--stone-soft); color: #3d4759; }
+
+.pill[data-risk='low']    { background: var(--moss-soft);  color: #2f4a2c; }
+.pill[data-risk='medium'] { background: var(--amber-soft); color: #6b4a25; }
+.pill[data-risk='high']   { background: var(--rust-soft);  color: #5e2b23; }
+
+.pill[data-profile='calibrated']::before     { background: var(--moss); }
+.pill[data-profile='overconfident']::before  { background: var(--amber); }
+.pill[data-profile='underconfident']::before { background: var(--stone); }
+.pill[data-risk='low']::before    { background: var(--moss); }
+.pill[data-risk='medium']::before { background: var(--amber); }
+.pill[data-risk='high']::before   { background: var(--rust); }
+
+
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+  font-size: 11px;
+  font-weight: var(--fw-medium);
+  letter-spacing: var(--tracking-wide);
+  background: var(--paper-elevated);
+  color: var(--ink);
+}
+
+.role-badge[data-role='teacher']     { background: var(--sage-soft);       color: var(--sage-strong); }
+.role-badge[data-role='student']     { background: var(--terracotta-soft); color: var(--terracotta); }
+.role-badge[data-role='coordinator'] { background: var(--amber-soft);      color: #6b4a25; }

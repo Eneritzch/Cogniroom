@@ -1,0 +1,28 @@
+.btn-primary {
+  --bs-btn-color:          var(--paper-surface);
+  --bs-btn-bg:             var(--ink);
+  --bs-btn-border-color:   var(--ink);
+  --bs-btn-hover-color:    var(--paper-surface);
+  --bs-btn-hover-bg:       var(--sage);
+  --bs-btn-hover-border-color: var(--sage);
+  --bs-btn-active-color:   var(--paper-surface);
+  --bs-btn-active-bg:      var(--sage-strong);
+  --bs-btn-active-border-color: var(--sage-strong);
+  --bs-btn-disabled-color: var(--paper-surface);
+  --bs-btn-disabled-bg:    var(--ink);
+  --bs-btn-disabled-border-color: var(--ink);
+  font-weight: var(--fw-medium);
+}
+
+.btn-outline-secondary {
+  --bs-btn-color:          var(--ink);
+  --bs-btn-bg:             var(--paper-surface);
+  --bs-btn-border-color:   var(--paper-border-strong);
+  --bs-btn-hover-color:    var(--ink);
+  --bs-btn-hover-bg:       var(--paper-elevated);
+  --bs-btn-hover-border-color: var(--paper-border-strong);
+  --bs-btn-active-color:   var(--ink);
+  --bs-btn-active-bg:      var(--paper-elevated);
+  --bs-btn-active-border-color: var(--paper-border-strong);
+  font-weight: var(--fw-medium);
+}
