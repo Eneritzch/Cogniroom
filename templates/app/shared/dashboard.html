@@ -201,96 +201,103 @@
                         intervenir antes de la próxima evaluación.
                     </p>
                 </div>
-                <div class="d-hero__actions">
-                    <span class="d-hero__active-room" aria-live="polite">
-                        <span class="d-action__k">Mostrando</span>
-                        <span id="teacher-current-room" class="d-action__v">—</span>
-                    </span>
-                    <a href="/app/rooms/" class="d-action d-action--secondary">
-                        <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M3 9h18M9 21V9"></path>
-                        </svg>
-                        Gestionar salas
-                    </a>
-                </div>
             </header>
 
             <section class="d-kpis" aria-label="Métricas principales">
-                <article class="d-kpi d-kpi--accent">
+                <article class="d-kpi d-kpi--accent" aria-labelledby="kpi-icc-label">
                     <header class="d-kpi__head">
-                        <span class="d-kpi__k">Calibración del grupo</span>
-                        <span class="d-kpi__arrow" aria-hidden="true">
-                            <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24">
-                                <line x1="7" y1="17" x2="17" y2="7"></line>
-                                <polyline points="7 7 17 7 17 17"></polyline>
+                        <span id="kpi-icc-label" class="d-kpi__k">Autoconocimiento del grupo</span>
+                        <span class="d-kpi__chip" id="icc-chip" data-tone="moss">
+                            <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+                                <line x1="12" y1="19" x2="12" y2="5"></line>
+                                <polyline points="5 12 12 5 19 12"></polyline>
                             </svg>
+                            <span id="icc-chip-text">+0.04</span>
                         </span>
                     </header>
-                    <div class="d-kpi__v num" data-bind="icc">0.58</div>
-                    <div class="d-kpi__trend" data-bind="icc-delta">▲ +0.04 vs sem. previa</div>
+                    <div class="d-kpi__v num" id="icc-value">0.58</div>
+                    <p class="d-kpi__hint" id="icc-hint">Calibración aceptable, hay margen.</p>
+                    <svg class="d-kpi__sparkline" id="spark-icc" viewBox="0 0 100 28" preserveAspectRatio="none" aria-hidden="true"></svg>
                 </article>
 
-                <article class="d-kpi">
+                <article class="d-kpi" aria-labelledby="kpi-gap-label">
                     <header class="d-kpi__head">
-                        <span class="d-kpi__k">Brecha de confianza</span>
-                        <span class="d-kpi__arrow" aria-hidden="true">
-                            <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24">
-                                <line x1="7" y1="17" x2="17" y2="7"></line>
-                                <polyline points="7 7 17 7 17 17"></polyline>
+                        <span id="kpi-gap-label" class="d-kpi__k">Creen saber más de lo que saben</span>
+                        <span class="d-kpi__chip" id="gap-chip" data-tone="amber">
+                            <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+                                <line x1="12" y1="19" x2="12" y2="5"></line>
+                                <polyline points="5 12 12 5 19 12"></polyline>
                             </svg>
+                            <span id="gap-chip-text">+3 pts</span>
                         </span>
                     </header>
-                    <div class="d-kpi__v num" data-tone-color="amber" data-bind="gap">+24 pts</div>
-                    <div class="d-kpi__trend" data-tone="amber" data-bind="gap-delta">▲ +3 pts vs sem. previa</div>
+                    <div class="d-kpi__v num" data-tone-color="amber" id="gap-value">+24 pts</div>
+                    <p class="d-kpi__hint" id="gap-hint">Sobreconfianza promedio en la cohorte.</p>
+                    <svg class="d-kpi__sparkline d-kpi__sparkline--amber" id="spark-gap" viewBox="0 0 100 28" preserveAspectRatio="none" aria-hidden="true"></svg>
                 </article>
 
-                <article class="d-kpi">
+                <article class="d-kpi" aria-labelledby="kpi-answers-label">
                     <header class="d-kpi__head">
-                        <span class="d-kpi__k">Actividad semanal</span>
-                        <span class="d-kpi__arrow" aria-hidden="true">
-                            <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24">
-                                <line x1="7" y1="17" x2="17" y2="7"></line>
-                                <polyline points="7 7 17 7 17 17"></polyline>
+                        <span id="kpi-answers-label" class="d-kpi__k">Respuestas esta semana</span>
+                        <span class="d-kpi__chip" id="answers-chip">
+                            <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
                             </svg>
+                            <span id="answers-chip-text">de 187 estudiantes</span>
                         </span>
                     </header>
-                    <div class="d-kpi__v num" data-bind="answers">2 471</div>
-                    <div class="d-kpi__trend" data-bind="answers-delta">212 estudiantes únicos</div>
+                    <div class="d-kpi__v num" id="answers-value">2 471</div>
+                    <p class="d-kpi__hint" id="answers-hint">212 únicos respondieron esta semana.</p>
+                    <svg class="d-kpi__sparkline d-kpi__sparkline--terracotta" id="spark-answers" viewBox="0 0 100 28" preserveAspectRatio="none" aria-hidden="true"></svg>
                 </article>
 
-                <article class="d-kpi">
+                <article class="d-kpi" aria-labelledby="kpi-diags-label">
                     <header class="d-kpi__head">
-                        <span class="d-kpi__k">Tutorías del IA</span>
-                        <span class="d-kpi__arrow" aria-hidden="true">
-                            <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24">
-                                <line x1="7" y1="17" x2="17" y2="7"></line>
-                                <polyline points="7 7 17 7 17 17"></polyline>
+                        <span id="kpi-diags-label" class="d-kpi__k">Notas del tutor IA</span>
+                        <span class="d-kpi__chip" id="diags-chip" data-tone="amber">
+                            <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="8" x2="12" y2="12"></line>
+                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
                             </svg>
+                            <span id="diags-chip-text">18 sin revisar</span>
                         </span>
                     </header>
-                    <div class="d-kpi__v num" data-bind="diags">47</div>
-                    <div class="d-kpi__trend" data-tone="amber" data-bind="diags-delta">18 sin revisar</div>
+                    <div class="d-kpi__v num" id="diags-value">47</div>
+                    <p class="d-kpi__hint" id="diags-hint">El IA emitió notas al detectar descalibración.</p>
+                    <svg class="d-kpi__sparkline d-kpi__sparkline--stone" id="spark-diags" viewBox="0 0 100 28" preserveAspectRatio="none" aria-hidden="true"></svg>
                 </article>
             </section>
 
             <section class="d-row-a">
 
-                <article class="d-card d-card--bars">
+                <article class="d-card d-card--chart">
                     <header class="d-card__head">
                         <div>
                             <h3 class="d-card__title">Actividad por día</h3>
-                            <p class="d-card__sub">Respuestas registradas en la última semana</p>
+                            <p class="d-card__sub" id="d-chart-headline">Respuestas registradas esta semana</p>
                         </div>
-                        <span class="d-card__hint num">2 471 totales</span>
+                        <span class="d-card__hint num" data-bind="week-total">2 471 totales</span>
                     </header>
-                    <div class="d-bars" id="d-bars" aria-hidden="true">
-                        <div class="d-bars__col"><div class="d-bars__bar"             style="height:30%;"></div><div class="d-bars__day">L</div></div>
-                        <div class="d-bars__col"><div class="d-bars__bar"             style="height:52%;"></div><div class="d-bars__day">M</div></div>
-                        <div class="d-bars__col"><div class="d-bars__bar d-bars__bar--soft" style="height:48%;"></div><div class="d-bars__day">M</div></div>
-                        <div class="d-bars__col"><div class="d-bars__bar d-bars__bar--strong" style="height:88%;"><span class="d-bars__value num">512</span></div><div class="d-bars__day d-bars__day--active">J · hoy</div></div>
-                        <div class="d-bars__col"><div class="d-bars__bar d-bars__bar--ghost" style="height:60%;"></div><div class="d-bars__day">V</div></div>
-                        <div class="d-bars__col"><div class="d-bars__bar d-bars__bar--ghost" style="height:35%;"></div><div class="d-bars__day">S</div></div>
-                        <div class="d-bars__col"><div class="d-bars__bar d-bars__bar--ghost" style="height:18%;"></div><div class="d-bars__day">D</div></div>
+                    <div class="d-chart-legend">
+                        <span class="d-chart-legend__item">
+                            <span class="d-chart-legend__swatch" aria-hidden="true"></span>
+                            Respuestas
+                        </span>
+                        <span class="d-chart-legend__item">
+                            <span class="d-chart-legend__line" aria-hidden="true"></span>
+                            <span id="d-chart-avg-label">Promedio</span>
+                            <span class="d-chart-legend__avg num" id="d-chart-avg">—</span>
+                        </span>
+                    </div>
+                    <div class="d-chart" aria-label="Respuestas por día de la semana">
+                        <div class="d-chart__y" aria-hidden="true">
+                            <span class="num" data-y-max>500</span>
+                            <span class="num" data-y-mid>250</span>
+                            <span class="num">0</span>
+                        </div>
+                        <div class="d-chart__plot" id="d-chart-plot"></div>
                     </div>
                 </article>
 
@@ -345,32 +352,42 @@
                     <ul class="d-students" id="teacher-at-risk" data-bind="at-risk"></ul>
                 </article>
 
-                <article class="d-card d-card--gauge" aria-labelledby="gauge-title">
+                <article class="d-card d-card--donut" aria-labelledby="donut-title">
                     <header class="d-card__head">
-                        <h3 id="gauge-title" class="d-card__title">Salud del grupo</h3>
+                        <div>
+                            <h3 id="donut-title" class="d-card__title">Salud del grupo</h3>
+                            <p class="d-card__sub">Distribución por perfil cognitivo</p>
+                        </div>
                     </header>
-                    <div class="d-gauge" aria-hidden="true">
-                        <svg viewBox="0 0 160 100" class="d-gauge__svg">
-                            <defs>
-                                <linearGradient id="gauge-grad" x1="0" y1="0" x2="1" y2="0">
-                                    <stop offset="0%"   stop-color="var(--rust)"/>
-                                    <stop offset="50%"  stop-color="var(--amber)"/>
-                                    <stop offset="100%" stop-color="var(--moss)"/>
-                                </linearGradient>
-                            </defs>
-                            <path d="M 20,90 A 60,60 0 0 1 140,90" fill="none" stroke="var(--paper-elevated)" stroke-width="14" stroke-linecap="round"/>
-                            <path id="gauge-arc" d="M 20,90 A 60,60 0 0 1 100,30" fill="none" stroke="url(#gauge-grad)" stroke-width="14" stroke-linecap="round"/>
+                    <div class="d-donut">
+                        <svg class="d-donut__svg" viewBox="0 0 120 120" aria-hidden="true">
+                            <circle class="d-donut__track" cx="60" cy="60" r="48"></circle>
+                            <circle class="d-donut__seg d-donut__seg--cal"  cx="60" cy="60" r="48"></circle>
+                            <circle class="d-donut__seg d-donut__seg--over" cx="60" cy="60" r="48"></circle>
+                            <circle class="d-donut__seg d-donut__seg--und"  cx="60" cy="60" r="48"></circle>
                         </svg>
-                        <div class="d-gauge__center">
-                            <div class="d-gauge__pct num" data-bind="gauge-pct">58%</div>
-                            <div class="d-gauge__label" data-bind="gauge-label">Calibración promedio</div>
+                        <div class="d-donut__center">
+                            <div class="d-donut__pct num" id="donut-pct">41%</div>
+                            <div class="d-donut__label">Calibrados</div>
                         </div>
                     </div>
-                    <div class="d-gauge__legend">
-                        <span class="d-gauge__legend-item"><span class="d-gauge__dot" style="background:var(--moss);"></span>Calibrados</span>
-                        <span class="d-gauge__legend-item"><span class="d-gauge__dot" style="background:var(--amber);"></span>Sobreconfiados</span>
-                        <span class="d-gauge__legend-item"><span class="d-gauge__dot" style="background:var(--stone);"></span>Subconfiados</span>
-                    </div>
+                    <ul class="d-donut__legend">
+                        <li>
+                            <span class="d-donut__dot" data-tone="moss" aria-hidden="true"></span>
+                            <span class="d-donut__legend-label">Calibrados</span>
+                            <span class="d-donut__legend-val num" id="donut-cal">34</span>
+                        </li>
+                        <li>
+                            <span class="d-donut__dot" data-tone="amber" aria-hidden="true"></span>
+                            <span class="d-donut__legend-label">Sobreconfiados</span>
+                            <span class="d-donut__legend-val num" id="donut-over">32</span>
+                        </li>
+                        <li>
+                            <span class="d-donut__dot" data-tone="stone" aria-hidden="true"></span>
+                            <span class="d-donut__legend-label">Subconfiados</span>
+                            <span class="d-donut__legend-val num" id="donut-und">18</span>
+                        </li>
+                    </ul>
                 </article>
 
                 <article class="d-card d-card--dark" aria-labelledby="next-title">

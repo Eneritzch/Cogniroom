@@ -572,7 +572,8 @@ async function bootstrapTeacher(user) {
         const firstRoom = list && list[0];
         if (!firstRoom) return;
 
-        document.getElementById('teacher-current-room').textContent = firstRoom.name;
+        const $tcr2 = document.getElementById('teacher-current-room');
+        if ($tcr2) $tcr2.textContent = firstRoom.name;
         if (firstRoom.ipc_avg != null) {
             document.getElementById('metric-ipc').textContent = fmt(firstRoom.ipc_avg);
         }
@@ -633,13 +634,45 @@ bootstrap();
 
 
 const ROOMS = {
+    '0': {
+        name: 'Todas las salas',
+        students: 187,
+        icc: '0.57', iccDelta: '+0.03 esta semana', iccDeltaTone: 'moss', iccHint: 'En promedio, tus salas se conocen aceptablemente.',
+        gap: '+24 pts', gapDelta: '+2 pts esta semana', gapDeltaTone: 'amber', gapHint: 'Los estudiantes creen saber más de lo que saben.',
+        answers: '5 299', answersDelta: 'de 187 estudiantes', answersHint: '404 únicos respondieron esta semana.',
+        diags: '99', diagsDelta: '38 sin revisar', diagsDeltaTone: 'amber', diagsHint: 'El IA emitió notas al detectar descalibración.',
+        weeklyActivity: { days: ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'], values: [628, 885, 784, 1100, 878, 595, 429], todayIndex: 3, total: '5 299 totales', avgLabel: 'Promedio diario' },
+        kpiSparklines: { icc: [0.48, 0.50, 0.53, 0.55, 0.57], gap: [27, 26, 25, 23, 24], answers: [3950, 4380, 4720, 5050, 5299], diags: [72, 80, 88, 94, 99] },
+        trend: [0.49, 0.52, 0.55, 0.57],
+        trendFooter: 'Calibración global sube <span class="num" style="color:var(--moss);">+0.08</span> en el último mes.',
+        profiles: { cal: 42, over: 38, und: 20 },
+        profileCounts: { cal: 78, over: 72, und: 37 },
+        insight: '<strong>Termodinámica I</strong> concentra el mayor riesgo: <strong>64 estudiantes</strong> creen dominar <em>«1ª ley»</em> pero solo <strong>28%</strong> acertó.',
+        insightHref: '/app/room/1/',
+        blindSpots: [
+            { node: 'Termodinámica I · 1ª ley aplicada',         ipc: 0.18, affected: 64 },
+            { node: 'Fisicoquímica · Entalpías de formación',     ipc: 0.19, affected: 35 },
+            { node: 'Fisicoquímica · Equilibrio iónico',          ipc: 0.22, affected: 31 },
+            { node: 'Termodinámica I · Entropía',                 ipc: 0.24, affected: 52 },
+            { node: 'Cinética · Arrhenius',                       ipc: 0.42, affected: 24 },
+        ],
+        atRisk: [
+            { name: 'Hugo Iturra',     initials: 'HI', profile: 'overconfident', gap: 42, last: 'Hoy, 12:15', risk: 'high', room: 'Fisicoquímica' },
+            { name: 'Inés Quispe',     initials: 'IQ', profile: 'overconfident', gap: 38, last: 'Hoy, 09:30', risk: 'high', room: 'Fisicoquímica' },
+            { name: 'Andrea Molina',   initials: 'AM', profile: 'overconfident', gap: 31, last: 'Hoy, 09:14', risk: 'high', room: 'Termodinámica I' },
+            { name: 'Joaquín Riveros', initials: 'JR', profile: 'overconfident', gap: 35, last: 'Ayer',       risk: 'high', room: 'Fisicoquímica' },
+            { name: 'Bruno Cárdenas',  initials: 'BC', profile: 'overconfident', gap: 24, last: 'Ayer',       risk: 'high', room: 'Termodinámica I' },
+        ],
+    },
     '1': {
         name: 'Termodinámica I · 2026·I',
         students: 84,
-        icc: '0.58', iccDelta: '▲ +0.04',
-        gap: '+24 pts', gapDelta: '▲ +3 pts',
-        answers: '2 471', answersDelta: '212 únicos',
-        diags: '47', diagsDelta: '18 sin revisar',
+        icc: '0.58', iccDelta: '+0.04 esta semana', iccDeltaTone: 'moss', iccHint: 'La sala se conoce aceptablemente.',
+        gap: '+24 pts', gapDelta: '+3 pts esta semana', gapDeltaTone: 'amber', gapHint: 'Creen saber 24 pts más que su nivel real.',
+        answers: '2 471', answersDelta: 'de 84 estudiantes', answersHint: '212 únicos respondieron esta semana.',
+        diags: '47', diagsDelta: '18 sin revisar', diagsDeltaTone: 'amber', diagsHint: 'El IA emitió notas cuando detectó descalibración.',
+        weeklyActivity: { days: ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'], values: [288, 412, 374, 512, 408, 287, 190], todayIndex: 3, total: '2 471 totales', avgLabel: 'Promedio diario' },
+        kpiSparklines: { icc: [0.50, 0.53, 0.54, 0.56, 0.58], gap: [21, 22, 23, 23, 24], answers: [1810, 2030, 2210, 2350, 2471], diags: [32, 36, 40, 44, 47] },
         trend: [0.50, 0.53, 0.56, 0.58],
         trendFooter: 'Calibración sube <span class="num" style="color:var(--moss);">+0.08</span> en el último mes.',
         profiles: { cal: 41, over: 38, und: 21 },
@@ -664,10 +697,12 @@ const ROOMS = {
     '2': {
         name: 'Cinética Química · 2026·I',
         students: 62,
-        icc: '0.66', iccDelta: '▲ +0.06',
-        gap: '+12 pts', gapDelta: '▼ −4 pts', gapDeltaTone: 'moss',
-        answers: '1 842', answersDelta: '154 únicos',
-        diags: '23', diagsDelta: '6 sin revisar',
+        icc: '0.66', iccDelta: '+0.06 esta semana', iccDeltaTone: 'moss', iccHint: 'Buen autoconocimiento del grupo.',
+        gap: '+12 pts', gapDelta: '−4 pts esta semana', gapDeltaTone: 'moss', gapHint: 'La brecha se está cerrando — buen signo.',
+        answers: '1 842', answersDelta: 'de 62 estudiantes', answersHint: '154 únicos respondieron esta semana.',
+        diags: '23', diagsDelta: '6 sin revisar', diagsDeltaTone: 'amber', diagsHint: 'Pocas alertas — la clase va bien encarrilada.',
+        weeklyActivity: { days: ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'], values: [220, 305, 268, 392, 310, 198, 149], todayIndex: 3, total: '1 842 totales', avgLabel: 'Promedio diario' },
+        kpiSparklines: { icc: [0.58, 0.60, 0.63, 0.64, 0.66], gap: [18, 16, 15, 13, 12], answers: [1380, 1520, 1620, 1740, 1842], diags: [14, 17, 19, 21, 23] },
         trend: [0.55, 0.59, 0.62, 0.66],
         trendFooter: 'Mejoría sostenida <span class="num" style="color:var(--moss);">+0.11</span> en el último mes.',
         profiles: { cal: 56, over: 24, und: 20 },
@@ -687,10 +722,12 @@ const ROOMS = {
     '3': {
         name: 'Fisicoquímica · Repaso',
         students: 41,
-        icc: '0.41', iccDelta: '▼ −0.03', iccDeltaTone: 'amber',
-        gap: '+38 pts', gapDelta: '▲ +6 pts',
-        answers: '986',  answersDelta: '38 únicos',
-        diags: '29', diagsDelta: '14 sin revisar',
+        icc: '0.41', iccDelta: '−0.03 esta semana', iccDeltaTone: 'rust', iccHint: 'La sala está descalibrada — necesita refuerzo.',
+        gap: '+38 pts', gapDelta: '+6 pts esta semana', gapDeltaTone: 'rust', gapHint: 'Creen saber 38 pts más que su nivel real.',
+        answers: '986', answersDelta: 'de 41 estudiantes', answersHint: '38 únicos respondieron esta semana.',
+        diags: '29', diagsDelta: '14 sin revisar', diagsDeltaTone: 'rust', diagsHint: 'Muchas alertas — el IA ve descalibración recurrente.',
+        weeklyActivity: { days: ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'], values: [120, 168, 142, 196, 160, 110, 90], todayIndex: 3, total: '986 totales', avgLabel: 'Promedio diario' },
+        kpiSparklines: { icc: [0.48, 0.46, 0.44, 0.43, 0.41], gap: [32, 33, 35, 37, 38], answers: [720, 800, 870, 930, 986], diags: [18, 21, 24, 27, 29] },
         trend: [0.48, 0.45, 0.43, 0.41],
         trendFooter: 'Calibración baja <span class="num" style="color:var(--rust);">−0.07</span>. Grupo necesita refuerzo.',
         profiles: { cal: 22, over: 61, und: 17 },
@@ -796,6 +833,166 @@ function updateGauge(value) {
 }
 
 
+function renderWeekChart(week) {
+    const $plot = document.getElementById('d-chart-plot');
+    if (!$plot || !week) return;
+
+    const max = Math.max(...week.values, 1);
+    const ceiling = niceCeiling(max);
+    const avg = Math.round(week.values.reduce((s, v) => s + v, 0) / week.values.length);
+    const avgPct = (avg / ceiling) * 100;
+
+    document.querySelectorAll('[data-y-max]').forEach((el) => { el.textContent = ceiling; });
+    document.querySelectorAll('[data-y-mid]').forEach((el) => { el.textContent = Math.round(ceiling / 2); });
+
+    const $avg = document.getElementById('d-chart-avg');
+    if ($avg) $avg.textContent = avg;
+
+    const peakIndex = week.values.indexOf(max);
+    const $headline = document.getElementById('d-chart-headline');
+    if ($headline) {
+        $headline.innerHTML = `Día más activo: <strong>${escapeHTML(week.days[peakIndex])}</strong> con <strong class="num">${max}</strong> respuestas`;
+    }
+
+    const bars = week.values.map((v, i) => {
+        const pct = (v / ceiling) * 100;
+        const isActive = i === week.todayIndex;
+        return `
+            <div class="d-chart__col${isActive ? ' d-chart__col--active' : ''}">
+                ${isActive ? '<span class="d-chart__today">Hoy</span>' : ''}
+                <span class="d-chart__value num">${v}</span>
+                <div class="d-chart__bar-wrap">
+                    <div class="d-chart__bar" style="height:${pct.toFixed(1)}%"></div>
+                </div>
+                <span class="d-chart__day${isActive ? ' d-chart__day--active' : ''}">${escapeHTML(week.days[i])}</span>
+            </div>
+        `;
+    }).join('');
+
+    const PLOT_H = 220, TOP_PAD = 18, BOT_PAD = 28;
+    const barArea = PLOT_H - TOP_PAD - BOT_PAD;
+    const avgBottomPx = BOT_PAD + (avgPct / 100) * barArea;
+
+    $plot.innerHTML = `
+        <div class="d-chart__avg-line" style="bottom:${avgBottomPx.toFixed(1)}px"></div>
+        ${bars}
+    `;
+}
+
+
+function niceCeiling(max) {
+    if (max <= 50) return 50;
+    if (max <= 100) return 100;
+    if (max <= 200) return 200;
+    if (max <= 500) return Math.ceil(max / 100) * 100;
+    if (max <= 1000) return Math.ceil(max / 100) * 100;
+    return Math.ceil(max / 250) * 250;
+}
+
+
+function renderSparkline($svg, values) {
+    if (!$svg || !values || values.length < 2) return;
+    const w = 100, h = 28, pad = 2;
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const range = (max - min) || 1;
+    const pts = values.map((v, i) => {
+        const x = pad + (i / (values.length - 1)) * (w - 2 * pad);
+        const y = h - pad - ((v - min) / range) * (h - 2 * pad);
+        return [x, y];
+    });
+    const path = pts.map((p, i) => (i === 0 ? 'M' : 'L') + `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ');
+    const last = pts[pts.length - 1];
+    const area = `${path} L ${last[0].toFixed(1)},${h} L ${pts[0][0].toFixed(1)},${h} Z`;
+    $svg.innerHTML = `
+        <path class="d-kpi__sparkline-area" d="${area}"/>
+        <path class="d-kpi__sparkline-line" d="${path}"/>
+        <circle class="d-kpi__sparkline-dot" cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="2.2"/>
+    `;
+}
+
+
+function setKpi(key, opts) {
+    const $v = document.getElementById(`${key}-value`);
+    const $chip = document.getElementById(`${key}-chip`);
+    const $chipText = document.getElementById(`${key}-chip-text`);
+    const $hint = document.getElementById(`${key}-hint`);
+    const $spark = document.getElementById(`spark-${key}`);
+
+    if ($v && opts.value != null) $v.textContent = opts.value;
+    if ($chipText && opts.chipText != null) $chipText.textContent = opts.chipText;
+    if ($chip) {
+        if (opts.tone) $chip.dataset.tone = opts.tone;
+        else $chip.removeAttribute('data-tone');
+    }
+    if ($hint && opts.hint != null) $hint.textContent = opts.hint;
+    if ($spark && opts.spark) renderSparkline($spark, opts.spark);
+}
+
+
+function renderKpis(room) {
+    const sparks = room.kpiSparklines || {};
+    setKpi('icc', {
+        value: room.icc,
+        chipText: room.iccDelta,
+        tone: room.iccDeltaTone || 'moss',
+        hint: room.iccHint,
+        spark: sparks.icc,
+    });
+    setKpi('gap', {
+        value: room.gap,
+        chipText: room.gapDelta,
+        tone: room.gapDeltaTone || 'amber',
+        hint: room.gapHint,
+        spark: sparks.gap,
+    });
+    setKpi('answers', {
+        value: room.answers,
+        chipText: room.answersDelta,
+        tone: null,
+        hint: room.answersHint,
+        spark: sparks.answers,
+    });
+    setKpi('diags', {
+        value: room.diags,
+        chipText: room.diagsDelta,
+        tone: room.diagsDeltaTone || 'amber',
+        hint: room.diagsHint,
+        spark: sparks.diags,
+    });
+}
+
+
+function renderDonut(counts) {
+    const total = (counts.cal || 0) + (counts.over || 0) + (counts.und || 0);
+    if (total === 0) return;
+
+    const R = 48;
+    const C = 2 * Math.PI * R;
+    const calArc  = (counts.cal  / total) * C;
+    const overArc = (counts.over / total) * C;
+    const undArc  = (counts.und  / total) * C;
+
+    const set = (sel, len, offset) => {
+        const el = document.querySelector(sel);
+        if (!el) return;
+        el.style.strokeDasharray  = `${len.toFixed(2)} ${(C - len + 1).toFixed(2)}`;
+        el.style.strokeDashoffset = `${(-offset).toFixed(2)}`;
+    };
+
+    set('.d-donut__seg--cal',  calArc,  0);
+    set('.d-donut__seg--over', overArc, calArc);
+    set('.d-donut__seg--und',  undArc,  calArc + overArc);
+
+    const calPct = Math.round((counts.cal / total) * 100);
+    const $pct = document.getElementById('donut-pct');
+    if ($pct) $pct.textContent = `${calPct}%`;
+    const $cal = document.getElementById('donut-cal');   if ($cal)  $cal.textContent  = counts.cal;
+    const $over = document.getElementById('donut-over'); if ($over) $over.textContent = counts.over;
+    const $und = document.getElementById('donut-und');   if ($und)  $und.textContent  = counts.und;
+}
+
+
 function renderDotMatrix(counts) {
     const $matrix = document.getElementById('dot-matrix');
     if (!$matrix) return;
@@ -868,16 +1065,10 @@ function switchRoom(roomId) {
         });
     };
 
-    document.getElementById('teacher-current-room').textContent = room.name;
+    const $tcr = document.getElementById('teacher-current-room');
+    if ($tcr) $tcr.textContent = room.name;
 
-    bind('icc', room.icc);
-    bind('icc-delta', room.iccDelta);
-    bind('gap', room.gap);
-    bind('gap-delta', room.gapDelta);
-    bind('answers', room.answers);
-    bind('answers-delta', room.answersDelta);
-    bind('diags', room.diags);
-    bind('diags-delta', room.diagsDelta);
+    renderKpis(room);
 
     bind('insight', room.insight, true);
     document.querySelectorAll('[data-bind="insight-cta-href"]').forEach((el) => {
@@ -893,6 +1084,12 @@ function switchRoom(roomId) {
     bind('prof-over-count', String(room.profileCounts.over));
     bind('prof-und-count',  String(room.profileCounts.und));
     renderDotMatrix(room.profileCounts);
+    renderDonut(room.profileCounts);
+
+    if (room.weeklyActivity) {
+        renderWeekChart(room.weeklyActivity);
+        bind('week-total', room.weeklyActivity.total);
+    }
 
     const iccPct = Math.round(parseFloat(room.icc) * 100);
     bind('gauge-pct', `${iccPct}%`);

@@ -1,4 +1,33 @@
 export const ROOM_DATA = {
+    0: {
+        name: 'Todas las salas',
+        students: 187,
+        questions: 592,
+        pdfs: 10,
+        nodes: ['1ª ley', 'Entropía', 'Cinética 2°', 'Arrhenius', 'Catálisis', 'Equilibrio'],
+        icc: 0.57,
+        ipc: 0.34,
+        roster: [
+            { name: 'Hugo Iturra',     profile: 'overconfident',  icc: 0.38, bkt: 0.42, gap: +0.42, last: 'hoy',  cells: [0.30, 0.42, 0.40, 0.55, 0.45, 0.50] },
+            { name: 'Inés Quispe',     profile: 'overconfident',  icc: 0.40, bkt: 0.45, gap: +0.38, last: 'hoy',  cells: [0.35, 0.40, 0.45, 0.50, 0.42, 0.48] },
+            { name: 'Andrea Molina',   profile: 'overconfident',  icc: 0.42, bkt: 0.51, gap: +0.31, last: 'hoy',  cells: [0.32, 0.41, 0.78, 0.65, 0.50, 0.72] },
+            { name: 'Camila Reyes',    profile: 'underconfident', icc: 0.72, bkt: 0.78, gap: -0.22, last: 'hoy',  cells: [0.71, 0.82, 0.78, 0.69, 0.74, 0.81] },
+            { name: 'Daniel Tovar',    profile: 'calibrated',     icc: 0.86, bkt: 0.62, gap: +0.04, last: '2d',   cells: [0.60, 0.62, 0.65, 0.58, 0.61, 0.66] },
+            { name: 'Hugo Vargas',     profile: 'calibrated',     icc: 0.84, bkt: 0.72, gap: +0.05, last: 'hoy',  cells: [0.72, 0.68, 0.74, 0.70, 0.71, 0.70] },
+            { name: 'Karla Espinoza',  profile: 'underconfident', icc: 0.77, bkt: 0.81, gap: -0.20, last: '2d',   cells: [0.78, 0.82, 0.80, 0.79, 0.78, 0.80] },
+        ],
+        questionBank: [
+            { id: 'q1', text: '¿Por qué un sistema abierto puede intercambiar masa y energía con el entorno?',  node: '1ª ley',            source: 'manual', approved: true,  date: '2026-05-10' },
+            { id: 'q2', text: 'Aplique la ecuación de Arrhenius para calcular la energía de activación.',        node: 'Arrhenius',         source: 'ai',     approved: true,  date: '2026-05-09' },
+            { id: 'q3', text: '¿Bajo qué condiciones la entropía de un sistema aislado disminuye?',              node: 'Entropía',          source: 'ai',     approved: false, date: '2026-05-18' },
+            { id: 'q4', text: 'Determine la constante de equilibrio Kc.',                                        node: 'Equilibrio',        source: 'ai',     approved: false, date: '2026-05-11' },
+        ],
+        pdfFiles: [
+            { id: 'p1', name: 'Termodinamica-1.pdf',  size: '2.3 MB', date: '2026-05-01', nodes: 2, status: 'processed' },
+            { id: 'p2', name: 'Cinetica-intro.pdf',   size: '1.8 MB', date: '2026-04-22', nodes: 2, status: 'processed' },
+            { id: 'p3', name: 'Equilibrio-clase.pdf', size: '1.5 MB', date: '2026-04-10', nodes: 1, status: 'processed' },
+        ],
+    },
     1: {
         name: 'Termodinámica I · 2026·I',
         students: 84,

@@ -121,7 +121,7 @@ function setupSidebarToggle() {
 const ACTIVE_ROOM_KEY = 'cogniroom.activeRoomId';
 
 const MOCK_ROOMS = [
-    { id: 1, name: 'Termodinámica I · 2026·I', meta: '84 est.' },
+    { id: 1, name: 'Termodinámica I · 2026·I',  meta: '84 est.' },
     { id: 2, name: 'Cinética Química · 2026·I', meta: '62 est.' },
     { id: 3, name: 'Fisicoquímica · Repaso',    meta: '41 est.' },
 ];
