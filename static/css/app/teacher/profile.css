@@ -1,0 +1,127 @@
+.teacher-profile-hero {
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--terracotta) 8%, var(--paper-elevated)),
+      var(--paper-elevated) 90%);
+}
+
+.teacher-profile-hero .profile-hero__avatar {
+  background: var(--ink);
+}
+
+.teacher-profile-hero .profile-hero__role[data-role='teacher'] {
+  background: color-mix(in srgb, var(--terracotta) 16%, transparent);
+  color: var(--terracotta);
+}
+
+
+.teacher-cohort-health {
+  margin-top: var(--s-5);
+  padding: var(--s-5) var(--s-6);
+  background: var(--paper-elevated);
+  border: 1px solid var(--paper-border);
+  border-radius: var(--r-lg);
+}
+
+.teacher-cohort-health__head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s-3);
+  margin-bottom: var(--s-4);
+}
+
+@media (min-width: 768px) {
+  .teacher-cohort-health__head {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.teacher-cohort-health__title {
+  margin: 4px 0 0;
+  font-size: 22px;
+  font-weight: var(--fw-semibold);
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.teacher-cohort-health__title-sub {
+  font-size: 13px;
+  font-weight: var(--fw-regular);
+  color: var(--ink-muted);
+  letter-spacing: 0;
+}
+
+
+.teacher-cohort-health__bars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+
+
+.teacher-cohort-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.teacher-cohort-bar__label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--s-2);
+  font-size: 12.5px;
+  color: var(--ink-muted);
+}
+
+.teacher-cohort-bar__label .num {
+  font-family: var(--font-mono);
+  font-weight: var(--fw-semibold);
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.teacher-cohort-bar__track {
+  height: 10px;
+  background: color-mix(in srgb, var(--paper-border) 40%, transparent);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.teacher-cohort-bar__fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width var(--dur-base) var(--ease-out);
+}
+
+.teacher-cohort-bar__fill[data-tone='moss']  { background: var(--moss); }
+.teacher-cohort-bar__fill[data-tone='amber'] { background: var(--amber); }
+.teacher-cohort-bar__fill[data-tone='rust']  { background: var(--rust); }
+.teacher-cohort-bar__fill[data-tone='sage']  { background: var(--sage); }
+
+
+.teacher-cohort-bar--alert {
+  padding: var(--s-3) var(--s-4);
+  background: color-mix(in srgb, var(--rust) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--rust) 22%, transparent);
+  border-radius: 12px;
+}
+
+.teacher-cohort-bar--alert .teacher-cohort-bar__label .num {
+  color: var(--rust);
+  font-size: 18px;
+}
+
+.teacher-cohort-bar__hint {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--ink-muted);
+}
