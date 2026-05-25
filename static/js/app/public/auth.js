@@ -12,8 +12,8 @@
  */
 
 const _v = new URL(import.meta.url).searchParams.get('v') || '';
-const { auth, tokens, ApiError } = await import(`./api.js?v=${_v}`);
-const { toast } = await import(`./toast.js?v=${_v}`);
+const { auth, tokens, ApiError } = await import(`../api.js?v=${_v}`);
+const { toast } = await import(`../toast.js?v=${_v}`);
 
 const $form = document.getElementById('login-form');
 const $email = document.getElementById('email');

@@ -68,7 +68,59 @@ function replaceCta(user) {
 }
 
 
+function populateTopbar(user) {
+    const $name = document.getElementById('user-name');
+    const $role = document.getElementById('user-role');
+    const $initials = document.getElementById('user-initials');
+    if ($name) $name.textContent = user.first_name || user.username;
+    if ($role) {
+        $role.textContent = user.role === 'teacher' ? 'Docente' : 'Estudiante';
+        $role.dataset.role = user.role;
+    }
+    if ($initials) {
+        const base = (user.first_name || user.username || '').trim();
+        $initials.textContent = base
+            ? base.split(/\s+/).map((p) => p[0]).join('').slice(0, 2).toUpperCase()
+            : 'TQ';
+    }
+}
+
+
+function setupSidebarToggle() {
+    const SIDEBAR_KEY = 'cogniroom.sidebar.collapsed';
+    const $sidebar = document.getElementById('app-sidebar');
+    const $toggle = document.getElementById('app-sidebar-toggle');
+    if (!$sidebar) return;
+
+    if (localStorage.getItem(SIDEBAR_KEY) === '1') {
+        $sidebar.classList.add('app-sidebar--collapsed');
+        if ($toggle) $toggle.setAttribute('aria-expanded', 'false');
+    }
+
+    if ($toggle && !$toggle.dataset.bound) {
+        $toggle.dataset.bound = '1';
+        $toggle.addEventListener('click', () => {
+            const collapsed = $sidebar.classList.toggle('app-sidebar--collapsed');
+            localStorage.setItem(SIDEBAR_KEY, collapsed ? '1' : '0');
+            $toggle.setAttribute('aria-expanded', String(!collapsed));
+            $toggle.setAttribute('aria-label', collapsed ? 'Expandir menú' : 'Colapsar menú');
+        });
+    }
+
+    const $logout = document.getElementById('logout-btn');
+    if ($logout && !$logout.dataset.bound) {
+        $logout.dataset.bound = '1';
+        $logout.addEventListener('click', () => {
+            tokens.clear();
+            location.href = '/';
+        });
+    }
+}
+
+
 async function updateNav() {
+    setupSidebarToggle();
+
     if (!tokens.access) {
         filterNav(null);
         return;
@@ -78,6 +130,7 @@ async function updateNav() {
         const user = await auth.me();
         filterNav(user.role);
         replaceCta(user);
+        populateTopbar(user);
     } catch (_) {
         tokens.clear();
         filterNav(null);

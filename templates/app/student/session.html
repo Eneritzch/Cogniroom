@@ -6,7 +6,7 @@
     <meta name="description" content="Responde, declara tu confianza y recibe feedback inmediato.">
     <title>Sesión de evaluación · CogniRoom</title>
     {% include 'app/partials/_styles.html' %}
-    <link rel="stylesheet" href="{% static 'css/app/session.css' %}?v={% now "U" %}">
+    <link rel="stylesheet" href="{% static 'css/app/student/session.css' %}?v={% now "U" %}">
 </head>
 <body class="session-page">
 
@@ -185,6 +185,6 @@
     <div class="toast-host" id="toast-host" aria-live="polite" aria-atomic="true"></div>
 
     {% include 'app/partials/_bootstrap-bundle.html' %}
-    <script type="module" src="{% static 'js/app/session.js' %}?v={% now "U" %}"></script>
+    <script type="module" src="{% static 'js/app/student/session.js' %}?v={% now "U" %}"></script>
 </body>
 </html>

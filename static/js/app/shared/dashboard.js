@@ -1,6 +1,6 @@
 const _v = new URL(import.meta.url).searchParams.get('v') || '';
-const { auth, me, rooms, sessions, tokens, ApiError } = await import(`./api.js?v=${_v}`);
-const { toast } = await import(`./toast.js?v=${_v}`);
+const { auth, me, rooms, sessions, tokens, ApiError } = await import(`../api.js?v=${_v}`);
+const { toast } = await import(`../toast.js?v=${_v}`);
 
 
 if (!tokens.access) {
@@ -356,15 +356,11 @@ function renderRooms(items) {
     const $count = document.getElementById('rooms-count-meta');
     const $headerCount = document.getElementById('teacher-rooms-count');
 
-    if (!items || items.length === 0) {
-        $list.innerHTML = `<p class="empty">Aún no tienes salas. Crea una para empezar.</p>`;
-        $count.textContent = '0 activas';
-        $headerCount.textContent = '0';
-        return;
-    }
+    if (!items || items.length === 0) return;
+    if (!$list) return;
 
-    $count.textContent = `${items.length} activa${items.length === 1 ? '' : 's'}`;
-    $headerCount.textContent = String(items.length);
+    if ($count) $count.textContent = `${items.length} activa${items.length === 1 ? '' : 's'}`;
+    if ($headerCount) $headerCount.textContent = String(items.length);
 
     $list.innerHTML = items.map((r) => {
         const ipc = r.ipc_avg ?? 0;
@@ -401,10 +397,7 @@ function renderRooms(items) {
 
 function renderBlindSpots(items) {
     const $list = document.getElementById('teacher-blind-spots');
-    if (!items || items.length === 0) {
-        $list.innerHTML = `<p class="empty" style="margin:var(--s-4);">No hay puntos ciegos detectados en esta sala.</p>`;
-        return;
-    }
+    if (!items || items.length === 0) return;
     $list.innerHTML = items.map((b) => {
         const ipc = b.ipc_value ?? 0;
         const tone = ipc < 0.25 ? 'rust' : ipc < 0.4 ? 'amber' : 'sage';
@@ -429,10 +422,7 @@ function renderBlindSpots(items) {
 
 function renderAtRisk(items) {
     const $list = document.getElementById('teacher-at-risk');
-    if (!items || items.length === 0) {
-        $list.innerHTML = `<li style="padding:var(--s-5);"><p class="empty">No hay estudiantes en riesgo. Buena noticia.</p></li>`;
-        return;
-    }
+    if (!items || items.length === 0) return;
     $list.innerHTML = items.map((s) => {
         const initials = (s.student_name || '?').split(' ').map((p) => p[0]).join('').slice(0, 2);
         const gap = s.gap ?? 0;
@@ -568,37 +558,34 @@ async function bootstrapStudent(user) {
 
 async function bootstrapTeacher(user) {
     $teacherView.hidden = false;
-    document.getElementById('teacher-greeting').textContent = user.first_name
-        ? `${user.last_name ? 'Dr/a. ' + user.last_name : user.first_name}`
-        : user.username;
+    const $greeting = document.getElementById('teacher-greeting');
+    if ($greeting) {
+        $greeting.textContent = user.first_name
+            ? `${user.last_name ? 'Dr/a. ' + user.last_name : user.first_name}`
+            : user.username;
+    }
 
     try {
         const list = await rooms.list();
         renderRooms(list);
 
         const firstRoom = list && list[0];
-        if (firstRoom) {
-            document.getElementById('teacher-current-room').textContent = firstRoom.name;
-            document.getElementById('metric-icc').textContent = '—';
-            document.getElementById('metric-ipc').textContent = fmt(firstRoom.ipc_avg ?? 0);
-            document.getElementById('metric-answers').textContent = '—';
-            document.getElementById('metric-diags').textContent = '—';
+        if (!firstRoom) return;
 
-            try {
-                const [blindSpots, atRisk] = await Promise.all([
-                    rooms.blindSpots(firstRoom.id),
-                    rooms.atRisk(firstRoom.id),
-                ]);
-                renderBlindSpots(blindSpots);
-                renderAtRisk(atRisk);
-            } catch (_) {
-                renderBlindSpots([]);
-                renderAtRisk([]);
-            }
-        } else {
-            document.getElementById('teacher-current-room').textContent = 'Sin salas';
-            renderBlindSpots([]);
-            renderAtRisk([]);
+        document.getElementById('teacher-current-room').textContent = firstRoom.name;
+        if (firstRoom.ipc_avg != null) {
+            document.getElementById('metric-ipc').textContent = fmt(firstRoom.ipc_avg);
+        }
+
+        try {
+            const [blindSpots, atRisk] = await Promise.all([
+                rooms.blindSpots(firstRoom.id),
+                rooms.atRisk(firstRoom.id),
+            ]);
+            renderBlindSpots(blindSpots);
+            renderAtRisk(atRisk);
+        } catch (_) {
+            /* mantener contenido quemado del template */
         }
     } catch (err) {
         if (err instanceof ApiError && err.status === 401) {
@@ -606,7 +593,7 @@ async function bootstrapTeacher(user) {
             location.replace('/app/');
             return;
         }
-        toast(err?.message || 'Error al cargar salas', { kind: 'error' });
+        /* sin backend disponible — el template ya muestra los datos demo */
     }
 }
 
@@ -614,9 +601,18 @@ async function bootstrapTeacher(user) {
 async function bootstrap() {
     try {
         const user = await auth.me();
-        $userName.textContent = user.username;
-        $userRole.textContent = user.role;
-        $userRole.dataset.role = user.role;
+        if ($userName) $userName.textContent = user.first_name || user.username;
+        if ($userRole) {
+            $userRole.textContent = user.role === 'teacher' ? 'Docente' : 'Estudiante';
+            $userRole.dataset.role = user.role;
+        }
+        const $initials = document.getElementById('user-initials');
+        if ($initials) {
+            const base = (user.first_name || user.username || '').trim();
+            $initials.textContent = base
+                ? base.split(/\s+/).map((p) => p[0]).join('').slice(0, 2).toUpperCase()
+                : 'TQ';
+        }
 
         if (user.role === 'teacher') {
             await bootstrapTeacher(user);
@@ -634,3 +630,307 @@ async function bootstrap() {
 }
 
 bootstrap();
+
+
+const ROOMS = {
+    '1': {
+        name: 'Termodinámica I · 2026·I',
+        students: 84,
+        icc: '0.58', iccDelta: '▲ +0.04',
+        gap: '+24 pts', gapDelta: '▲ +3 pts',
+        answers: '2 471', answersDelta: '212 únicos',
+        diags: '47', diagsDelta: '18 sin revisar',
+        trend: [0.50, 0.53, 0.56, 0.58],
+        trendFooter: 'Calibración sube <span class="num" style="color:var(--moss);">+0.08</span> en el último mes.',
+        profiles: { cal: 41, over: 38, und: 21 },
+        profileCounts: { cal: 34, over: 32, und: 18 },
+        insight: '<strong>64 estudiantes</strong> creen dominar <em>«1ª ley aplicada a sistemas abiertos»</em>, pero solo el <strong>28%</strong> acertó. Brecha promedio <span class="num">+56 pts</span>.',
+        insightHref: '/app/room/1/',
+        blindSpots: [
+            { node: '1ª ley aplicada a sistemas abiertos', ipc: 0.18, affected: 64 },
+            { node: 'Entropía como función de estado',     ipc: 0.24, affected: 52 },
+            { node: 'Equilibrio químico — Le Chatelier',   ipc: 0.31, affected: 47 },
+            { node: 'Energía libre de Gibbs',              ipc: 0.36, affected: 39 },
+            { node: 'Cinética de reacciones de 2° orden',  ipc: 0.41, affected: 33 },
+        ],
+        atRisk: [
+            { name: 'Andrea Molina',   initials: 'AM', profile: 'overconfident',  gap: 31,  last: 'Hoy, 09:14',  risk: 'high' },
+            { name: 'Bruno Cárdenas',  initials: 'BC', profile: 'overconfident',  gap: 24,  last: 'Ayer',        risk: 'high' },
+            { name: 'Camila Reyes',    initials: 'CR', profile: 'underconfident', gap: -18, last: 'Hoy, 11:02',  risk: 'medium' },
+            { name: 'Daniel Tovar',    initials: 'DT', profile: 'overconfident',  gap: 19,  last: 'Hace 2 días', risk: 'medium' },
+            { name: 'Elena Pinto',     initials: 'EP', profile: 'underconfident', gap: -22, last: 'Hoy, 08:40',  risk: 'medium' },
+        ],
+    },
+    '2': {
+        name: 'Cinética Química · 2026·I',
+        students: 62,
+        icc: '0.66', iccDelta: '▲ +0.06',
+        gap: '+12 pts', gapDelta: '▼ −4 pts', gapDeltaTone: 'moss',
+        answers: '1 842', answersDelta: '154 únicos',
+        diags: '23', diagsDelta: '6 sin revisar',
+        trend: [0.55, 0.59, 0.62, 0.66],
+        trendFooter: 'Mejoría sostenida <span class="num" style="color:var(--moss);">+0.11</span> en el último mes.',
+        profiles: { cal: 56, over: 24, und: 20 },
+        profileCounts: { cal: 35, over: 15, und: 12 },
+        insight: 'Solo <strong>15 estudiantes</strong> sobreconfiados. La clase mejoró su autoconocimiento tras la unidad de <em>velocidades de reacción</em>.',
+        insightHref: '/app/room/2/',
+        blindSpots: [
+            { node: 'Energía de activación (Arrhenius)',  ipc: 0.42, affected: 24 },
+            { node: 'Mecanismos de reacción',             ipc: 0.45, affected: 18 },
+            { node: 'Catálisis heterogénea',              ipc: 0.48, affected: 14 },
+        ],
+        atRisk: [
+            { name: 'Felipe Marín',   initials: 'FM', profile: 'overconfident', gap: 22, last: 'Hoy, 10:30', risk: 'medium' },
+            { name: 'Gabriela Soto',  initials: 'GS', profile: 'overconfident', gap: 19, last: 'Ayer',       risk: 'medium' },
+        ],
+    },
+    '3': {
+        name: 'Fisicoquímica · Repaso',
+        students: 41,
+        icc: '0.41', iccDelta: '▼ −0.03', iccDeltaTone: 'amber',
+        gap: '+38 pts', gapDelta: '▲ +6 pts',
+        answers: '986',  answersDelta: '38 únicos',
+        diags: '29', diagsDelta: '14 sin revisar',
+        trend: [0.48, 0.45, 0.43, 0.41],
+        trendFooter: 'Calibración baja <span class="num" style="color:var(--rust);">−0.07</span>. Grupo necesita refuerzo.',
+        profiles: { cal: 22, over: 61, und: 17 },
+        profileCounts: { cal: 9, over: 25, und: 7 },
+        insight: '<strong>25 estudiantes</strong> (61%) están sobreconfiados. Es la sala con mayor brecha de toda la cohorte.',
+        insightHref: '/app/room/3/',
+        blindSpots: [
+            { node: 'Termoquímica — entalpías de formación', ipc: 0.15, affected: 35 },
+            { node: 'Equilibrio iónico en disoluciones',     ipc: 0.19, affected: 31 },
+            { node: 'Cinética enzimática',                   ipc: 0.22, affected: 28 },
+            { node: 'Termodinámica de mezclas',              ipc: 0.27, affected: 24 },
+            { node: 'Potenciales electroquímicos',           ipc: 0.33, affected: 19 },
+            { node: 'Capacidad calorífica molar',            ipc: 0.38, affected: 16 },
+        ],
+        atRisk: [
+            { name: 'Hugo Iturra',     initials: 'HI', profile: 'overconfident',  gap: 42, last: 'Hoy, 12:15',  risk: 'high' },
+            { name: 'Inés Quispe',     initials: 'IQ', profile: 'overconfident',  gap: 38, last: 'Hoy, 09:30',  risk: 'high' },
+            { name: 'Joaquín Riveros', initials: 'JR', profile: 'overconfident',  gap: 35, last: 'Ayer',        risk: 'high' },
+            { name: 'Karina Núñez',    initials: 'KN', profile: 'overconfident',  gap: 29, last: 'Hace 2 días', risk: 'medium' },
+            { name: 'Lautaro Espina',  initials: 'LE', profile: 'underconfident', gap: -24,last: 'Hoy, 08:10',  risk: 'medium' },
+            { name: 'Mariana Vega',    initials: 'MV', profile: 'overconfident',  gap: 21, last: 'Hace 3 días', risk: 'medium' },
+        ],
+    },
+};
+
+
+function renderBlindSpotsList(items) {
+    return items.map((b) => {
+        const tone = b.ipc < 0.25 ? 'rust' : b.ipc < 0.4 ? 'amber' : 'sage';
+        return `
+          <div class="blind-spots__item">
+            <div class="blind-spots__row">
+              <p class="blind-spots__node">${escapeHTML(b.node)}</p>
+              <span class="blind-spots__ipc num">${b.ipc.toFixed(2)}</span>
+            </div>
+            <div class="blind-spots__bar"><div class="blind-spots__bar-fill" data-tone="${tone}" style="width:${Math.round((1 - b.ipc) * 100)}%;"></div></div>
+            <div class="blind-spots__meta">
+              <span><span class="num">${b.affected}</span> estudiantes</span>
+              <button class="blind-spots__action" type="button">Ver →</button>
+            </div>
+          </div>
+        `;
+    }).join('');
+}
+
+function renderAtRiskList(items) {
+    const profileLabelMap = { calibrated: 'Calibrado', overconfident: 'Sobreconfiado', underconfident: 'Subconfiado' };
+    return items.map((s) => {
+        const tone = s.gap >= 0 ? 'amber' : 'stone';
+        return `
+          <li class="d-students__row">
+            <span class="d-students__avatar" aria-hidden="true">${escapeHTML(s.initials)}</span>
+            <div class="d-students__main">
+              <span class="d-students__name">${escapeHTML(s.name)}</span>
+              <span class="d-students__sub">${profileLabelMap[s.profile]} · ${escapeHTML(s.last)}</span>
+            </div>
+            <span class="num" style="color:var(--${tone});font-size:13px;font-weight:500;white-space:nowrap;">${s.gap > 0 ? '+' : ''}${s.gap} pts</span>
+            <span class="pill" data-risk="${s.risk}" style="font-size:10px;padding:2px 8px;">${s.risk === 'high' ? 'Alto' : s.risk === 'medium' ? 'Medio' : 'Bajo'}</span>
+          </li>
+        `;
+    }).join('');
+}
+
+
+function updateLineChart(trend) {
+    const xs = [50, 165, 280, 395];
+    const yFor = (v) => 130 - ((v - 0.25) / 0.50) * 90;
+    const points = trend.map((v, i) => `${xs[i]},${yFor(v).toFixed(1)}`);
+    const polyline = document.getElementById('line-stroke');
+    const area = document.getElementById('line-area');
+    if (!polyline || !area) return;
+    polyline.setAttribute('points', points.join(' '));
+    area.setAttribute('d', `M ${points.join(' L ')} L ${xs[xs.length - 1]},150 L ${xs[0]},150 Z`);
+    trend.forEach((v, i) => {
+        const group = document.getElementById(`line-dot-${i + 1}`);
+        if (!group) return;
+        const y = yFor(v).toFixed(1);
+        const circle = group.querySelector('circle');
+        const text = group.querySelector('text');
+        if (circle) circle.setAttribute('cy', y);
+        if (text) {
+            text.setAttribute('y', (parseFloat(y) - 11).toFixed(1));
+            text.textContent = v.toFixed(2);
+        }
+    });
+}
+
+
+function updateGauge(value) {
+    const $arc = document.getElementById('gauge-arc');
+    if (!$arc) return;
+    const clamped = Math.max(0, Math.min(1, value));
+    const startAngle = 180;
+    const endAngle = 180 - (180 * clamped);
+    const cx = 80, cy = 90, r = 60;
+    const rad = (deg) => (deg * Math.PI) / 180;
+    const x1 = cx + r * Math.cos(rad(startAngle));
+    const y1 = cy + r * Math.sin(rad(startAngle));
+    const x2 = cx + r * Math.cos(rad(endAngle));
+    const y2 = cy + r * Math.sin(rad(endAngle));
+    const largeArc = clamped > 0.5 ? 1 : 0;
+    $arc.setAttribute('d', `M ${x1.toFixed(2)},${y1.toFixed(2)} A ${r},${r} 0 ${largeArc} 1 ${x2.toFixed(2)},${y2.toFixed(2)}`);
+}
+
+
+function renderDotMatrix(counts) {
+    const $matrix = document.getElementById('dot-matrix');
+    if (!$matrix) return;
+    const dots = [];
+    for (let i = 0; i < counts.cal; i++)  dots.push('moss');
+    for (let i = 0; i < counts.over; i++) dots.push('amber');
+    for (let i = 0; i < counts.und; i++)  dots.push('stone');
+
+    const cols = 14;
+    const rows = Math.ceil(dots.length / cols);
+    const r = 5;
+    const gap = 4;
+    const step = r * 2 + gap;
+    const w = cols * step - gap;
+    const h = rows * step - gap;
+
+    const circles = dots.map((c, i) => {
+        const cx = (i % cols) * step + r;
+        const cy = Math.floor(i / cols) * step + r;
+        return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="var(--${c})"/>`;
+    }).join('');
+
+    $matrix.innerHTML = `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid meet" class="dot-matrix__svg">${circles}</svg>`;
+}
+
+
+function renderRoomsCompare() {
+    const $list = document.getElementById('rooms-compare');
+    if (!$list) return;
+
+    const icons = {
+        '1': '<svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24"><path d="M12 2v6m0 0a4 4 0 0 0 4 4h2a4 4 0 0 1-4 4v6"/></svg>',
+        '2': '<svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0z"/></svg>',
+        '3': '<svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>',
+    };
+
+    const items = Object.entries(ROOMS).map(([id, room]) => `
+      <li class="d-rooms__row" data-switch-room="${id}" tabindex="0">
+        <span class="d-rooms__icon">${icons[id] || icons['3']}</span>
+        <div class="d-rooms__main">
+          <span class="d-rooms__name">${escapeHTML(room.name.split(' · ')[0])}</span>
+          <span class="d-rooms__sub">${room.students} est.</span>
+        </div>
+        <span class="d-rooms__icc num">${room.icc}</span>
+      </li>
+    `).join('');
+
+    $list.innerHTML = items;
+
+    $list.querySelectorAll('[data-switch-room]').forEach((row) => {
+        row.addEventListener('click', () => switchRoom(row.dataset.switchRoom));
+        row.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                switchRoom(row.dataset.switchRoom);
+            }
+        });
+    });
+}
+
+
+function switchRoom(roomId) {
+    const room = ROOMS[String(roomId)];
+    if (!room) return;
+
+    const bind = (key, value, isHTML = false) => {
+        document.querySelectorAll(`[data-bind="${key}"]`).forEach((el) => {
+            if (isHTML) el.innerHTML = value;
+            else el.textContent = value;
+        });
+    };
+
+    document.getElementById('teacher-current-room').textContent = room.name;
+
+    bind('icc', room.icc);
+    bind('icc-delta', room.iccDelta);
+    bind('gap', room.gap);
+    bind('gap-delta', room.gapDelta);
+    bind('answers', room.answers);
+    bind('answers-delta', room.answersDelta);
+    bind('diags', room.diags);
+    bind('diags-delta', room.diagsDelta);
+
+    bind('insight', room.insight, true);
+    document.querySelectorAll('[data-bind="insight-cta-href"]').forEach((el) => {
+        el.setAttribute('href', room.insightHref);
+    });
+
+    room.trend.forEach((v, i) => bind(`trend-${i}`, v.toFixed(2)));
+    bind('trend-footer', room.trendFooter, true);
+    updateLineChart(room.trend);
+
+    bind('donut-total', `${room.students} est.`);
+    bind('prof-cal-count',  String(room.profileCounts.cal));
+    bind('prof-over-count', String(room.profileCounts.over));
+    bind('prof-und-count',  String(room.profileCounts.und));
+    renderDotMatrix(room.profileCounts);
+
+    const iccPct = Math.round(parseFloat(room.icc) * 100);
+    bind('gauge-pct', `${iccPct}%`);
+    bind('gauge-label', 'Calibración del grupo');
+    updateGauge(parseFloat(room.icc));
+
+    bind('next-room', room.name.split(' · ')[0]);
+    bind('next-students', String(room.students));
+    bind('next-questions', String(Math.max(8, Math.floor(room.students / 6))));
+
+    bind('bs-count', `${room.blindSpots.length} detectados`);
+    bind('ar-count', `${room.atRisk.length} en riesgo`);
+
+    const $bs = document.getElementById('teacher-blind-spots');
+    const $ar = document.getElementById('teacher-at-risk');
+    if ($bs) $bs.innerHTML = renderBlindSpotsList(room.blindSpots);
+    if ($ar) $ar.innerHTML = renderAtRiskList(room.atRisk);
+}
+
+
+document.querySelectorAll('.filter-dropdown__item').forEach((item) => {
+    item.addEventListener('click', () => {
+        const id = item.dataset.roomId;
+        switchRoom(id);
+    });
+});
+
+document.getElementById('filter-reset')?.addEventListener('click', () => {
+    switchRoom('1');
+});
+
+if (document.querySelector('[data-view="teacher"]')) {
+    const init = () => {
+        renderRoomsCompare();
+        switchRoom('1');
+    };
+    document.addEventListener('DOMContentLoaded', init);
+    setTimeout(init, 0);
+}
+
+

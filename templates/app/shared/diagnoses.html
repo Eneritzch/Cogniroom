@@ -6,13 +6,17 @@
     <meta name="description" content="Historial de diagnósticos del tutor cognitivo IA de CogniRoom.">
     <title>Diagnósticos · CogniRoom</title>
     {% include 'app/partials/_styles.html' %}
-    <link rel="stylesheet" href="{% static 'css/app/diagnoses.css' %}?v={% now "U" %}">
+    <link rel="stylesheet" href="{% static 'css/app/shared/dashboard.css' %}?v={% now "U" %}">
+    <link rel="stylesheet" href="{% static 'css/app/shared/diagnoses.css' %}?v={% now "U" %}">
 </head>
-<body class="diagnoses-page">
+<body class="diagnoses-page dashboard-shell">
 
-    {% include 'app/partials/_app-header.html' with active='diagnoses' %}
+    {% include 'app/partials/_app-sidebar.html' with active='diagnoses' %}
 
-    <main class="app-main">
+    <main class="dashboard-shell__main">
+
+        {% include 'app/partials/_app-topbar.html' %}
+
         <span class="eyebrow">Tutor cognitivo</span>
         <h1 class="diagnoses-title display">Diagnósticos de Claude</h1>
         <p class="diagnoses-lead">
@@ -53,6 +57,6 @@
 
     {% include 'app/partials/_bootstrap-bundle.html' %}
     <script type="module" src="{% static 'js/app/nav-auth.js' %}?v={% now "U" %}"></script>
-    <script type="module" src="{% static 'js/app/diagnoses.js' %}?v={% now "U" %}"></script>
+    <script type="module" src="{% static 'js/app/shared/diagnoses.js' %}?v={% now "U" %}"></script>
 </body>
 </html>

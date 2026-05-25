@@ -55,15 +55,14 @@ def api_root(request):
 
 
 html_routes = [
-    path('',                                  TemplateView.as_view(template_name='landing.html'),               name='landing'),
-    path('app/',                              TemplateView.as_view(template_name='app/login.html'),             name='login'),
-    path('app/dashboard/',                    TemplateView.as_view(template_name='app/dashboard.html'),         name='dashboard'),
-    path('app/diagnoses/',                    TemplateView.as_view(template_name='app/diagnoses.html'),         name='diagnoses'),
-    path('app/room/',                         TemplateView.as_view(template_name='app/room.html'),              name='room-demo'),
-    path('app/room/<int:room_id>/',           TemplateView.as_view(template_name='app/room.html'),              name='room-detail'),
-    path('app/session/',                      TemplateView.as_view(template_name='app/session.html'),           name='session-demo'),
-    path('app/session/<int:session_id>/',     TemplateView.as_view(template_name='app/session.html'),           name='session-detail'),
-    path('app/design-system/',                TemplateView.as_view(template_name='app/design-system.html'),     name='design-system'),
+    path('',                                  TemplateView.as_view(template_name='landing.html'),                      name='landing'),
+    path('app/',                              TemplateView.as_view(template_name='app/public/login.html'),             name='login'),
+    path('app/dashboard/',                    TemplateView.as_view(template_name='app/shared/dashboard.html'),         name='dashboard'),
+    path('app/diagnoses/',                    TemplateView.as_view(template_name='app/shared/diagnoses.html'),         name='diagnoses'),
+    path('app/room/',                         TemplateView.as_view(template_name='app/teacher/room.html'),             name='room-demo'),
+    path('app/room/<int:room_id>/',           TemplateView.as_view(template_name='app/teacher/room.html'),             name='room-detail'),
+    path('app/session/',                      TemplateView.as_view(template_name='app/student/session.html'),          name='session-demo'),
+    path('app/session/<int:session_id>/',     TemplateView.as_view(template_name='app/student/session.html'),          name='session-detail'),
 ]
 
 
