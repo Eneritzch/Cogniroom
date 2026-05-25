@@ -15,6 +15,22 @@ if (!IS_DEMO && !tokens.access) {
     location.replace('/app/');
 }
 
+
+const $closeBtn = document.getElementById('session-close-btn');
+if ($closeBtn) {
+    $closeBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const ref = document.referrer;
+        const sameOrigin = ref && ref.startsWith(location.origin);
+        const fromHistory = sameOrigin && ref.includes('/app/history');
+        const fromRooms   = sameOrigin && ref.includes('/app/my-rooms');
+        if (fromHistory) location.href = '/app/history/';
+        else if (fromRooms) location.href = '/app/my-rooms/';
+        else if (sameOrigin && history.length > 1) history.back();
+        else location.href = '/app/my-rooms/';
+    });
+}
+
 const SESSION_LENGTH = 12;
 let currentIndex = 0;
 let currentQuestion = null;
@@ -208,6 +224,12 @@ function renderFeedback(result) {
     } else {
         $diag.hidden = true;
     }
+
+    const isLast = currentIndex >= SESSION_LENGTH - 1;
+    const $nextBtn = document.getElementById('next-question');
+    const $finishBtn = document.getElementById('complete-session');
+    if ($nextBtn) $nextBtn.hidden = isLast;
+    if ($finishBtn) $finishBtn.hidden = !isLast;
 
     showStage('feedback');
 }

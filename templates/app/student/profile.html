@@ -1,0 +1,272 @@
+{% load static %}<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Tu perfil cognitivo, datos personales y estadísticas globales.">
+    <title>Perfil · CogniRoom</title>
+    {% include 'app/partials/_styles.html' %}
+    <link rel="stylesheet" href="{% static 'css/app/shared/dashboard.css' %}?v={% now "U" %}">
+    <link rel="stylesheet" href="{% static 'css/app/teacher/room.css' %}?v={% now "U" %}">
+    <link rel="stylesheet" href="{% static 'css/app/teacher/rooms.css' %}?v={% now "U" %}">
+    <link rel="stylesheet" href="{% static 'css/app/student/profile.css' %}?v={% now "U" %}">
+</head>
+<body class="profile-page dashboard-shell">
+
+    {% include 'app/partials/_app-sidebar.html' with active='profile' %}
+
+    <main class="dashboard-shell__main">
+
+        {% include 'app/partials/_app-topbar.html' %}
+
+        <span class="eyebrow">Perfil</span>
+        <div class="room-head">
+            <h1 class="room-title">Tu cuenta</h1>
+            <div class="room-meta">
+                <span>Datos personales, estadísticas y seguridad</span>
+            </div>
+        </div>
+
+        <section class="profile-hero" aria-label="Resumen de identidad">
+            <div class="profile-hero__avatar" id="profile-avatar" aria-hidden="true">—</div>
+            <div class="profile-hero__id">
+                <h2 class="profile-hero__name" id="profile-name">—</h2>
+                <div class="profile-hero__sub">
+                    <span class="profile-hero__role" data-role="student">Estudiante</span>
+                    <span class="profile-hero__sep">·</span>
+                    <span id="profile-program">—</span>
+                </div>
+                <div class="profile-hero__meta num">
+                    <span id="profile-member">—</span>
+                    <span class="profile-hero__meta-sep">·</span>
+                    <span id="profile-last">—</span>
+                </div>
+            </div>
+            <div class="profile-hero__cta">
+                <span class="pill" data-profile="calibrated" id="profile-pill">—</span>
+            </div>
+        </section>
+
+        <section class="profile-stats" aria-label="Estadísticas globales">
+            <article class="profile-stat">
+                <span class="profile-stat__k eyebrow">ICC promedio</span>
+                <span class="profile-stat__v num" id="stat-icc">—</span>
+                <span class="profile-stat__sub" id="stat-icc-sub">calibración global</span>
+            </article>
+            <article class="profile-stat">
+                <span class="profile-stat__k eyebrow">Mastery promedio</span>
+                <span class="profile-stat__v num" id="stat-mastery">—</span>
+                <span class="profile-stat__sub">dominio sobre los nodos</span>
+            </article>
+            <article class="profile-stat">
+                <span class="profile-stat__k eyebrow">Sesiones</span>
+                <span class="profile-stat__v num" id="stat-sessions">—</span>
+                <span class="profile-stat__sub" id="stat-answers-sub">— respuestas</span>
+            </article>
+            <article class="profile-stat">
+                <span class="profile-stat__k eyebrow">Nodos rastreados</span>
+                <span class="profile-stat__v num" id="stat-nodes">—</span>
+                <span class="profile-stat__sub" id="stat-diagnoses-sub">— diagnósticos IA</span>
+            </article>
+            <article class="profile-stat profile-stat--streak">
+                <span class="profile-stat__k eyebrow">Racha actual</span>
+                <span class="profile-stat__v num" id="stat-streak">—</span>
+                <span class="profile-stat__sub">días seguidos</span>
+            </article>
+        </section>
+
+        <div class="profile-grid">
+
+            <section class="profile-card" aria-labelledby="personal-title">
+                <header class="profile-card__head">
+                    <div>
+                        <h3 class="profile-card__title" id="personal-title">Datos personales</h3>
+                        <p class="profile-card__sub">Solo vos podés ver y editar estos datos.</p>
+                    </div>
+                </header>
+
+                <form class="profile-form" id="personal-form" novalidate>
+                    <div class="profile-field-row">
+                        <div class="profile-field">
+                            <label class="profile-field__label" for="p-first">Nombre</label>
+                            <input class="form-control" type="text" id="p-first" name="first_name" autocomplete="given-name" required>
+                        </div>
+                        <div class="profile-field">
+                            <label class="profile-field__label" for="p-last">Apellido</label>
+                            <input class="form-control" type="text" id="p-last" name="last_name" autocomplete="family-name" required>
+                        </div>
+                    </div>
+
+                    <div class="profile-field">
+                        <label class="profile-field__label" for="p-email">
+                            Email
+                            <span class="profile-field__lock" title="No se puede editar">
+                                <svg class="icon-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <rect x="3" y="11" width="18" height="11" rx="2"></rect>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                </svg>
+                                Asignado por la institución
+                            </span>
+                        </label>
+                        <input class="form-control" type="email" id="p-email" name="email" disabled>
+                    </div>
+
+                    <div class="profile-field-row">
+                        <div class="profile-field">
+                            <label class="profile-field__label" for="p-institution">
+                                Institución
+                                <span class="profile-field__lock">
+                                    <svg class="icon-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <rect x="3" y="11" width="18" height="11" rx="2"></rect>
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                    </svg>
+                                </span>
+                            </label>
+                            <input class="form-control" type="text" id="p-institution" name="institution" disabled>
+                        </div>
+                        <div class="profile-field">
+                            <label class="profile-field__label" for="p-program">Programa / Curso</label>
+                            <input class="form-control" type="text" id="p-program" name="program">
+                        </div>
+                    </div>
+
+                    <footer class="profile-form__foot">
+                        <span class="profile-form__hint" id="personal-hint">Editá un campo para activar guardar.</span>
+                        <button type="submit" class="ds-btn ds-btn--ink" id="personal-save" disabled>
+                            <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            Guardar cambios
+                        </button>
+                    </footer>
+                </form>
+            </section>
+
+            <section class="profile-card" aria-labelledby="security-title">
+                <header class="profile-card__head">
+                    <div>
+                        <h3 class="profile-card__title" id="security-title">Seguridad</h3>
+                        <p class="profile-card__sub">Cambiá tu contraseña con regularidad.</p>
+                    </div>
+                </header>
+
+                <form class="profile-form" id="password-form" novalidate>
+                    <div class="profile-field">
+                        <label class="profile-field__label" for="pw-current">Contraseña actual</label>
+                        <input class="form-control" type="password" id="pw-current" name="current" required autocomplete="current-password">
+                    </div>
+
+                    <div class="profile-field-row">
+                        <div class="profile-field">
+                            <label class="profile-field__label" for="pw-new">Nueva contraseña</label>
+                            <input class="form-control" type="password" id="pw-new" name="new" required minlength="8" autocomplete="new-password">
+                        </div>
+                        <div class="profile-field">
+                            <label class="profile-field__label" for="pw-confirm">Confirmar</label>
+                            <input class="form-control" type="password" id="pw-confirm" name="confirm" required minlength="8" autocomplete="new-password">
+                        </div>
+                    </div>
+
+                    <div class="profile-pw-rules" aria-live="polite">
+                        <span class="profile-pw-rules__title">Tu contraseña debe tener:</span>
+                        <ul class="profile-pw-rules__list">
+                            <li class="profile-pw-rule" data-rule="length">
+                                <span class="profile-pw-rule__dot" aria-hidden="true"></span>
+                                Al menos 8 caracteres
+                            </li>
+                            <li class="profile-pw-rule" data-rule="case">
+                                <span class="profile-pw-rule__dot" aria-hidden="true"></span>
+                                Mayúsculas y minúsculas
+                            </li>
+                            <li class="profile-pw-rule" data-rule="number">
+                                <span class="profile-pw-rule__dot" aria-hidden="true"></span>
+                                Al menos un número
+                            </li>
+                            <li class="profile-pw-rule" data-rule="match">
+                                <span class="profile-pw-rule__dot" aria-hidden="true"></span>
+                                Coincidencia entre nueva y confirmación
+                            </li>
+                        </ul>
+                    </div>
+
+                    <footer class="profile-form__foot">
+                        <span class="profile-form__hint" id="password-hint">Tu sesión se mantendrá abierta tras el cambio.</span>
+                        <button type="submit" class="ds-btn ds-btn--ink" id="password-save" disabled>
+                            Actualizar contraseña
+                        </button>
+                    </footer>
+                </form>
+            </section>
+
+            <section class="profile-card" aria-labelledby="prefs-title">
+                <header class="profile-card__head">
+                    <div>
+                        <h3 class="profile-card__title" id="prefs-title">Preferencias</h3>
+                        <p class="profile-card__sub">Controlá qué te notifica CogniRoom.</p>
+                    </div>
+                </header>
+
+                <ul class="profile-prefs" id="profile-prefs">
+                    <li class="profile-pref">
+                        <div class="profile-pref__body">
+                            <span class="profile-pref__title">Notificaciones por email</span>
+                            <span class="profile-pref__sub">Resumen y novedades importantes.</span>
+                        </div>
+                        <label class="profile-switch">
+                            <input type="checkbox" data-pref="emailNotifications">
+                            <span class="profile-switch__track" aria-hidden="true"></span>
+                        </label>
+                    </li>
+                    <li class="profile-pref">
+                        <div class="profile-pref__body">
+                            <span class="profile-pref__title">Resumen semanal</span>
+                            <span class="profile-pref__sub">Tu calibración y nodos débiles cada lunes.</span>
+                        </div>
+                        <label class="profile-switch">
+                            <input type="checkbox" data-pref="weeklyDigest">
+                            <span class="profile-switch__track" aria-hidden="true"></span>
+                        </label>
+                    </li>
+                    <li class="profile-pref">
+                        <div class="profile-pref__body">
+                            <span class="profile-pref__title">Alertas del tutor IA</span>
+                            <span class="profile-pref__sub">Avisos cuando Claude detecta sobreconfianza grave.</span>
+                        </div>
+                        <label class="profile-switch">
+                            <input type="checkbox" data-pref="aiTutorAlerts">
+                            <span class="profile-switch__track" aria-hidden="true"></span>
+                        </label>
+                    </li>
+                </ul>
+            </section>
+
+            <section class="profile-card profile-card--danger" aria-labelledby="danger-title">
+                <header class="profile-card__head">
+                    <div>
+                        <h3 class="profile-card__title" id="danger-title">Sesión</h3>
+                        <p class="profile-card__sub">Cerrá sesión en este dispositivo.</p>
+                    </div>
+                </header>
+                <div class="profile-danger">
+                    <button type="button" class="ds-btn ds-btn--ghost" id="logout-btn-profile">
+                        <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        Cerrar sesión
+                    </button>
+                </div>
+            </section>
+
+        </div>
+
+    </main>
+
+    <div class="toast-host" id="toast-host" aria-live="polite" aria-atomic="true"></div>
+
+    {% include 'app/partials/_bootstrap-bundle.html' %}
+    <script type="module" src="{% static 'js/app/nav-auth.js' %}?v={% now "U" %}"></script>
+    <script type="module" src="{% static 'js/app/student/profile.js' %}?v={% now "U" %}"></script>
+</body>
+</html>

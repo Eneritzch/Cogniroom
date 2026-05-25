@@ -7,6 +7,8 @@
     <title>Diagnósticos · CogniRoom</title>
     {% include 'app/partials/_styles.html' %}
     <link rel="stylesheet" href="{% static 'css/app/shared/dashboard.css' %}?v={% now "U" %}">
+    <link rel="stylesheet" href="{% static 'css/app/teacher/room.css' %}?v={% now "U" %}">
+    <link rel="stylesheet" href="{% static 'css/app/teacher/rooms.css' %}?v={% now "U" %}">
     <link rel="stylesheet" href="{% static 'css/app/shared/diagnoses.css' %}?v={% now "U" %}">
 </head>
 <body class="diagnoses-page dashboard-shell">
@@ -18,40 +20,98 @@
         {% include 'app/partials/_app-topbar.html' %}
 
         <span class="eyebrow">Tutor cognitivo</span>
-        <h1 class="diagnoses-title display">Diagnósticos de Claude</h1>
-        <p class="diagnoses-lead">
-            Historial de intervenciones generadas cuando tu calibración se desvía.
-            Cada nota está pensada para ayudarte a entender la brecha y cerrarla.
-        </p>
+        <div class="room-head">
+            <h1 class="room-title">Diagnósticos de Claude</h1>
+            <div class="room-meta">
+                <span><span id="diag-total">—</span> generados</span>
+                <span class="room-meta__sep">·</span>
+                <span>Cuando tu calibración se desvía, Claude prepara una nota personalizada</span>
+            </div>
+        </div>
 
-        <section class="diagnoses-summary" id="diag-summary" hidden>
-            <article class="diagnoses-summary__card">
-                <span class="diagnoses-summary__k eyebrow">Total recibidos</span>
-                <span class="diagnoses-summary__v num" id="diag-total">0</span>
+        <section class="diagnoses-stats" aria-label="Resumen de diagnósticos">
+            <article class="diagnoses-stat">
+                <span class="diagnoses-stat__k eyebrow">Riesgo alto</span>
+                <span class="diagnoses-stat__v num" id="diag-count-high" data-tone="rust">—</span>
+                <span class="diagnoses-stat__sub">requiere intervención</span>
             </article>
-            <article class="diagnoses-summary__card">
-                <span class="diagnoses-summary__k eyebrow">Último riesgo</span>
-                <span class="pill" data-risk="low" id="diag-last-risk">—</span>
+            <article class="diagnoses-stat">
+                <span class="diagnoses-stat__k eyebrow">Riesgo medio</span>
+                <span class="diagnoses-stat__v num" id="diag-count-medium" data-tone="amber">—</span>
+                <span class="diagnoses-stat__sub">a vigilar</span>
             </article>
-            <article class="diagnoses-summary__card">
-                <span class="diagnoses-summary__k eyebrow">Perfil dominante</span>
-                <span class="pill" data-profile="calibrated" id="diag-profile">—</span>
+            <article class="diagnoses-stat">
+                <span class="diagnoses-stat__k eyebrow">Riesgo bajo</span>
+                <span class="diagnoses-stat__v num" id="diag-count-low" data-tone="moss">—</span>
+                <span class="diagnoses-stat__sub">monitoreo</span>
+            </article>
+            <article class="diagnoses-stat">
+                <span class="diagnoses-stat__k eyebrow">Perfil dominante</span>
+                <span class="diagnoses-stat__v" id="diag-profile-text">—</span>
+                <span class="diagnoses-stat__sub" id="diag-profile-sub">según tus diagnósticos</span>
             </article>
         </section>
 
-        <section class="diagnoses-list" id="diag-list">
-            <article class="ai-diagnosis skeleton" aria-hidden="true" style="height:200px;"></article>
-        </section>
+        <header class="diagnoses-toolbar">
+            <div class="diagnoses-toolbar__group" role="tablist" aria-label="Filtro por riesgo">
+                <span class="diagnoses-toolbar__label">Riesgo</span>
+                <div class="diagnoses-chips">
+                    <button type="button" class="diagnoses-chip" data-risk-filter="all" aria-pressed="true">Todos</button>
+                    <button type="button" class="diagnoses-chip" data-risk-filter="high" aria-pressed="false">
+                        <span class="diagnoses-chip__dot" data-risk="high" aria-hidden="true"></span>
+                        Alto
+                    </button>
+                    <button type="button" class="diagnoses-chip" data-risk-filter="medium" aria-pressed="false">
+                        <span class="diagnoses-chip__dot" data-risk="medium" aria-hidden="true"></span>
+                        Medio
+                    </button>
+                    <button type="button" class="diagnoses-chip" data-risk-filter="low" aria-pressed="false">
+                        <span class="diagnoses-chip__dot" data-risk="low" aria-hidden="true"></span>
+                        Bajo
+                    </button>
+                </div>
+            </div>
+
+            <div class="diagnoses-toolbar__group" role="tablist" aria-label="Filtro por perfil">
+                <span class="diagnoses-toolbar__label">Perfil</span>
+                <div class="diagnoses-chips">
+                    <button type="button" class="diagnoses-chip" data-profile-filter="all" aria-pressed="true">Todos</button>
+                    <button type="button" class="diagnoses-chip" data-profile-filter="overconfident" aria-pressed="false">
+                        <span class="diagnoses-chip__dot" data-profile="overconfident" aria-hidden="true"></span>
+                        Sobreconfiado
+                    </button>
+                    <button type="button" class="diagnoses-chip" data-profile-filter="underconfident" aria-pressed="false">
+                        <span class="diagnoses-chip__dot" data-profile="underconfident" aria-hidden="true"></span>
+                        Subconfiado
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="rooms-meta" id="diag-meta"></div>
+
+        <section class="diagnoses-list" id="diag-list"></section>
 
         <section class="diagnoses-empty" id="diag-empty" hidden>
-            <p class="empty">
-                Aún no hay diagnósticos generados.
-                Cuando tu ICC baje de 0.5 en una pregunta, Claude prepara una nota personalizada.
+            <div class="diagnoses-empty__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path>
+                </svg>
+            </div>
+            <h2 class="diagnoses-empty__title">Aún no hay diagnósticos.</h2>
+            <p class="diagnoses-empty__body">
+                Cuando tu ICC baje de 0.5 en una pregunta, Claude prepara una nota personalizada
+                para ayudarte a entender qué pasó.
             </p>
+            <a href="/app/session/" class="ds-btn ds-btn--ink diagnoses-empty__cta">
+                Empezar una evaluación
+                <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+            </a>
         </section>
     </main>
-
-    {% include 'app/partials/_app-footer.html' %}
 
     <div class="toast-host" id="toast-host" aria-live="polite" aria-atomic="true"></div>
 

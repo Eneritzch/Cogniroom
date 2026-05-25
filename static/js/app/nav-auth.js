@@ -68,17 +68,40 @@ function replaceCta(user) {
 }
 
 
-function populateTopbar(user) {
+async function loadMockOverride(role) {
+    try {
+        if (role === 'student') {
+            const m = await import(`./student/student-mock.js?v=${_v}`);
+            return m.STUDENT_DATA?.profile || null;
+        }
+        if (role === 'teacher') {
+            const m = await import(`./teacher/teacher-mock.js?v=${_v}`);
+            return m.TEACHER_DATA?.profile || null;
+        }
+    } catch (_) {
+        return null;
+    }
+    return null;
+}
+
+
+async function populateTopbar(user) {
     const $name = document.getElementById('user-name');
     const $role = document.getElementById('user-role');
     const $initials = document.getElementById('user-initials');
-    if ($name) $name.textContent = user.first_name || user.username;
+
+    const mock = await loadMockOverride(user.role);
+    const firstName = (mock?.first_name) || user.first_name || user.username;
+    const lastName  = (mock?.last_name)  || user.last_name  || '';
+    const fullName  = lastName ? `${firstName} ${lastName}` : firstName;
+
+    if ($name) $name.textContent = firstName;
     if ($role) {
         $role.textContent = user.role === 'teacher' ? 'Docente' : 'Estudiante';
         $role.dataset.role = user.role;
     }
     if ($initials) {
-        const base = (user.first_name || user.username || '').trim();
+        const base = fullName.trim() || user.username || '';
         $initials.textContent = base
             ? base.split(/\s+/).map((p) => p[0]).join('').slice(0, 2).toUpperCase()
             : 'TQ';
@@ -214,7 +237,7 @@ async function updateNav() {
         const user = await auth.me();
         filterNav(user.role);
         replaceCta(user);
-        populateTopbar(user);
+        await populateTopbar(user);
         if (user.role === 'teacher') {
             setupRoomSelector();
             setupCreateRoomForm();

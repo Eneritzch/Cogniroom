@@ -1,6 +1,7 @@
 const _v = new URL(import.meta.url).searchParams.get('v') || '';
 const { auth, me, rooms, sessions, tokens, ApiError } = await import(`../api.js?v=${_v}`);
 const { toast } = await import(`../toast.js?v=${_v}`);
+const { STUDENT_DATA } = await import(`../student/student-mock.js?v=${_v}`);
 
 
 if (!tokens.access) {
@@ -325,6 +326,7 @@ function renderKnowledgeGraph(graphNodes, graphEdges) {
 
             g.addEventListener('mouseenter', () => { hover = n.id; buildSvg(); updateReadout(); });
             g.addEventListener('mouseleave', () => { hover = null; buildSvg(); updateReadout(); });
+            g.addEventListener('click', () => { location.href = `/app/node/${n.id}/`; });
 
             $svg.appendChild(g);
         });
@@ -502,57 +504,80 @@ function renderStudentRooms(items) {
 }
 
 
+function studentRoomsFromMock() {
+    return STUDENT_DATA.joinedRooms.map((r) => ({
+        id: r.id,
+        name: r.name,
+        mode: r.mode,
+        access_code: r.accessCode,
+    }));
+}
+
+
+function studentNodesFromMock() {
+    const details = STUDENT_DATA.nodeDetails || {};
+    const activeIds = ['gibbs', 'entr', 'ley1', 'ley2', 'sis', 'cin2'];
+    return activeIds
+        .map((id) => details[id])
+        .filter(Boolean)
+        .map((n) => ({
+            node_id: n.id,
+            node_name: n.name,
+            topic: n.topic,
+            p_mastery: n.bktMastery,
+            icc_value: n.iccValue,
+            profile: n.profile,
+            attempts: n.attempts,
+            trend: 'estable',
+        }));
+}
+
+
 async function bootstrapStudent(user) {
     $studentView.hidden = false;
-    document.getElementById('student-greeting').textContent = user.first_name || user.username;
 
-    rooms.list()
-        .then(renderStudentRooms)
-        .catch(() => renderStudentRooms([]));
+    const mockProfile = STUDENT_DATA.profile;
+    const greeting = mockProfile.first_name || user.first_name || user.username;
+    document.getElementById('student-greeting').textContent = greeting;
 
-    try {
-        const [profile, nodes] = await Promise.all([
-            me.profile(),
-            me.nodes(),
-        ]);
+    const mockRooms = studentRoomsFromMock();
+    renderStudentRooms(mockRooms);
 
-        const iccAvg = profile.icc_avg ?? 0;
-        const masteryAvg = nodes && nodes.length
-            ? nodes.reduce((s, n) => s + (n.p_mastery ?? 0), 0) / nodes.length
-            : 0;
-        const declaredAvg = iccAvg + masteryAvg;
-        const gap = (declaredAvg - masteryAvg) * 100;
-        const profileKey = profile.predominant_profile || profileFromGap((declaredAvg - masteryAvg));
+    const nodes = studentNodesFromMock();
+    const iccAvg = mockProfile.avgIcc ?? 0;
+    const masteryAvg = mockProfile.avgMastery ?? 0;
+    const declaredAvg = iccAvg + masteryAvg;
+    const gap = (declaredAvg - masteryAvg) * 100;
+    const profileKey = mockProfile.predominantProfile || profileFromGap((declaredAvg - masteryAvg));
 
-        updateCalibrationRing(
-            document.getElementById('student-ring'),
-            iccAvg,
-            profileKey,
-            `${nodes?.length || 0} nodos · 7 días`,
-        );
+    updateCalibrationRing(
+        document.getElementById('student-ring'),
+        iccAvg,
+        profileKey,
+        `${mockProfile.totalAnswers} respuestas · 7 días`,
+    );
 
-        const $pill = document.getElementById('student-pill');
-        $pill.textContent = profileLabel(profileKey);
-        $pill.dataset.profile = profileKey;
+    const $pill = document.getElementById('student-pill');
+    $pill.textContent = profileLabel(profileKey);
+    $pill.dataset.profile = profileKey;
 
-        document.getElementById('student-mini-icc').textContent = fmt(iccAvg);
-        document.getElementById('student-mini-icc').dataset.tone = profileKey === 'overconfident' ? 'amber' : '';
-        document.getElementById('student-mini-mastery').textContent = fmt(masteryAvg);
-        document.getElementById('student-mini-gap').textContent = `${gap >= 0 ? '+' : ''}${Math.round(gap)}`;
-        document.getElementById('student-mini-gap').dataset.tone = gapTone(gap);
+    document.getElementById('student-mini-icc').textContent = fmt(iccAvg);
+    document.getElementById('student-mini-icc').dataset.tone = profileKey === 'overconfident' ? 'amber' : '';
+    document.getElementById('student-mini-mastery').textContent = fmt(masteryAvg);
+    document.getElementById('student-mini-gap').textContent = `${gap >= 0 ? '+' : ''}${Math.round(gap)}`;
+    document.getElementById('student-mini-gap').dataset.tone = gapTone(gap);
 
-        renderStudentNodes(nodes);
-        renderStudentDiagnosis(profile.last_diagnosis);
-        renderKnowledgeGraph(DEMO_GRAPH_NODES, DEMO_GRAPH_EDGES);
-    } catch (err) {
-        if (err instanceof ApiError && err.status === 401) {
-            tokens.clear();
-            location.replace('/app/');
-            return;
-        }
-        toast(err?.message || 'Error al cargar datos del estudiante', { kind: 'error' });
-        renderKnowledgeGraph(DEMO_GRAPH_NODES, DEMO_GRAPH_EDGES);
+    renderStudentNodes(nodes);
+
+    const latestDiag = (STUDENT_DATA.diagnosesHistory || [])[0];
+    if (latestDiag) {
+        renderStudentDiagnosis({
+            reasoning: latestDiag.reasoning,
+            recommendation: latestDiag.recommendation,
+        });
     }
+
+    renderKnowledgeGraph(DEMO_GRAPH_NODES, DEMO_GRAPH_EDGES);
 }
 
 

@@ -1,0 +1,208 @@
+{% load static %}<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Detalle cognitivo de un nodo de conocimiento del estudiante.">
+    <title>Detalle de nodo · CogniRoom</title>
+    {% include 'app/partials/_styles.html' %}
+    <link rel="stylesheet" href="{% static 'css/app/shared/dashboard.css' %}?v={% now "U" %}">
+    <link rel="stylesheet" href="{% static 'css/app/teacher/room.css' %}?v={% now "U" %}">
+    <link rel="stylesheet" href="{% static 'css/app/teacher/rooms.css' %}?v={% now "U" %}">
+    <link rel="stylesheet" href="{% static 'css/app/student/node-detail.css' %}?v={% now "U" %}">
+</head>
+<body class="node-page dashboard-shell">
+
+    {% include 'app/partials/_app-sidebar.html' with active='dashboard' %}
+
+    <main class="dashboard-shell__main">
+
+        {% include 'app/partials/_app-topbar.html' %}
+
+        <a href="/app/dashboard/" class="node-back">
+            <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            Volver al dashboard
+        </a>
+
+        <header class="node-hero">
+            <div class="node-hero__head">
+                <span class="eyebrow" id="node-topic">—</span>
+                <h1 class="node-hero__title" id="node-name">—</h1>
+                <div class="node-hero__meta">
+                    <a href="#" id="node-room-link" class="node-hero__room">
+                        <svg class="icon-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M3 21V8l9-5 9 5v13"></path>
+                            <path d="M9 21V12h6v9"></path>
+                        </svg>
+                        <span id="node-room-name">—</span>
+                    </a>
+                    <span class="room-meta__sep">·</span>
+                    <span class="node-hero__updated num" id="node-updated">—</span>
+                </div>
+            </div>
+            <div class="node-hero__cta">
+                <span class="pill" data-profile="calibrated" id="node-profile-pill">—</span>
+                <a href="/app/session/" class="ds-btn ds-btn--ink">
+                    Practicar este nodo
+                    <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                </a>
+            </div>
+        </header>
+
+        <section class="node-kpis" aria-label="Métricas principales del nodo">
+            <article class="node-kpi node-kpi--ring">
+                <div class="calibration-ring" data-profile="calibrated" id="node-ring" style="width:140px;height:140px;">
+                    <svg class="calibration-ring__svg" width="140" height="140" aria-hidden="true">
+                        <circle class="calibration-ring__track" cx="70" cy="70" r="63" stroke-width="10"></circle>
+                        <circle class="calibration-ring__fill"  cx="70" cy="70" r="63" stroke-width="10" stroke-dasharray="395.84" stroke-dashoffset="0"></circle>
+                    </svg>
+                    <div class="calibration-ring__center">
+                        <span class="calibration-ring__value num" id="node-ring-value" style="font-size:32px;">—</span>
+                        <span class="calibration-ring__label eyebrow">ICC</span>
+                    </div>
+                </div>
+                <div class="node-kpi__ringside">
+                    <span class="eyebrow">Calibración</span>
+                    <span class="node-kpi__sub" id="node-ring-sub">—</span>
+                </div>
+            </article>
+
+            <article class="node-kpi">
+                <span class="node-kpi__k eyebrow">Mastery (BKT)</span>
+                <span class="node-kpi__v num" id="node-mastery">—</span>
+                <span class="node-kpi__sub" id="node-mastery-sub">probabilidad de acertar</span>
+            </article>
+
+            <article class="node-kpi">
+                <span class="node-kpi__k eyebrow">Confianza promedio</span>
+                <span class="node-kpi__v num" id="node-confidence">—</span>
+                <span class="node-kpi__sub">declarada en este nodo</span>
+            </article>
+
+            <article class="node-kpi">
+                <span class="node-kpi__k eyebrow">Gap</span>
+                <span class="node-kpi__v num" id="node-gap">—</span>
+                <span class="node-kpi__sub">confianza vs. mastery</span>
+            </article>
+
+            <article class="node-kpi">
+                <span class="node-kpi__k eyebrow">Intentos</span>
+                <span class="node-kpi__v num" id="node-attempts">—</span>
+                <span class="node-kpi__sub">preguntas respondidas</span>
+            </article>
+        </section>
+
+        <section class="node-row" aria-label="Tendencia y BKT">
+            <article class="node-card node-card--trend">
+                <header class="node-card__head">
+                    <h2 class="node-card__title">Tendencia · últimas 7 semanas</h2>
+                    <span class="node-card__hint num" id="node-trend-delta">—</span>
+                </header>
+                <div class="node-trend">
+                    <svg class="node-trend__svg" id="node-trend-svg" viewBox="0 0 200 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+                    <div class="node-trend__axis" id="node-trend-axis"></div>
+                </div>
+                <footer class="node-trend__legend">
+                    <span class="node-trend__legend-item">
+                        <span class="node-trend__dot" data-series="icc" aria-hidden="true"></span>
+                        ICC
+                    </span>
+                    <span class="node-trend__legend-item">
+                        <span class="node-trend__dot" data-series="mastery" aria-hidden="true"></span>
+                        Mastery
+                    </span>
+                    <span class="node-trend__legend-item">
+                        <span class="node-trend__dot" data-series="confidence" aria-hidden="true"></span>
+                        Confianza
+                    </span>
+                </footer>
+            </article>
+
+            <article class="node-card node-card--bkt">
+                <header class="node-card__head">
+                    <h2 class="node-card__title">Parámetros BKT</h2>
+                    <span class="node-card__hint">Modelo bayesiano</span>
+                </header>
+                <ul class="bkt-list">
+                    <li class="bkt-row">
+                        <div class="bkt-row__k">
+                            <span class="bkt-row__label">p(mastery)</span>
+                            <span class="bkt-row__expl">Probabilidad actual de dominar el nodo</span>
+                        </div>
+                        <span class="bkt-row__v num" id="bkt-mastery">—</span>
+                    </li>
+                    <li class="bkt-row">
+                        <div class="bkt-row__k">
+                            <span class="bkt-row__label">p(transit)</span>
+                            <span class="bkt-row__expl">Probabilidad de aprender en cada intento</span>
+                        </div>
+                        <span class="bkt-row__v num" id="bkt-transit">—</span>
+                    </li>
+                    <li class="bkt-row">
+                        <div class="bkt-row__k">
+                            <span class="bkt-row__label">p(guess)</span>
+                            <span class="bkt-row__expl">Acertar sin dominar (suerte)</span>
+                        </div>
+                        <span class="bkt-row__v num" id="bkt-guess">—</span>
+                    </li>
+                    <li class="bkt-row">
+                        <div class="bkt-row__k">
+                            <span class="bkt-row__label">p(slip)</span>
+                            <span class="bkt-row__expl">Fallar dominando (descuido)</span>
+                        </div>
+                        <span class="bkt-row__v num" id="bkt-slip">—</span>
+                    </li>
+                </ul>
+            </article>
+        </section>
+
+        <section class="node-card node-card--ai" id="node-ai-card" hidden>
+            <header class="node-card__head">
+                <span class="node-ai__head eyebrow">
+                    <svg class="icon-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path>
+                    </svg>
+                    Tutor cognitivo · Claude
+                </span>
+                <span class="node-card__hint num" id="node-ai-date">—</span>
+            </header>
+            <h3 class="node-ai__title" id="node-ai-title">—</h3>
+            <p class="node-ai__body" id="node-ai-body"></p>
+            <div class="node-ai__rec" id="node-ai-rec" hidden>
+                <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+                <span id="node-ai-rec-text"></span>
+            </div>
+        </section>
+
+        <section class="node-card node-card--responses">
+            <header class="node-card__head">
+                <h2 class="node-card__title">Respuestas recientes en este nodo</h2>
+                <span class="node-card__hint" id="node-responses-count">—</span>
+            </header>
+            <ul class="node-responses" id="node-responses" aria-label="Respuestas recientes"></ul>
+        </section>
+
+        <section class="node-card node-card--related" id="node-related-card" hidden>
+            <header class="node-card__head">
+                <h2 class="node-card__title">Nodos relacionados</h2>
+                <span class="node-card__hint">Tu mastery comparado</span>
+            </header>
+            <ul class="node-related" id="node-related"></ul>
+        </section>
+
+    </main>
+
+    <div class="toast-host" id="toast-host" aria-live="polite" aria-atomic="true"></div>
+
+    {% include 'app/partials/_bootstrap-bundle.html' %}
+    <script type="module" src="{% static 'js/app/nav-auth.js' %}?v={% now "U" %}"></script>
+    <script type="module" src="{% static 'js/app/student/node-detail.js' %}?v={% now "U" %}"></script>
+</body>
+</html>

@@ -1,0 +1,129 @@
+{% load static %}<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Historial de sesiones de evaluación del estudiante en CogniRoom.">
+    <title>Historial · CogniRoom</title>
+    {% include 'app/partials/_styles.html' %}
+    <link rel="stylesheet" href="{% static 'css/app/shared/dashboard.css' %}?v={% now "U" %}">
+    <link rel="stylesheet" href="{% static 'css/app/teacher/room.css' %}?v={% now "U" %}">
+    <link rel="stylesheet" href="{% static 'css/app/teacher/rooms.css' %}?v={% now "U" %}">
+    <link rel="stylesheet" href="{% static 'css/app/student/history.css' %}?v={% now "U" %}">
+</head>
+<body class="history-page dashboard-shell">
+
+    {% include 'app/partials/_app-sidebar.html' with active='history' %}
+
+    <main class="dashboard-shell__main">
+
+        {% include 'app/partials/_app-topbar.html' %}
+
+        <span class="eyebrow">Historial</span>
+        <div class="room-head">
+            <h1 class="room-title">Tus sesiones</h1>
+            <div class="room-meta">
+                <span><span id="history-count">—</span> sesiones</span>
+                <span class="room-meta__sep">·</span>
+                <span>Ordenadas de la más reciente a la más antigua</span>
+            </div>
+        </div>
+
+        <section class="room-panel" role="region" aria-label="Historial de sesiones">
+
+            <section class="history-stats" aria-label="Resumen del historial">
+                <article class="history-stat">
+                    <span class="history-stat__k eyebrow">Sesiones</span>
+                    <span class="history-stat__v num" id="h-total">—</span>
+                    <span class="history-stat__sub">en total</span>
+                </article>
+                <article class="history-stat">
+                    <span class="history-stat__k eyebrow">Aciertos</span>
+                    <span class="history-stat__v num" id="h-accuracy">—</span>
+                    <span class="history-stat__sub">promedio</span>
+                </article>
+                <article class="history-stat">
+                    <span class="history-stat__k eyebrow">Tiempo total</span>
+                    <span class="history-stat__v num" id="h-time">—</span>
+                    <span class="history-stat__sub">acumulado</span>
+                </article>
+                <article class="history-stat">
+                    <span class="history-stat__k eyebrow">Cambio ICC</span>
+                    <span class="history-stat__v num" id="h-icc">—</span>
+                    <span class="history-stat__sub">vs. primera sesión</span>
+                </article>
+            </section>
+
+            <header class="history-toolbar">
+                <div class="history-toolbar__filters">
+                    <div class="history-toolbar__group" role="tablist" aria-label="Filtro por estado">
+                        <span class="history-toolbar__label">Estado</span>
+                        <div class="history-chips">
+                            <button type="button" class="history-chip" data-status-filter="all" aria-pressed="true">Todas</button>
+                            <button type="button" class="history-chip" data-status-filter="completed" aria-pressed="false">Completadas</button>
+                            <button type="button" class="history-chip" data-status-filter="in_progress" aria-pressed="false">En curso</button>
+                        </div>
+                    </div>
+
+                    <div class="history-toolbar__group" role="tablist" aria-label="Filtro por tipo de sala">
+                        <span class="history-toolbar__label">Tipo</span>
+                        <div class="history-chips">
+                            <button type="button" class="history-chip" data-mode-filter="all" aria-pressed="true">Todas</button>
+                            <button type="button" class="history-chip" data-mode-filter="group" aria-pressed="false">
+                                <span class="history-chip__dot history-chip__dot--group" aria-hidden="true"></span>
+                                Grupales
+                            </button>
+                            <button type="button" class="history-chip" data-mode-filter="individual" aria-pressed="false">
+                                <span class="history-chip__dot history-chip__dot--individual" aria-hidden="true"></span>
+                                De estudio
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <label class="history-search" aria-label="Buscar por sala">
+                    <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="11" cy="11" r="7"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="search" id="history-search" placeholder="Buscar por sala…">
+                </label>
+            </header>
+
+            <div class="rooms-meta" id="history-meta"></div>
+
+            <div class="history-table" role="table" aria-label="Tabla de sesiones">
+                <div class="history-table__head" role="row">
+                    <span role="columnheader" class="history-col history-col--room">Sala</span>
+                    <span role="columnheader" class="history-col history-col--when">Cuándo</span>
+                    <span role="columnheader" class="history-col history-col--duration">Duración</span>
+                    <span role="columnheader" class="history-col history-col--accuracy">Aciertos</span>
+                    <span role="columnheader" class="history-col history-col--icc">ICC</span>
+                    <span role="columnheader" class="history-col history-col--status">Estado</span>
+                    <span role="columnheader" class="history-col history-col--action" aria-hidden="true"></span>
+                </div>
+                <ul class="history-rows" id="history-rows" aria-label="Sesiones"></ul>
+            </div>
+
+            <div class="history-empty" id="history-empty" hidden>
+                <div class="history-empty__icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="9"></circle>
+                        <path d="M12 7v6l3 2"></path>
+                    </svg>
+                </div>
+                <h2 class="history-empty__title">Sin resultados.</h2>
+                <p class="history-empty__body">Probá quitando algún filtro o buscando otra sala.</p>
+            </div>
+
+            <nav class="rooms-pager" id="history-pager" aria-label="Paginación de sesiones"></nav>
+        </section>
+    </main>
+
+    <div class="toast-host" id="toast-host" aria-live="polite" aria-atomic="true"></div>
+
+    {% include 'app/partials/_bootstrap-bundle.html' %}
+    <script type="module" src="{% static 'js/app/nav-auth.js' %}?v={% now "U" %}"></script>
+    <script type="module" src="{% static 'js/app/student/history.js' %}?v={% now "U" %}"></script>
+</body>
+</html>

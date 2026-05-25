@@ -1,0 +1,149 @@
+{% load static %}<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Revisión de una sesión completada de evaluación cognitiva.">
+    <title>Revisión de sesión · CogniRoom</title>
+    {% include 'app/partials/_styles.html' %}
+    <link rel="stylesheet" href="{% static 'css/app/shared/dashboard.css' %}?v={% now "U" %}">
+    <link rel="stylesheet" href="{% static 'css/app/teacher/room.css' %}?v={% now "U" %}">
+    <link rel="stylesheet" href="{% static 'css/app/teacher/rooms.css' %}?v={% now "U" %}">
+    <link rel="stylesheet" href="{% static 'css/app/student/session-review.css' %}?v={% now "U" %}">
+</head>
+<body class="review-page dashboard-shell">
+
+    {% include 'app/partials/_app-sidebar.html' with active='history' %}
+
+    <main class="dashboard-shell__main">
+
+        {% include 'app/partials/_app-topbar.html' %}
+
+        <a href="/app/history/" class="review-back">
+            <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            Volver al historial
+        </a>
+
+        <span class="eyebrow">Revisión de sesión</span>
+        <div class="room-head">
+            <h1 class="room-title" id="review-room-name">—</h1>
+            <div class="room-meta">
+                <span id="review-date">—</span>
+                <span class="room-meta__sep">·</span>
+                <span id="review-duration">—</span>
+                <span class="room-meta__sep">·</span>
+                <span id="review-id" class="num">—</span>
+            </div>
+        </div>
+
+        <section class="review-stats" aria-label="Resumen de la sesión">
+            <article class="review-stat">
+                <span class="review-stat__k eyebrow">Aciertos</span>
+                <span class="review-stat__v num" id="review-accuracy">—</span>
+                <span class="review-stat__sub" id="review-accuracy-sub">—</span>
+            </article>
+            <article class="review-stat">
+                <span class="review-stat__k eyebrow">Cambio ICC</span>
+                <span class="review-stat__v num" id="review-icc">—</span>
+                <span class="review-stat__sub">en esta sesión</span>
+            </article>
+            <article class="review-stat">
+                <span class="review-stat__k eyebrow">Gap promedio</span>
+                <span class="review-stat__v num" id="review-gap">—</span>
+                <span class="review-stat__sub">confianza vs. mastery</span>
+            </article>
+            <article class="review-stat">
+                <span class="review-stat__k eyebrow">Tutorías IA</span>
+                <span class="review-stat__v num" id="review-ai-count">—</span>
+                <span class="review-stat__sub">en preguntas falladas</span>
+            </article>
+        </section>
+
+        <section class="review-strip" aria-label="Vista rápida de respuestas">
+            <header class="review-strip__head">
+                <h2 class="review-strip__title">Vista de pájaro</h2>
+                <div class="review-strip__legend">
+                    <span class="review-strip__legend-item">
+                        <span class="review-strip__legend-dot" data-state="correct" aria-hidden="true"></span>
+                        Acertada
+                    </span>
+                    <span class="review-strip__legend-item">
+                        <span class="review-strip__legend-dot" data-state="wrong" aria-hidden="true"></span>
+                        Fallada
+                    </span>
+                    <span class="review-strip__legend-item">
+                        <span class="review-strip__legend-dot" data-state="ai" aria-hidden="true"></span>
+                        Con feedback IA
+                    </span>
+                </div>
+            </header>
+            <ol class="review-strip__cells" id="review-strip"></ol>
+        </section>
+
+        <header class="review-toolbar">
+            <div class="review-toolbar__filters" role="tablist" aria-label="Filtro por estado">
+                <span class="review-toolbar__label">Mostrar</span>
+                <div class="review-chips">
+                    <button type="button" class="review-chip" data-filter="all" aria-pressed="true">Todas</button>
+                    <button type="button" class="review-chip" data-filter="wrong" aria-pressed="false">Falladas</button>
+                    <button type="button" class="review-chip" data-filter="correct" aria-pressed="false">Acertadas</button>
+                    <button type="button" class="review-chip" data-filter="ai" aria-pressed="false">Con feedback IA</button>
+                </div>
+            </div>
+
+            <button type="button" class="review-toolbar__collapse" id="toggle-all-btn">
+                <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+                <span id="toggle-all-label">Expandir todas</span>
+            </button>
+        </header>
+
+        <div class="rooms-meta" id="review-meta"></div>
+
+        <ol class="review-questions" id="review-questions" aria-label="Preguntas de la sesión"></ol>
+
+        <div class="review-empty" id="review-empty" hidden>
+            <div class="review-empty__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="9"></circle>
+                    <line x1="12" y1="8" x2="12" y2="13"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+            </div>
+            <h2 class="review-empty__title">Sin preguntas con este filtro.</h2>
+            <p class="review-empty__body">Probá con otro filtro.</p>
+            <a href="/app/history/" class="ds-btn ds-btn--ghost review-empty__cta">
+                <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+                Volver al historial
+            </a>
+        </div>
+
+        <footer class="review-foot">
+            <a href="/app/history/" class="ds-btn ds-btn--ghost">
+                <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+                Volver al historial
+            </a>
+            <a href="/app/session/" class="ds-btn ds-btn--ink">
+                Empezar nueva evaluación
+                <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+            </a>
+        </footer>
+    </main>
+
+    <div class="toast-host" id="toast-host" aria-live="polite" aria-atomic="true"></div>
+
+    {% include 'app/partials/_bootstrap-bundle.html' %}
+    <script type="module" src="{% static 'js/app/nav-auth.js' %}?v={% now "U" %}"></script>
+    <script type="module" src="{% static 'js/app/student/session-review.js' %}?v={% now "U" %}"></script>
+</body>
+</html>
