@@ -1,0 +1,69 @@
+{% load static %}<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Banco de preguntas de la sala activa.">
+    <title>Preguntas · CogniRoom</title>
+    {% include 'app/partials/_styles.html' %}
+    <link rel="stylesheet" href="{% static 'css/app/shared/dashboard.css' %}?v={% now "U" %}">
+    <link rel="stylesheet" href="{% static 'css/app/teacher/room.css' %}?v={% now "U" %}">
+    <link rel="stylesheet" href="{% static 'css/app/teacher/questions.css' %}?v={% now "U" %}">
+</head>
+<body class="room-page dashboard-shell">
+
+    {% include 'app/partials/_app-sidebar.html' with active='questions' %}
+
+    <main class="dashboard-shell__main">
+
+        {% include 'app/partials/_app-topbar.html' %}
+
+        <span class="eyebrow">Preguntas</span>
+        <div class="room-head">
+            <h1 class="room-title" id="room-name">—</h1>
+            <div class="room-meta">
+                <span><span id="room-questions">—</span> en el banco</span>
+                <span class="room-meta__sep">·</span>
+                <span id="room-pending">—</span>
+            </div>
+        </div>
+
+        <section class="room-panel" role="region" aria-labelledby="questions-title">
+            <header class="questions-toolbar">
+                <h2 id="questions-title" class="questions-toolbar__title">Banco de preguntas</h2>
+                <div class="questions-toolbar__actions">
+                    <button type="button" class="ds-btn ds-btn--secondary">
+                        <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        Crear manual
+                    </button>
+                    <button type="button" class="ds-btn ds-btn--sage">
+                        <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path>
+                        </svg>
+                        Generar con IA
+                    </button>
+                </div>
+            </header>
+
+            <div class="questions-filters">
+                <button type="button" class="questions-filters__chip" data-filter="all" aria-pressed="true">Todas</button>
+                <button type="button" class="questions-filters__chip" data-filter="approved" aria-pressed="false">Aprobadas</button>
+                <button type="button" class="questions-filters__chip" data-filter="pending" aria-pressed="false">Pendientes</button>
+                <button type="button" class="questions-filters__chip" data-filter="ai" aria-pressed="false">IA</button>
+                <button type="button" class="questions-filters__chip" data-filter="manual" aria-pressed="false">Manuales</button>
+            </div>
+
+            <div class="questions-list" id="questions-list"></div>
+        </section>
+    </main>
+
+    <div class="toast-host" id="toast-host" aria-live="polite" aria-atomic="true"></div>
+
+    {% include 'app/partials/_bootstrap-bundle.html' %}
+    <script type="module" src="{% static 'js/app/nav-auth.js' %}?v={% now "U" %}"></script>
+    <script type="module" src="{% static 'js/app/teacher/questions.js' %}?v={% now "U" %}"></script>
+</body>
+</html>

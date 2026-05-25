@@ -947,30 +947,7 @@
   gap: var(--s-3);
 }
 
-.ds-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s-2);
-  padding: 10px var(--s-4);
-  border-radius: var(--r-sm);
-  font-size: 13px;
-  font-weight: var(--fw-medium);
-  cursor: pointer;
-  border: 1px solid transparent;
-  transition: opacity var(--dur-fast) var(--ease-out),
-              background-color var(--dur-fast) var(--ease-out);
-}
-
-.ds-btn--ink       { background: var(--ink);          color: var(--paper-surface); }
-.ds-btn--ink:hover { opacity: 0.9; }
-.ds-btn--sage      { background: var(--sage);         color: var(--paper-surface); }
-.ds-btn--sage:hover { opacity: 0.9; }
-.ds-btn--secondary { background: var(--paper-surface); color: var(--ink); border-color: var(--paper-border-strong); }
-.ds-btn--secondary:hover { background: var(--paper-elevated); }
-.ds-btn--ghost     { background: 0; color: var(--ink-muted); }
-.ds-btn--ghost:hover { color: var(--ink); }
-.ds-btn--danger    { background: var(--rust-soft); color: var(--rust); }
-.ds-btn--danger:hover { opacity: 0.9; }
+/* .ds-btn vive en components/buttons.css */
 
 
 .ds-stack {

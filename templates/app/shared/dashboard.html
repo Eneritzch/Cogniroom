@@ -202,24 +202,11 @@
                     </p>
                 </div>
                 <div class="d-hero__actions">
-                    <div class="dropdown">
-                        <button type="button" class="d-action d-action--ghost" data-bs-toggle="dropdown" aria-expanded="false">
-                            <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
-                                <path d="M3 6h18M7 12h10M11 18h2"></path>
-                            </svg>
-                            <span class="d-action__k">Sala</span>
-                            <span id="teacher-current-room" class="d-action__v">Termodinámica I · 2026·I</span>
-                            <svg class="icon-svg" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true">
-                                <polyline points="6 9 12 15 18 9"></polyline>
-                            </svg>
-                        </button>
-                        <ul class="dropdown-menu filter-dropdown">
-                            <li><button class="dropdown-item filter-dropdown__item" type="button" data-room-id="1">Termodinámica I · 2026·I</button></li>
-                            <li><button class="dropdown-item filter-dropdown__item" type="button" data-room-id="2">Cinética Química · 2026·I</button></li>
-                            <li><button class="dropdown-item filter-dropdown__item" type="button" data-room-id="3">Fisicoquímica · Repaso</button></li>
-                        </ul>
-                    </div>
-                    <a href="/app/room/" class="d-action d-action--secondary">
+                    <span class="d-hero__active-room" aria-live="polite">
+                        <span class="d-action__k">Mostrando</span>
+                        <span id="teacher-current-room" class="d-action__v">—</span>
+                    </span>
+                    <a href="/app/rooms/" class="d-action d-action--secondary">
                         <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
                             <path d="M3 9h18M9 21V9"></path>
                         </svg>

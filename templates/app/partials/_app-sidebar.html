@@ -29,13 +29,45 @@
             </svg>
             <span class="app-sidebar__label">Dashboard</span>
         </a>
-        <a class="app-sidebar__item" href="/app/room/" data-show-for="teacher" {% if active == 'room' %}aria-current="page"{% endif %} data-tip="Salas">
+        <a class="app-sidebar__item" href="/app/students/" data-show-for="teacher" {% if active == 'students' %}aria-current="page"{% endif %} data-tip="Estudiantes">
             <svg class="icon-svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M3 21V8l9-5 9 5v13"></path>
-                <path d="M9 21V12h6v9"></path>
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
             </svg>
-            <span class="app-sidebar__label">Salas</span>
+            <span class="app-sidebar__label">Estudiantes</span>
         </a>
+        <a class="app-sidebar__item" href="/app/questions/" data-show-for="teacher" {% if active == 'questions' %}aria-current="page"{% endif %} data-tip="Preguntas">
+            <svg class="icon-svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path>
+            </svg>
+            <span class="app-sidebar__label">Preguntas</span>
+        </a>
+        <a class="app-sidebar__item" href="/app/pdfs/" data-show-for="teacher" {% if active == 'pdfs' %}aria-current="page"{% endif %} data-tip="PDFs">
+            <svg class="icon-svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+            </svg>
+            <span class="app-sidebar__label">PDFs</span>
+        </a>
+        <a class="app-sidebar__item" href="/app/metrics/" data-show-for="teacher" {% if active == 'metrics' %}aria-current="page"{% endif %} data-tip="Métricas">
+            <svg class="icon-svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                <line x1="3" y1="3" x2="3" y2="21"></line>
+                <line x1="3" y1="21" x2="21" y2="21"></line>
+                <rect x="7"  y="13" width="3" height="5"></rect>
+                <rect x="12" y="9"  width="3" height="9"></rect>
+                <rect x="17" y="5"  width="3" height="13"></rect>
+            </svg>
+            <span class="app-sidebar__label">Métricas</span>
+        </a>
+        <button type="button" class="app-sidebar__item app-sidebar__item--accent" data-show-for="teacher" data-tip="Crear sala" data-bs-toggle="modal" data-bs-target="#createRoomModal">
+            <svg class="icon-svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span class="app-sidebar__label">Crear sala</span>
+        </button>
         <a class="app-sidebar__item" href="/app/session/" data-show-for="student" {% if active == 'session' %}aria-current="page"{% endif %} data-tip="Sesión">
             <svg class="icon-svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M12 2v4"></path>
@@ -46,7 +78,7 @@
             </svg>
             <span class="app-sidebar__label">Sesión</span>
         </a>
-        <a class="app-sidebar__item" href="/app/diagnoses/" {% if active == 'diagnoses' %}aria-current="page"{% endif %} data-tip="Diagnósticos">
+        <a class="app-sidebar__item" href="/app/diagnoses/" data-show-for="student" {% if active == 'diagnoses' %}aria-current="page"{% endif %} data-tip="Diagnósticos">
             <svg class="icon-svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path>
             </svg>
@@ -63,3 +95,52 @@
         </button>
     </nav>
 </aside>
+
+<div class="modal fade" id="createRoomModal" tabindex="-1" aria-labelledby="createRoomModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content create-room-modal">
+            <header class="create-room-modal__head">
+                <div>
+                    <span class="eyebrow">Nueva sala</span>
+                    <h2 id="createRoomModalTitle" class="create-room-modal__title">Crear sala</h2>
+                </div>
+                <button type="button" class="create-room-modal__close" data-bs-dismiss="modal" aria-label="Cerrar">
+                    <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </header>
+
+            <form class="create-room-modal__body" id="create-room-form" novalidate>
+                <div class="create-room-modal__field">
+                    <label for="cr-name" class="create-room-modal__label">Nombre de la sala</label>
+                    <input type="text" id="cr-name" name="name" class="form-control" placeholder="Ej. Termodinámica II · 2026·II" required>
+                </div>
+
+                <div class="create-room-modal__field">
+                    <label for="cr-mode" class="create-room-modal__label">Modo</label>
+                    <select id="cr-mode" name="mode" class="form-select">
+                        <option value="group">Grupal — el docente aprueba preguntas IA</option>
+                        <option value="individual">Individual — preguntas IA auto-aprobadas</option>
+                    </select>
+                </div>
+
+                <div class="create-room-modal__field">
+                    <label for="cr-desc" class="create-room-modal__label">Descripción (opcional)</label>
+                    <textarea id="cr-desc" name="description" class="form-control" rows="3" placeholder="Para qué cohorte, qué unidad, qué semestre…"></textarea>
+                </div>
+            </form>
+
+            <footer class="create-room-modal__foot">
+                <button type="button" class="ds-btn ds-btn--ghost" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" form="create-room-form" class="ds-btn ds-btn--ink">
+                    <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    Crear sala
+                </button>
+            </footer>
+        </div>
+    </div>
+</div>

@@ -77,6 +77,14 @@ kbd {
   stroke-linejoin: round;
 }
 
+[hidden] { display: none !important; }
+
+.app-sidebar:not(.nav-ready) [data-show-for],
+.app-nav:not(.nav-ready) [data-show-for],
+.landing-nav:not(.nav-ready) [data-show-for] {
+  display: none !important;
+}
+
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50%      { opacity: 0.4; }

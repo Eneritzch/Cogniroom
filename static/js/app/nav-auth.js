@@ -11,7 +11,7 @@ function filterNav(role) {
             || (!role && allowed.includes('public'));
         el.hidden = !matches;
     });
-    document.querySelectorAll('.app-nav, .landing-nav').forEach((nav) => {
+    document.querySelectorAll('.app-nav, .landing-nav, .app-sidebar').forEach((nav) => {
         nav.classList.add('nav-ready');
     });
     renumberNav();
@@ -118,6 +118,86 @@ function setupSidebarToggle() {
 }
 
 
+const ACTIVE_ROOM_KEY = 'cogniroom.activeRoomId';
+
+const MOCK_ROOMS = [
+    { id: 1, name: 'Termodinámica I · 2026·I', meta: '84 est.' },
+    { id: 2, name: 'Cinética Química · 2026·I', meta: '62 est.' },
+    { id: 3, name: 'Fisicoquímica · Repaso',    meta: '41 est.' },
+];
+
+
+function getActiveRoom() {
+    const stored = Number(localStorage.getItem(ACTIVE_ROOM_KEY));
+    return MOCK_ROOMS.find((r) => r.id === stored) || MOCK_ROOMS[0];
+}
+
+function setActiveRoom(roomId) {
+    const room = MOCK_ROOMS.find((r) => r.id === Number(roomId));
+    if (!room) return;
+    localStorage.setItem(ACTIVE_ROOM_KEY, String(room.id));
+    paintActiveRoom(room);
+    window.dispatchEvent(new CustomEvent('cogniroom:roomchange', { detail: room }));
+}
+
+function paintActiveRoom(room) {
+    const $name = document.getElementById('topbar-room-name');
+    if ($name) $name.textContent = room.name;
+    document.querySelectorAll('#topbar-room-menu .dropdown-item').forEach((el) => {
+        const isActive = Number(el.dataset.roomId) === room.id;
+        el.setAttribute('aria-current', isActive ? 'true' : 'false');
+    });
+}
+
+function setupRoomSelector() {
+    const $wrap = document.querySelector('.dashboard-shell__room');
+    const $menu = document.getElementById('topbar-room-menu');
+    if (!$wrap || !$menu) return;
+
+    $wrap.hidden = false;
+
+    $menu.innerHTML = MOCK_ROOMS.map((r) => `
+        <li>
+            <button type="button" class="dropdown-item" data-room-id="${r.id}">
+                <span>${r.name}</span>
+                <span class="topbar-room__menu-meta">${r.meta}</span>
+            </button>
+        </li>
+    `).join('');
+
+    $menu.querySelectorAll('.dropdown-item').forEach((btn) => {
+        btn.addEventListener('click', () => setActiveRoom(btn.dataset.roomId));
+    });
+
+    paintActiveRoom(getActiveRoom());
+}
+
+
+async function setupCreateRoomForm() {
+    const $form = document.getElementById('create-room-form');
+    if (!$form || $form.dataset.bound) return;
+    $form.dataset.bound = '1';
+
+    const { toast } = await import(`./toast.js?v=${_v}`);
+
+    $form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = $form.elements.name.value.trim();
+        if (!name) {
+            $form.elements.name.focus();
+            return;
+        }
+        toast(`Sala "${name}" creada (mock).`, { kind: 'success' });
+        $form.reset();
+        const $modal = document.getElementById('createRoomModal');
+        if ($modal && window.bootstrap) {
+            const instance = window.bootstrap.Modal.getInstance($modal) || new window.bootstrap.Modal($modal);
+            instance.hide();
+        }
+    });
+}
+
+
 async function updateNav() {
     setupSidebarToggle();
 
@@ -131,6 +211,10 @@ async function updateNav() {
         filterNav(user.role);
         replaceCta(user);
         populateTopbar(user);
+        if (user.role === 'teacher') {
+            setupRoomSelector();
+            setupCreateRoomForm();
+        }
     } catch (_) {
         tokens.clear();
         filterNav(null);
@@ -138,3 +222,6 @@ async function updateNav() {
 }
 
 updateNav();
+
+
+export { MOCK_ROOMS, getActiveRoom, setActiveRoom, ACTIVE_ROOM_KEY };

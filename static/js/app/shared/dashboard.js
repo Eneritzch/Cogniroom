@@ -913,24 +913,21 @@ function switchRoom(roomId) {
 }
 
 
-document.querySelectorAll('.filter-dropdown__item').forEach((item) => {
-    item.addEventListener('click', () => {
-        const id = item.dataset.roomId;
-        switchRoom(id);
-    });
-});
-
-document.getElementById('filter-reset')?.addEventListener('click', () => {
-    switchRoom('1');
-});
-
 if (document.querySelector('[data-view="teacher"]')) {
+    const { getActiveRoom } = await import(`../nav-auth.js?v=${_v}`);
+
     const init = () => {
         renderRoomsCompare();
-        switchRoom('1');
+        const room = getActiveRoom();
+        switchRoom(String(room.id));
     };
+
     document.addEventListener('DOMContentLoaded', init);
     setTimeout(init, 0);
+
+    window.addEventListener('cogniroom:roomchange', (e) => {
+        switchRoom(String(e.detail.id));
+    });
 }
 
 

@@ -1,0 +1,88 @@
+{% load static %}<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Mastery por nodo × estudiante de la sala activa.">
+    <title>Métricas · CogniRoom</title>
+    {% include 'app/partials/_styles.html' %}
+    <link rel="stylesheet" href="{% static 'css/app/shared/dashboard.css' %}?v={% now "U" %}">
+    <link rel="stylesheet" href="{% static 'css/app/teacher/room.css' %}?v={% now "U" %}">
+</head>
+<body class="room-page dashboard-shell">
+
+    {% include 'app/partials/_app-sidebar.html' with active='metrics' %}
+
+    <main class="dashboard-shell__main">
+
+        {% include 'app/partials/_app-topbar.html' %}
+
+        <span class="eyebrow">Métricas</span>
+        <div class="room-head">
+            <h1 class="room-title" id="room-name">—</h1>
+            <div class="room-meta">
+                <span><span id="room-students">—</span> estudiantes</span>
+                <span class="room-meta__sep">·</span>
+                <span>Mastery por nodo</span>
+            </div>
+        </div>
+
+        <section class="room-panel" role="region" aria-labelledby="metrics-title">
+            <div class="room-metrics">
+                <header class="room-metrics__head">
+                    <h2 id="metrics-title" class="room-metrics__title">Mastery por nodo × estudiante</h2>
+                    <div class="room-metrics__filters">
+                        <button type="button" class="room-metrics__filter">
+                            Todos los perfiles
+                            <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+                        <span class="room-metrics__legend">
+                            <span>0.0</span>
+                            <span class="room-metrics__legend-bar" aria-hidden="true"></span>
+                            <span>1.0</span>
+                        </span>
+                    </div>
+                </header>
+
+                <div class="heatmap" id="heatmap">
+                    <div class="heatmap__inner" id="heatmap-inner">
+                        <div class="heatmap__header" id="heatmap-header"></div>
+                        <div id="heatmap-rows"></div>
+                    </div>
+                </div>
+
+                <div class="room-stats">
+                    <div class="room-stat">
+                        <div class="room-stat__k eyebrow">ICC sala</div>
+                        <div class="room-stat__v" id="stat-icc">—</div>
+                        <div class="room-stat__t" data-tone="moss">+0.04 sem.</div>
+                    </div>
+                    <div class="room-stat">
+                        <div class="room-stat__k eyebrow">IPC promedio</div>
+                        <div class="room-stat__v" id="stat-ipc">—</div>
+                        <div class="room-stat__t" data-tone="amber">−0.06 sem.</div>
+                    </div>
+                    <div class="room-stat">
+                        <div class="room-stat__k eyebrow">Sobreconfiados</div>
+                        <div class="room-stat__v" id="stat-over">—</div>
+                        <div class="room-stat__t" data-tone="amber" id="stat-over-detail">—</div>
+                    </div>
+                    <div class="room-stat">
+                        <div class="room-stat__k eyebrow">Calibrados</div>
+                        <div class="room-stat__v" id="stat-cal">—</div>
+                        <div class="room-stat__t" data-tone="moss" id="stat-cal-detail">—</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div class="toast-host" id="toast-host" aria-live="polite" aria-atomic="true"></div>
+
+    {% include 'app/partials/_bootstrap-bundle.html' %}
+    <script type="module" src="{% static 'js/app/nav-auth.js' %}?v={% now "U" %}"></script>
+    <script type="module" src="{% static 'js/app/teacher/metrics.js' %}?v={% now "U" %}"></script>
+</body>
+</html>
