@@ -29,6 +29,13 @@
             </svg>
             <span class="app-sidebar__label">Dashboard</span>
         </a>
+        <a class="app-sidebar__item" href="/app/rooms/" data-show-for="teacher" {% if active == 'rooms' %}aria-current="page"{% endif %} data-tip="Salas">
+            <svg class="icon-svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M3 21V8l9-5 9 5v13"></path>
+                <path d="M9 21V12h6v9"></path>
+            </svg>
+            <span class="app-sidebar__label">Salas</span>
+        </a>
         <a class="app-sidebar__item" href="/app/students/" data-show-for="teacher" {% if active == 'students' %}aria-current="page"{% endif %} data-tip="Estudiantes">
             <svg class="icon-svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
@@ -113,23 +120,22 @@
             </header>
 
             <form class="create-room-modal__body" id="create-room-form" novalidate>
+                <input type="hidden" name="mode" value="group">
+
                 <div class="create-room-modal__field">
                     <label for="cr-name" class="create-room-modal__label">Nombre de la sala</label>
                     <input type="text" id="cr-name" name="name" class="form-control" placeholder="Ej. Termodinámica II · 2026·II" required>
                 </div>
 
                 <div class="create-room-modal__field">
-                    <label for="cr-mode" class="create-room-modal__label">Modo</label>
-                    <select id="cr-mode" name="mode" class="form-select">
-                        <option value="group">Grupal — el docente aprueba preguntas IA</option>
-                        <option value="individual">Individual — preguntas IA auto-aprobadas</option>
-                    </select>
-                </div>
-
-                <div class="create-room-modal__field">
                     <label for="cr-desc" class="create-room-modal__label">Descripción (opcional)</label>
                     <textarea id="cr-desc" name="description" class="form-control" rows="3" placeholder="Para qué cohorte, qué unidad, qué semestre…"></textarea>
                 </div>
+
+                <p class="create-room-modal__hint">
+                    Las salas que tú creas son <strong>grupales</strong>: tus alumnos
+                    entran con un código y tú apruebas las preguntas que genera la IA.
+                </p>
             </form>
 
             <footer class="create-room-modal__foot">

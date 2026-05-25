@@ -124,6 +124,10 @@ const MOCK_ROOMS = [
     { id: 1, name: 'Termodinámica I · 2026·I',  meta: '84 est.' },
     { id: 2, name: 'Cinética Química · 2026·I', meta: '62 est.' },
     { id: 3, name: 'Fisicoquímica · Repaso',    meta: '41 est.' },
+    { id: 4, name: 'Mecánica Cuántica · 2026·I', meta: '38 est.' },
+    { id: 5, name: 'Química Orgánica · 2025·II', meta: '56 est.' },
+    { id: 6, name: 'Bioquímica · Avanzado',      meta: '29 est.' },
+    { id: 7, name: 'Termodinámica II · 2026·II', meta: '47 est.' },
 ];
 
 

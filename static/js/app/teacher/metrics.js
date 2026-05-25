@@ -1,12 +1,20 @@
 const _v = new URL(import.meta.url).searchParams.get('v') || '';
 const { tokens } = await import(`../api.js?v=${_v}`);
-const { ROOM_DATA, escapeHTML, profileLabel, fmt, bindRoomChange } = await import(`./room-mock.js?v=${_v}`);
+const { ROOM_DATA, escapeHTML, profileLabel, bindRoomChange } = await import(`./room-mock.js?v=${_v}`);
 const { getActiveRoom } = await import(`../nav-auth.js?v=${_v}`);
 
 
 if (!tokens.access) {
     location.replace('/app/');
 }
+
+
+const PAGE_SIZE = 12;
+
+let currentProfile = 'all';
+let currentCurso = 'all';
+let currentSearch = '';
+let currentPage = 1;
 
 
 function cellColor(v) {
@@ -16,34 +24,252 @@ function cellColor(v) {
 }
 
 
+function cellColorBold(v) {
+    if (v >= 0.7) return `color-mix(in oklab, var(--sage) 78%, var(--paper-surface))`;
+    if (v >= 0.5) return `color-mix(in oklab, var(--amber) 72%, var(--paper-surface))`;
+    return `color-mix(in oklab, var(--rust) 72%, var(--paper-surface))`;
+}
+
+
 function profileShort(p) {
     return ({ calibrated: 'Cal.', overconfident: 'Sobre.', underconfident: 'Sub.' })[p] || '—';
 }
 
 
-function renderHeatmap(data) {
+function avg(arr) {
+    if (!arr || arr.length === 0) return 0;
+    return arr.reduce((s, v) => s + v, 0) / arr.length;
+}
+
+
+function rowAvg(row) {
+    return avg(row.cells);
+}
+
+
+function nodeAvg(roster, nodeIndex) {
+    return avg(roster.map((r) => r.cells[nodeIndex]));
+}
+
+
+function initials(name) {
+    return name.split(/\s+/).map((p) => p[0]).join('').slice(0, 2).toUpperCase();
+}
+
+
+function applyFilters(roster) {
+    const q = currentSearch.trim().toLowerCase();
+    return roster.filter((s) => {
+        if (currentProfile !== 'all' && s.profile !== currentProfile) return false;
+        if (currentCurso !== 'all' && s.curso !== currentCurso) return false;
+        if (q && !s.name.toLowerCase().includes(q)) return false;
+        return true;
+    });
+}
+
+
+function renderInsights(data) {
+    const $wrap = document.getElementById('metrics-insights');
+    if (!$wrap) return;
+
+    const nodeAverages = data.nodes.map((node, i) => ({ node, avg: nodeAvg(data.roster, i) }));
+    nodeAverages.sort((a, b) => a.avg - b.avg);
+    const weakest = nodeAverages[0];
+    const strongest = nodeAverages[nodeAverages.length - 1];
+
+    const studentAverages = data.roster.map((s) => ({ name: s.name, avg: rowAvg(s), profile: s.profile }));
+    studentAverages.sort((a, b) => a.avg - b.avg);
+    const lowest = studentAverages[0];
+    const highest = studentAverages[studentAverages.length - 1];
+
+    $wrap.innerHTML = `
+        <article class="insight-card insight-card--weak">
+            <span class="insight-card__k">Tema más débil</span>
+            <strong class="insight-card__v">${escapeHTML(weakest.node)}</strong>
+            <span class="insight-card__sub">
+                <span class="num">${Math.round(weakest.avg * 100)}%</span> de dominio promedio
+            </span>
+        </article>
+        <article class="insight-card insight-card--strong">
+            <span class="insight-card__k">Tema más fuerte</span>
+            <strong class="insight-card__v">${escapeHTML(strongest.node)}</strong>
+            <span class="insight-card__sub">
+                <span class="num">${Math.round(strongest.avg * 100)}%</span> de dominio promedio
+            </span>
+        </article>
+        <article class="insight-card insight-card--risk">
+            <span class="insight-card__k">Estudiante a apoyar</span>
+            <strong class="insight-card__v">${escapeHTML(lowest.name)}</strong>
+            <span class="insight-card__sub">
+                <span class="num">${Math.round(lowest.avg * 100)}%</span> · ${escapeHTML(profileLabel(lowest.profile))}
+            </span>
+        </article>
+        <article class="insight-card insight-card--top">
+            <span class="insight-card__k">Estudiante destacado</span>
+            <strong class="insight-card__v">${escapeHTML(highest.name)}</strong>
+            <span class="insight-card__sub">
+                <span class="num">${Math.round(highest.avg * 100)}%</span> · ${escapeHTML(profileLabel(highest.profile))}
+            </span>
+        </article>
+    `;
+}
+
+
+function renderCursoChips(cursos) {
+    const $wrap = document.getElementById('metrics-curso-chips');
+    const $group = document.getElementById('metrics-curso-group');
+    if (!$wrap || !$group) return;
+
+    if (!cursos || cursos.length <= 1) {
+        $group.hidden = true;
+        return;
+    }
+    $group.hidden = false;
+
+    const totalStudents = cursos.reduce((s, c) => s + c.students, 0);
+    const chips = [
+        `<button type="button" class="metrics-chip" data-curso="all" aria-pressed="${currentCurso === 'all' ? 'true' : 'false'}">
+            Todos <span class="metrics-chip__count num">${totalStudents}</span>
+        </button>`,
+        ...cursos.map((c) => `
+            <button type="button" class="metrics-chip" data-curso="${c.id}" aria-pressed="${currentCurso === c.id ? 'true' : 'false'}">
+                ${escapeHTML(c.name.split(' · ')[0])} <span class="metrics-chip__count num">${c.students}</span>
+            </button>
+        `),
+    ];
+    $wrap.innerHTML = chips.join('');
+
+    $wrap.querySelectorAll('[data-curso]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            currentCurso = btn.dataset.curso;
+            currentPage = 1;
+            $wrap.querySelectorAll('[data-curso]').forEach((b) => {
+                b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+            });
+            renderHeatmap();
+        });
+    });
+}
+
+
+function renderHeatmap() {
+    const room = getActiveRoom();
+    const data = ROOM_DATA[room.id];
+    if (!data) return;
+
     const $header = document.getElementById('heatmap-header');
     const $rows = document.getElementById('heatmap-rows');
-    if (!$header || !$rows) return;
+    const $footer = document.getElementById('heatmap-footer');
+    const $meta = document.getElementById('metrics-meta');
+    if (!$header || !$rows || !$footer) return;
 
-    $header.innerHTML = data.nodes
-        .map((n) => `<div class="heatmap__header-cell eyebrow">${escapeHTML(n)}</div>`)
-        .join('');
+    const filtered = applyFilters(data.roster);
+    const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+    if (currentPage > totalPages) currentPage = totalPages;
+    const startIdx = (currentPage - 1) * PAGE_SIZE;
+    const visible = filtered.slice(startIdx, startIdx + PAGE_SIZE);
 
-    $rows.innerHTML = data.roster.map((row) => `
-      <div class="heatmap__row">
-        <div class="heatmap__row-name">
-          <span class="heatmap__row-name-text">${escapeHTML(row.name)}</span>
-          <span class="pill" data-profile="${row.profile}">${profileShort(row.profile)}</span>
+    if ($meta) {
+        $meta.textContent = filtered.length === 0
+            ? 'Sin estudiantes para este filtro'
+            : `${startIdx + 1}–${startIdx + visible.length} de ${filtered.length} estudiantes`;
+    }
+
+    if (filtered.length === 0) {
+        $header.innerHTML = '';
+        $rows.innerHTML = `<div class="heatmap__empty">Sin estudiantes para este filtro.</div>`;
+        $footer.innerHTML = '';
+        renderPager(0, 1);
+        return;
+    }
+
+    $header.innerHTML = `
+        <div class="heatmap__row-name heatmap__row-name--header">
+            <span class="eyebrow">Estudiante</span>
         </div>
-        ${row.cells.map((v, i) => `
-          <div class="heatmap__cell" style="background:${cellColor(v)};"
-               title="${escapeHTML(row.name)} · ${escapeHTML(data.nodes[i])} · ${v.toFixed(2)}">
-            <span class="heatmap__cell-value">${v.toFixed(2)}</span>
-          </div>
-        `).join('')}
-      </div>
-    `).join('');
+        ${data.nodes.map((n) => `<div class="heatmap__header-cell eyebrow">${escapeHTML(n)}</div>`).join('')}
+        <div class="heatmap__summary heatmap__summary--header eyebrow">Promedio</div>
+    `;
+
+    $rows.innerHTML = visible.map((row) => {
+        const rAvg = rowAvg(row);
+        return `
+        <div class="heatmap__row">
+            <div class="heatmap__row-name">
+                <span class="heatmap__row-avatar" aria-hidden="true">${initials(row.name)}</span>
+                <span class="heatmap__row-name-text">${escapeHTML(row.name)}</span>
+                <span class="pill" data-profile="${row.profile}">${profileShort(row.profile)}</span>
+            </div>
+            ${row.cells.map((v, i) => `
+                <div class="heatmap__cell" style="background:${cellColor(v)};"
+                     title="${escapeHTML(row.name)} · ${escapeHTML(data.nodes[i])} · ${Math.round(v * 100)}%">
+                    <span class="heatmap__cell-value">${Math.round(v * 100)}</span>
+                </div>
+            `).join('')}
+            <div class="heatmap__summary">${Math.round(rAvg * 100)}%</div>
+        </div>
+        `;
+    }).join('');
+
+    $footer.innerHTML = `
+        <div class="heatmap__row-name heatmap__row-name--footer">
+            <span class="eyebrow">Promedio del tema</span>
+        </div>
+        ${data.nodes.map((_, i) => {
+            const v = nodeAvg(data.roster, i);
+            return `<div class="heatmap__cell heatmap__cell--avg" style="background:${cellColorBold(v)};">
+                <span class="heatmap__cell-value">${Math.round(v * 100)}</span>
+            </div>`;
+        }).join('')}
+        <div class="heatmap__summary heatmap__summary--total">${Math.round(avg(data.roster.map(rowAvg)) * 100)}%</div>
+    `;
+
+    renderPager(filtered.length, totalPages);
+}
+
+
+function renderPager(total, totalPages) {
+    const $pager = document.getElementById('metrics-pager');
+    if (!$pager) return;
+
+    if (total === 0 || totalPages <= 1) {
+        $pager.innerHTML = '';
+        $pager.hidden = true;
+        return;
+    }
+    $pager.hidden = false;
+
+    const pages = pageRange(currentPage, totalPages);
+    const parts = [];
+    parts.push(`<span class="metrics-pager__info">Página ${currentPage} de ${totalPages}</span>`);
+    parts.push(`<button type="button" class="metrics-pager__btn" data-page-go="prev" ${currentPage === 1 ? 'disabled' : ''} aria-label="Anterior">‹</button>`);
+    pages.forEach((p) => {
+        if (p === '…') {
+            parts.push(`<span class="metrics-pager__ellipsis">…</span>`);
+        } else {
+            parts.push(`<button type="button" class="metrics-pager__btn" data-page-go="${p}" ${p === currentPage ? 'aria-current="page"' : ''}>${p}</button>`);
+        }
+    });
+    parts.push(`<button type="button" class="metrics-pager__btn" data-page-go="next" ${currentPage === totalPages ? 'disabled' : ''} aria-label="Siguiente">›</button>`);
+    $pager.innerHTML = parts.join('');
+
+    $pager.querySelectorAll('[data-page-go]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const target = btn.dataset.pageGo;
+            if (target === 'prev') currentPage = Math.max(1, currentPage - 1);
+            else if (target === 'next') currentPage = Math.min(totalPages, currentPage + 1);
+            else currentPage = Number(target);
+            renderHeatmap();
+        });
+    });
+}
+
+
+function pageRange(current, total) {
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+    if (current <= 4) return [1, 2, 3, 4, 5, '…', total];
+    if (current >= total - 3) return [1, '…', total - 4, total - 3, total - 2, total - 1, total];
+    return [1, '…', current - 1, current, current + 1, '…', total];
 }
 
 
@@ -55,18 +281,38 @@ function render() {
     document.getElementById('room-name').textContent = data.name;
     document.getElementById('room-students').textContent = String(data.students);
 
-    document.getElementById('stat-icc').textContent = fmt(data.icc);
-    document.getElementById('stat-ipc').textContent = fmt(data.ipc);
+    currentPage = 1;
+    currentCurso = 'all';
 
-    const total = data.roster.length || 1;
-    const over = data.roster.filter((r) => r.profile === 'overconfident').length;
-    const cal = data.roster.filter((r) => r.profile === 'calibrated').length;
-    document.getElementById('stat-over').textContent = `${Math.round((over / total) * 100)}%`;
-    document.getElementById('stat-cal').textContent  = `${Math.round((cal  / total) * 100)}%`;
-    document.getElementById('stat-over-detail').textContent = `${over} de ${total}`;
-    document.getElementById('stat-cal-detail').textContent  = `${cal} de ${total}`;
+    renderInsights(data);
+    renderCursoChips(data.cursos);
+    renderHeatmap();
+}
 
-    renderHeatmap(data);
+
+document.querySelectorAll('[data-profile-filter]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+        currentProfile = btn.dataset.profileFilter;
+        currentPage = 1;
+        document.querySelectorAll('[data-profile-filter]').forEach((b) => {
+            b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+        });
+        renderHeatmap();
+    });
+});
+
+
+const $search = document.getElementById('metrics-search');
+if ($search) {
+    let t = null;
+    $search.addEventListener('input', () => {
+        clearTimeout(t);
+        t = setTimeout(() => {
+            currentSearch = $search.value;
+            currentPage = 1;
+            renderHeatmap();
+        }, 150);
+    });
 }
 
 

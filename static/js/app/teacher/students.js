@@ -9,7 +9,12 @@ if (!tokens.access) {
 }
 
 
-let currentFilter = 'all';
+const PAGE_SIZE = 20;
+
+let currentProfile = 'all';
+let currentCurso = 'all';
+let currentSearch = '';
+let visibleCount = PAGE_SIZE;
 
 
 function initials(name) {
@@ -18,15 +23,161 @@ function initials(name) {
 
 
 function gapTone(gap) {
-    if (gap > 0.2) return 'amber';
-    if (gap < -0.2) return 'stone';
+    if (gap > 0.15)  return 'amber';
+    if (gap < -0.15) return 'stone';
     return 'moss';
 }
 
 
-function fmtGap(g) {
-    const sign = g >= 0 ? '+' : '';
-    return `${sign}${g.toFixed(2)}`;
+function actionLabel(profile) {
+    if (profile === 'overconfident') return 'Refuerzo';
+    if (profile === 'underconfident') return 'Nota';
+    return 'Detalle';
+}
+
+
+function summaryShort(profile, gapPts) {
+    const abs = Math.abs(gapPts);
+    if (profile === 'overconfident') return `Cree saber ${abs} pts más de lo real.`;
+    if (profile === 'underconfident') return `Sabe ${abs} pts más de lo que cree.`;
+    return 'Bien calibrado · confianza alineada con su nivel.';
+}
+
+
+function renderCursoChips(cursos) {
+    const $wrap = document.getElementById('curso-chips');
+    const $group = document.getElementById('students-curso-group');
+    if (!$wrap || !$group) return;
+
+    if (!cursos || cursos.length <= 1) {
+        $group.hidden = true;
+        return;
+    }
+    $group.hidden = false;
+
+    const totalStudents = cursos.reduce((s, c) => s + c.students, 0);
+    const chips = [
+        `<button type="button" class="students-chip" data-curso="all" aria-pressed="${currentCurso === 'all' ? 'true' : 'false'}">
+            Todos <span class="students-chip__count num">${totalStudents}</span>
+        </button>`,
+        ...cursos.map((c) => `
+            <button type="button" class="students-chip" data-curso="${c.id}" aria-pressed="${currentCurso === c.id ? 'true' : 'false'}">
+                ${escapeHTML(c.name)} <span class="students-chip__count num">${c.students}</span>
+            </button>
+        `),
+    ];
+    $wrap.innerHTML = chips.join('');
+
+    $wrap.querySelectorAll('[data-curso]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            currentCurso = btn.dataset.curso;
+            visibleCount = PAGE_SIZE;
+            $wrap.querySelectorAll('[data-curso]').forEach((b) => {
+                b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+            });
+            renderList();
+        });
+    });
+}
+
+
+function applyFilters(roster) {
+    const q = currentSearch.trim().toLowerCase();
+    return roster.filter((s) => {
+        if (currentProfile !== 'all' && s.profile !== currentProfile) return false;
+        if (currentCurso !== 'all' && s.curso !== currentCurso) return false;
+        if (q && !s.name.toLowerCase().includes(q)) return false;
+        return true;
+    });
+}
+
+
+function renderList() {
+    const room = getActiveRoom();
+    const data = ROOM_DATA[room.id];
+    if (!data) return;
+
+    const $rows = document.getElementById('students-rows');
+    const $meta = document.getElementById('students-meta');
+    const $pager = document.getElementById('students-pager');
+    const $more = document.getElementById('students-more');
+    if (!$rows) return;
+
+    const filtered = applyFilters(data.roster);
+    const visible = filtered.slice(0, visibleCount);
+
+    if ($meta) {
+        const cursoLabel = currentCurso === 'all' ? '' : ` · ${data.cursos.find((c) => c.id === currentCurso)?.name || currentCurso}`;
+        $meta.textContent = `Mostrando ${visible.length} de ${filtered.length}${cursoLabel}`;
+    }
+
+    if (filtered.length === 0) {
+        $rows.innerHTML = `<li class="students-list__empty">Sin estudiantes para este filtro.</li>`;
+        if ($pager) $pager.hidden = true;
+        return;
+    }
+
+    $rows.innerHTML = visible.map((s) => {
+        const mastery = Math.round(s.bkt * 100);
+        const gapPts = Math.round(s.gap * 100);
+        const confidence = Math.min(100, Math.max(0, mastery + gapPts));
+        const tone = gapTone(s.gap);
+        const gapText = gapPts > 0 ? `+${gapPts}` : `${gapPts}`;
+
+        return `
+        <li class="student-card" data-profile="${s.profile}">
+            <div class="student-card__head">
+                <span class="student-card__avatar" aria-hidden="true">${initials(s.name)}</span>
+                <div class="student-card__id">
+                    <div class="student-card__name">${escapeHTML(s.name)}</div>
+                    <div class="student-card__meta">
+                        ${s.curso ? `<span class="student-card__curso">${escapeHTML(s.curso)}</span>` : ''}
+                        <span class="student-card__last">${escapeHTML(s.last)}</span>
+                    </div>
+                </div>
+                <span class="pill student-card__pill" data-profile="${s.profile}">${profileLabel(s.profile)}</span>
+            </div>
+
+            <div class="student-card__bars">
+                <div class="microbar" title="Cree saber ${confidence}%">
+                    <span class="microbar__label">Cree</span>
+                    <div class="microbar__track">
+                        <div class="microbar__fill microbar__fill--declared" style="width:${confidence}%"></div>
+                    </div>
+                    <span class="microbar__val num">${confidence}%</span>
+                </div>
+                <div class="microbar" title="Realmente sabe ${mastery}%">
+                    <span class="microbar__label">Sabe</span>
+                    <div class="microbar__track">
+                        <div class="microbar__fill microbar__fill--mastery" style="width:${mastery}%"></div>
+                    </div>
+                    <span class="microbar__val num">${mastery}%</span>
+                </div>
+            </div>
+
+            <div class="student-card__foot">
+                <span class="student-card__diff" data-tone="${tone}" title="${summaryShort(s.profile, gapPts)}">${gapText} pts</span>
+                <button type="button" class="student-card__action">
+                    ${actionLabel(s.profile)}
+                    <svg class="icon-svg" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+            </div>
+        </li>
+        `;
+    }).join('');
+
+    if ($pager && $more) {
+        const remaining = filtered.length - visibleCount;
+        if (remaining > 0) {
+            $pager.hidden = false;
+            $more.textContent = `Mostrar ${Math.min(PAGE_SIZE, remaining)} más`;
+        } else {
+            $pager.hidden = true;
+        }
+    }
 }
 
 
@@ -38,47 +189,47 @@ function render() {
     document.getElementById('room-name').textContent = data.name;
     document.getElementById('room-students').textContent = String(data.students);
 
-    const $rows = document.getElementById('students-rows');
-    if (!$rows) return;
+    visibleCount = PAGE_SIZE;
+    currentCurso = 'all';
 
-    const filtered = currentFilter === 'all'
-        ? data.roster
-        : data.roster.filter((r) => r.profile === currentFilter);
-
-    if (filtered.length === 0) {
-        $rows.innerHTML = `<div class="students-table__empty">Sin estudiantes para este filtro.</div>`;
-        return;
-    }
-
-    $rows.innerHTML = filtered.map((s) => `
-        <div class="students-table__row" role="row">
-            <div class="students-table__cell students-table__name" role="cell">
-                <span class="students-table__avatar" aria-hidden="true">${initials(s.name)}</span>
-                <span>${escapeHTML(s.name)}</span>
-            </div>
-            <div class="students-table__cell" role="cell">
-                <span class="pill" data-profile="${s.profile}">${profileLabel(s.profile)}</span>
-            </div>
-            <div class="students-table__cell num" role="cell">${s.icc.toFixed(2)}</div>
-            <div class="students-table__cell num" role="cell">${s.bkt.toFixed(2)}</div>
-            <div class="students-table__cell num" role="cell">
-                <span data-tone="${gapTone(s.gap)}">${fmtGap(s.gap)}</span>
-            </div>
-            <div class="students-table__cell students-table__last" role="cell">${escapeHTML(s.last)}</div>
-        </div>
-    `).join('');
+    renderCursoChips(data.cursos);
+    renderList();
 }
 
 
-document.querySelectorAll('.students-toolbar__chip').forEach((btn) => {
+document.querySelectorAll('[data-profile-filter]').forEach((btn) => {
     btn.addEventListener('click', () => {
-        currentFilter = btn.dataset.filter;
-        document.querySelectorAll('.students-toolbar__chip').forEach((b) => {
+        currentProfile = btn.dataset.profileFilter;
+        visibleCount = PAGE_SIZE;
+        document.querySelectorAll('[data-profile-filter]').forEach((b) => {
             b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
         });
-        render();
+        renderList();
     });
 });
+
+
+const $search = document.getElementById('students-search');
+if ($search) {
+    let t = null;
+    $search.addEventListener('input', () => {
+        clearTimeout(t);
+        t = setTimeout(() => {
+            currentSearch = $search.value;
+            visibleCount = PAGE_SIZE;
+            renderList();
+        }, 150);
+    });
+}
+
+
+const $more = document.getElementById('students-more');
+if ($more) {
+    $more.addEventListener('click', () => {
+        visibleCount += PAGE_SIZE;
+        renderList();
+    });
+}
 
 
 bindRoomChange(render);

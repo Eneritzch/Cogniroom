@@ -1,0 +1,59 @@
+{% load static %}<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Gestiona tus salas, comparte códigos y mira métricas resumidas.">
+    <title>Salas · CogniRoom</title>
+    {% include 'app/partials/_styles.html' %}
+    <link rel="stylesheet" href="{% static 'css/app/shared/dashboard.css' %}?v={% now "U" %}">
+    <link rel="stylesheet" href="{% static 'css/app/teacher/room.css' %}?v={% now "U" %}">
+    <link rel="stylesheet" href="{% static 'css/app/teacher/rooms.css' %}?v={% now "U" %}">
+</head>
+<body class="rooms-page dashboard-shell">
+
+    {% include 'app/partials/_app-sidebar.html' with active='rooms' %}
+
+    <main class="dashboard-shell__main">
+
+        {% include 'app/partials/_app-topbar.html' %}
+
+        <span class="eyebrow">Salas</span>
+        <div class="room-head">
+            <h1 class="room-title">Tus salas</h1>
+            <div class="room-meta">
+                <span><span id="rooms-count">—</span> activas</span>
+                <span class="room-meta__sep">·</span>
+                <span>Comparte el código para que tus alumnos se unan</span>
+            </div>
+        </div>
+
+        <section class="room-panel" role="region" aria-label="Gestión de salas">
+            <header class="rooms-toolbar">
+                <p class="rooms-toolbar__hint">
+                    Cada sala tiene un <strong>código único</strong>. Tus alumnos lo introducen al unirse.
+                </p>
+                <button type="button" class="ds-btn ds-btn--ink" data-bs-toggle="modal" data-bs-target="#createRoomModal">
+                    <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Crear sala
+                </button>
+            </header>
+
+            <div class="rooms-meta" id="rooms-meta"></div>
+
+            <ul class="rooms-list" id="rooms-list" aria-label="Lista de salas"></ul>
+
+            <nav class="rooms-pager" id="rooms-pager" aria-label="Paginación de salas"></nav>
+        </section>
+    </main>
+
+    <div class="toast-host" id="toast-host" aria-live="polite" aria-atomic="true"></div>
+
+    {% include 'app/partials/_bootstrap-bundle.html' %}
+    <script type="module" src="{% static 'js/app/nav-auth.js' %}?v={% now "U" %}"></script>
+    <script type="module" src="{% static 'js/app/teacher/rooms.js' %}?v={% now "U" %}"></script>
+</body>
+</html>

@@ -29,26 +29,51 @@
         </div>
 
         <section class="room-panel" role="region" aria-labelledby="students-title">
-            <header class="students-toolbar">
-                <h2 id="students-title" class="students-toolbar__title">Listado</h2>
-                <div class="students-toolbar__filters">
-                    <button type="button" class="students-toolbar__chip" data-filter="all" aria-pressed="true">Todos</button>
-                    <button type="button" class="students-toolbar__chip" data-filter="overconfident" aria-pressed="false">Sobreconfiados</button>
-                    <button type="button" class="students-toolbar__chip" data-filter="calibrated" aria-pressed="false">Calibrados</button>
-                    <button type="button" class="students-toolbar__chip" data-filter="underconfident" aria-pressed="false">Subconfiados</button>
-                </div>
+            <header class="students-hero">
+                <h2 id="students-title" class="students-hero__title">¿Cómo se conoce cada estudiante?</h2>
+                <p class="students-hero__sub">Cada barra compara lo que cree saber con lo que realmente sabe.</p>
             </header>
 
-            <div class="students-table" id="students-table" role="table" aria-label="Estudiantes de la sala">
-                <div class="students-table__head" role="row">
-                    <span role="columnheader">Estudiante</span>
-                    <span role="columnheader">Perfil</span>
-                    <span role="columnheader">ICC</span>
-                    <span role="columnheader">BKT</span>
-                    <span role="columnheader">Brecha</span>
-                    <span role="columnheader">Última</span>
+            <div class="students-controls">
+                <div class="students-controls__group" id="students-curso-group" role="tablist" aria-label="Filtro por curso">
+                    <span class="students-controls__label">Curso</span>
+                    <div class="students-controls__chips" id="curso-chips"></div>
                 </div>
-                <div class="students-table__body" id="students-rows"></div>
+
+                <div class="students-controls__group">
+                    <span class="students-controls__label">Perfil</span>
+                    <div class="students-controls__chips" role="tablist" aria-label="Filtro por perfil">
+                        <button type="button" class="students-chip" data-profile-filter="all" aria-pressed="true">Todos</button>
+                        <button type="button" class="students-chip" data-profile-filter="overconfident" aria-pressed="false">
+                            <span class="students-chip__dot" data-profile="overconfident"></span>
+                            Sobreconfiados
+                        </button>
+                        <button type="button" class="students-chip" data-profile-filter="calibrated" aria-pressed="false">
+                            <span class="students-chip__dot" data-profile="calibrated"></span>
+                            Calibrados
+                        </button>
+                        <button type="button" class="students-chip" data-profile-filter="underconfident" aria-pressed="false">
+                            <span class="students-chip__dot" data-profile="underconfident"></span>
+                            Subconfiados
+                        </button>
+                    </div>
+                </div>
+
+                <label class="students-search" aria-label="Buscar estudiante">
+                    <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="11" cy="11" r="7"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="search" id="students-search" placeholder="Buscar por nombre…">
+                </label>
+            </div>
+
+            <div class="students-meta" id="students-meta"></div>
+
+            <ul class="students-list" id="students-rows" aria-label="Estudiantes de la sala"></ul>
+
+            <div class="students-pager" id="students-pager" hidden>
+                <button type="button" class="students-pager__btn" id="students-more">Mostrar 20 más</button>
             </div>
         </section>
     </main>

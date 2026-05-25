@@ -29,9 +29,12 @@
         </div>
 
         <section class="room-panel" role="region" aria-labelledby="questions-title">
-            <header class="questions-toolbar">
-                <h2 id="questions-title" class="questions-toolbar__title">Banco de preguntas</h2>
-                <div class="questions-toolbar__actions">
+            <header class="questions-hero">
+                <div>
+                    <h2 id="questions-title" class="questions-hero__title">¿Qué preguntas tienen tus estudiantes?</h2>
+                    <p class="questions-hero__sub">Aprueba, edita o crea las preguntas que usará esta sala.</p>
+                </div>
+                <div class="questions-hero__actions">
                     <button type="button" class="ds-btn ds-btn--secondary">
                         <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
                             <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -48,15 +51,45 @@
                 </div>
             </header>
 
-            <div class="questions-filters">
-                <button type="button" class="questions-filters__chip" data-filter="all" aria-pressed="true">Todas</button>
-                <button type="button" class="questions-filters__chip" data-filter="approved" aria-pressed="false">Aprobadas</button>
-                <button type="button" class="questions-filters__chip" data-filter="pending" aria-pressed="false">Pendientes</button>
-                <button type="button" class="questions-filters__chip" data-filter="ai" aria-pressed="false">IA</button>
-                <button type="button" class="questions-filters__chip" data-filter="manual" aria-pressed="false">Manuales</button>
+            <div class="questions-controls">
+                <div class="questions-controls__group">
+                    <span class="questions-controls__label">Estado</span>
+                    <div class="questions-controls__chips">
+                        <button type="button" class="questions-chip" data-status-filter="all" aria-pressed="true">Todas</button>
+                        <button type="button" class="questions-chip" data-status-filter="pending" aria-pressed="false">
+                            <span class="questions-chip__dot" data-tone="amber"></span>
+                            Por revisar
+                        </button>
+                        <button type="button" class="questions-chip" data-status-filter="approved" aria-pressed="false">
+                            <span class="questions-chip__dot" data-tone="moss"></span>
+                            Activas
+                        </button>
+                    </div>
+                </div>
+
+                <div class="questions-controls__group">
+                    <span class="questions-controls__label">Origen</span>
+                    <div class="questions-controls__chips">
+                        <button type="button" class="questions-chip" data-source-filter="all" aria-pressed="true">Todas</button>
+                        <button type="button" class="questions-chip" data-source-filter="ai" aria-pressed="false">IA</button>
+                        <button type="button" class="questions-chip" data-source-filter="manual" aria-pressed="false">Manuales</button>
+                    </div>
+                </div>
+
+                <label class="questions-search" aria-label="Buscar pregunta">
+                    <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="11" cy="11" r="7"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="search" id="questions-search" placeholder="Buscar en el banco…">
+                </label>
             </div>
 
-            <div class="questions-list" id="questions-list"></div>
+            <div class="questions-meta" id="questions-meta"></div>
+
+            <ul class="questions-list" id="questions-list" aria-label="Banco de preguntas"></ul>
+
+            <nav class="questions-pager" id="questions-pager" aria-label="Paginación del banco"></nav>
         </section>
     </main>
 
