@@ -45,12 +45,35 @@ class Room(models.Model):
         return f'{self.name} [{self.mode}]'
 
 
+class Section(models.Model):
+    room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='sections')
+    code = models.CharField(max_length=20)
+    name = models.CharField(max_length=200)
+    schedule = models.CharField(max_length=100, blank=True, default='')
+    capacity = models.PositiveIntegerField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('room', 'code')
+        ordering = ['code']
+
+    def __str__(self):
+        return f'{self.room.name} · {self.code}'
+
+
 class RoomMembership(models.Model):
     room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='memberships')
     student = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='room_memberships',
+    )
+    section = models.ForeignKey(
+        Section,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='memberships',
     )
     joined_at = models.DateTimeField(auto_now_add=True)
 

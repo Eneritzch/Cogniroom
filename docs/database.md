@@ -17,10 +17,13 @@ erDiagram
     USER ||--o{ PDF_DOCUMENT : "uploads"
 
     ROOM ||--o{ ROOM_MEMBERSHIP : "has"
+    ROOM ||--o{ SECTION : "divides into"
     ROOM ||--o{ KNOWLEDGE_NODE : "contains"
     ROOM ||--o{ PDF_DOCUMENT : "stores"
     ROOM ||--o{ EVALUATION_SESSION : "hosts"
     ROOM ||--o{ BLIND_SPOT_INDEX : "tracks"
+
+    SECTION ||--o{ ROOM_MEMBERSHIP : "groups"
 
     KNOWLEDGE_NODE ||--o{ QUESTION : "groups"
     KNOWLEDGE_NODE ||--o{ BKT_STATE : "measures"
@@ -75,6 +78,22 @@ Sala de aprendizaje. Puede ser grupal (con docente) o individual (autoestudio).
 - Si `mode = group` y `access_code` vacío → auto-generado (8 chars alfanuméricos).
 - Si `mode = individual` → `access_code` queda NULL.
 
+### `rooms_section`
+Sub-grupo (curso paralelo) dentro de una sala. Soporta el caso de una misma materia dictada a varios cursos con horarios distintos (ej. "Termodinámica I" → "Curso A · L-M-V 10:00", "Curso B · M-J 14:00").
+
+| Campo | Tipo | Restricciones | Descripción |
+|---|---|---|---|
+| `id` | BigAutoField | PK | — |
+| `room_id` | FK → rooms_room | ON DELETE CASCADE, NOT NULL | Sala dueña |
+| `code` | CharField(20) | NOT NULL | Identificador corto ("A", "B", "C") |
+| `name` | CharField(200) | NOT NULL | Nombre completo ("Curso A · L-M-V 10:00") |
+| `schedule` | CharField(100) | BLANK | Horario libre, opcional |
+| `capacity` | PositiveIntegerField | NULL | Cupo máximo opcional |
+| `is_active` | Boolean | default True | — |
+| `created_at` | DateTime | auto_now_add | — |
+
+**UNIQUE(`room_id`, `code`)** — el código del curso es único dentro de cada sala.
+
 ### `rooms_roommembership`
 Relación muchos-a-muchos entre salas grupales y estudiantes.
 
@@ -83,9 +102,14 @@ Relación muchos-a-muchos entre salas grupales y estudiantes.
 | `id` | BigAutoField | PK | — |
 | `room_id` | FK → rooms_room | ON DELETE CASCADE | — |
 | `student_id` | FK → users_user | ON DELETE CASCADE | — |
+| `section_id` | FK → rooms_section | ON DELETE SET NULL, NULL | Curso opcional al que pertenece el alumno dentro de la sala |
 | `joined_at` | DateTime | auto_now_add | — |
 
 **UNIQUE(`room_id`, `student_id`)** — un alumno no puede inscribirse dos veces.
+
+**Reglas de negocio:**
+- `section_id` es NULL cuando la sala no usa sub-grupos (caso típico: salas individuales o repaso unificado).
+- Si se borra un curso (`Section`), las membresías quedan en la sala pero con `section_id = NULL` (no se expulsa al alumno).
 
 ---
 
