@@ -5,8 +5,6 @@ export const TEACHER_DATA = {
         username: 'teacher',
         email: 'teacher@cogniroom.com',
         institution: 'CogniRoom Demo',
-        title: 'Dr. en Ingeniería Química',
-        department: 'Departamento de Termodinámica · 2026·I',
         memberSince: '2026-01-20',
         lastActiveAt: '2026-05-25T08:45:00',
         totalRooms: 7,
@@ -20,12 +18,6 @@ export const TEACHER_DATA = {
         avgClassMastery: 0.61,
         atRiskStudents: 23,
         streakDays: 12,
-        preferences: {
-            emailNotifications: true,
-            weeklyDigest: true,
-            atRiskAlerts: true,
-            pendingQuestionsReminder: false,
-        },
     },
 
     recentActivity: [

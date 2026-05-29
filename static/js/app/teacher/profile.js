@@ -58,8 +58,7 @@ function paintHero(p) {
     document.getElementById('profile-avatar').textContent = initials(p.first_name, p.last_name, p.username);
     const fullName = `${p.first_name || ''} ${p.last_name || ''}`.trim() || p.username;
     document.getElementById('profile-name').textContent = fullName;
-    document.getElementById('profile-title').textContent = p.title || '—';
-    document.getElementById('profile-department').textContent = p.department || '';
+    document.getElementById('profile-institution').textContent = p.institution || '—';
     document.getElementById('profile-member').textContent = `Miembro desde ${fmtDateLong(p.memberSince)}`;
     document.getElementById('profile-last').textContent = `Último acceso: ${relDate(p.lastActiveAt)}`;
 }
@@ -101,10 +100,8 @@ function paintCohortHealth(p) {
 function paintPersonal(p) {
     document.getElementById('p-first').value = p.first_name || '';
     document.getElementById('p-last').value = p.last_name || '';
-    document.getElementById('p-title').value = p.title || '';
     document.getElementById('p-email').value = p.email || '';
     document.getElementById('p-institution').value = p.institution || '';
-    document.getElementById('p-department').value = p.department || '';
 }
 
 
@@ -113,7 +110,7 @@ function bindPersonalForm() {
     const $save = document.getElementById('personal-save');
     const $hint = document.getElementById('personal-hint');
 
-    const fields = ['p-first', 'p-last', 'p-title', 'p-department'];
+    const fields = ['p-first', 'p-last'];
     const initial = {};
     fields.forEach((id) => { initial[id] = document.getElementById(id).value; });
 
@@ -186,18 +183,6 @@ function bindPasswordForm() {
 }
 
 
-function bindPreferences(p) {
-    document.querySelectorAll('[data-pref]').forEach(($input) => {
-        const key = $input.dataset.pref;
-        $input.checked = !!(p.preferences && p.preferences[key]);
-        $input.addEventListener('change', () => {
-            const label = $input.closest('.profile-pref').querySelector('.profile-pref__title').textContent;
-            toast(`${label}: ${$input.checked ? 'activado' : 'desactivado'} (mock).`, { kind: 'info', duration: 1500 });
-        });
-    });
-}
-
-
 function bindLogout() {
     document.getElementById('logout-btn-profile').addEventListener('click', () => {
         tokens.clear();
@@ -214,7 +199,6 @@ function init() {
     paintPersonal(p);
     bindPersonalForm();
     bindPasswordForm();
-    bindPreferences(p);
     bindLogout();
 }
 

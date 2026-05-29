@@ -5,7 +5,6 @@ export const STUDENT_DATA = {
         username: 'student1',
         email: 'student1@cogniroom.com',
         institution: 'CogniRoom Demo',
-        program: 'Ingeniería Química · 4° año',
         memberSince: '2026-02-15',
         avgIcc: 0.46,
         avgMastery: 0.61,
@@ -16,11 +15,6 @@ export const STUDENT_DATA = {
         lastActiveAt: '2026-05-25T09:30:00',
         nodesTracked: 6,
         aiDiagnoses: 3,
-        preferences: {
-            emailNotifications: true,
-            weeklyDigest: true,
-            aiTutorAlerts: false,
-        },
     },
 
     joinedRooms: [

@@ -34,7 +34,7 @@
                 <div class="profile-hero__sub">
                     <span class="profile-hero__role" data-role="student">Estudiante</span>
                     <span class="profile-hero__sep">·</span>
-                    <span id="profile-program">—</span>
+                    <span id="profile-institution">—</span>
                 </div>
                 <div class="profile-hero__meta num">
                     <span id="profile-member">—</span>
@@ -111,23 +111,17 @@
                         <input class="form-control" type="email" id="p-email" name="email" disabled>
                     </div>
 
-                    <div class="profile-field-row">
-                        <div class="profile-field">
-                            <label class="profile-field__label" for="p-institution">
-                                Institución
-                                <span class="profile-field__lock">
-                                    <svg class="icon-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                        <rect x="3" y="11" width="18" height="11" rx="2"></rect>
-                                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                                    </svg>
-                                </span>
-                            </label>
-                            <input class="form-control" type="text" id="p-institution" name="institution" disabled>
-                        </div>
-                        <div class="profile-field">
-                            <label class="profile-field__label" for="p-program">Programa / Curso</label>
-                            <input class="form-control" type="text" id="p-program" name="program">
-                        </div>
+                    <div class="profile-field">
+                        <label class="profile-field__label" for="p-institution">
+                            Institución
+                            <span class="profile-field__lock">
+                                <svg class="icon-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <rect x="3" y="11" width="18" height="11" rx="2"></rect>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                </svg>
+                            </span>
+                        </label>
+                        <input class="form-control" type="text" id="p-institution" name="institution" disabled>
                     </div>
 
                     <footer class="profile-form__foot">
@@ -196,48 +190,6 @@
                         </button>
                     </footer>
                 </form>
-            </section>
-
-            <section class="profile-card" aria-labelledby="prefs-title">
-                <header class="profile-card__head">
-                    <div>
-                        <h3 class="profile-card__title" id="prefs-title">Preferencias</h3>
-                        <p class="profile-card__sub">Controlá qué te notifica CogniRoom.</p>
-                    </div>
-                </header>
-
-                <ul class="profile-prefs" id="profile-prefs">
-                    <li class="profile-pref">
-                        <div class="profile-pref__body">
-                            <span class="profile-pref__title">Notificaciones por email</span>
-                            <span class="profile-pref__sub">Resumen y novedades importantes.</span>
-                        </div>
-                        <label class="profile-switch">
-                            <input type="checkbox" data-pref="emailNotifications">
-                            <span class="profile-switch__track" aria-hidden="true"></span>
-                        </label>
-                    </li>
-                    <li class="profile-pref">
-                        <div class="profile-pref__body">
-                            <span class="profile-pref__title">Resumen semanal</span>
-                            <span class="profile-pref__sub">Tu calibración y nodos débiles cada lunes.</span>
-                        </div>
-                        <label class="profile-switch">
-                            <input type="checkbox" data-pref="weeklyDigest">
-                            <span class="profile-switch__track" aria-hidden="true"></span>
-                        </label>
-                    </li>
-                    <li class="profile-pref">
-                        <div class="profile-pref__body">
-                            <span class="profile-pref__title">Alertas del tutor IA</span>
-                            <span class="profile-pref__sub">Avisos cuando Claude detecta sobreconfianza grave.</span>
-                        </div>
-                        <label class="profile-switch">
-                            <input type="checkbox" data-pref="aiTutorAlerts">
-                            <span class="profile-switch__track" aria-hidden="true"></span>
-                        </label>
-                    </li>
-                </ul>
             </section>
 
             <section class="profile-card profile-card--danger" aria-labelledby="danger-title">
