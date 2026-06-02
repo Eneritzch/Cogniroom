@@ -37,6 +37,15 @@ function fmtDuration(min) {
 }
 
 
+function durationMinFromSession(session) {
+    if (!session.started_at || !session.finished_at) return null;
+    const start = new Date(session.started_at).getTime();
+    const end = new Date(session.finished_at).getTime();
+    if (Number.isNaN(start) || Number.isNaN(end) || end <= start) return null;
+    return Math.round((end - start) / 60000);
+}
+
+
 function fmtTime(sec) {
     if (!sec) return '—';
     if (sec < 60) return `${sec}s`;
@@ -61,29 +70,36 @@ function gapTone(gapPts) {
 }
 
 
+function confidencePct(a) {
+    return Math.round((a.confidence_declared ?? 0) * 100);
+}
+
+
+function masteryPct(a) {
+    const fallback = Math.max(0, (a.confidence_declared ?? 0) - 0.15);
+    return Math.round((a.bkt_mastery ?? fallback) * 100);
+}
+
+
 function gapForAnswer(a) {
-    return a.confidenceDeclared - Math.round(a.bktMastery * 100);
+    return confidencePct(a) - masteryPct(a);
 }
 
 
 function paintHeader(session, answers) {
-    document.getElementById('review-room-name').textContent = session.roomName;
-    document.getElementById('review-date').textContent = fmtDate(session.startedAt);
-    document.getElementById('review-duration').textContent = fmtDuration(session.durationMin);
-    document.getElementById('review-id').textContent = `Sesión #${session.id}`;
+    const durationMin = durationMinFromSession(session);
+    document.getElementById('review-room-name').textContent = session.room?.name || '';
+    document.getElementById('review-date').textContent = fmtDate(session.started_at);
+    document.getElementById('review-duration').textContent = fmtDuration(durationMin);
+    document.getElementById('review-id').textContent = `Sesión #${session.id_session}`;
 
-    const correct = answers.filter((a) => a.isCorrect).length;
+    const correct = answers.filter((a) => a.is_correct).length;
     const pct = answers.length ? Math.round((correct / answers.length) * 100) : 0;
     document.getElementById('review-accuracy').textContent = `${pct}%`;
     document.getElementById('review-accuracy').dataset.tone = accuracyTone(pct);
     document.getElementById('review-accuracy-sub').textContent = `${correct} de ${answers.length}`;
 
-    const dSign = session.iccDelta == null ? '' : (session.iccDelta > 0 ? '+' : '');
-    const dValue = session.iccDelta == null ? '—' : `${dSign}${fmt(session.iccDelta)}`;
-    const iccEl = document.getElementById('review-icc');
-    iccEl.textContent = dValue;
-    iccEl.dataset.tone = session.iccDelta > 0.02 ? 'moss'
-        : session.iccDelta < -0.02 ? 'rust' : 'amber';
+    // widget review-icc (iccDelta) removido — no se computan ventanas temporales en schema v2026-06
 
     const gaps = answers.map(gapForAnswer);
     const avgGap = gaps.length ? Math.round(gaps.reduce((s, g) => s + g, 0) / gaps.length) : 0;
@@ -91,7 +107,7 @@ function paintHeader(session, answers) {
     gapEl.textContent = `${avgGap >= 0 ? '+' : ''}${avgGap}`;
     gapEl.dataset.tone = avgGap > 15 ? 'amber' : avgGap < -15 ? 'stone' : 'moss';
 
-    const aiCount = answers.filter((a) => a.aiFeedback).length;
+    const aiCount = answers.filter((a) => a.ai_feedback).length;
     document.getElementById('review-ai-count').textContent = aiCount;
 }
 
@@ -99,9 +115,9 @@ function paintHeader(session, answers) {
 function renderStrip(answers) {
     const $strip = document.getElementById('review-strip');
     $strip.innerHTML = answers.map((a, i) => {
-        const state = a.isCorrect ? 'correct' : 'wrong';
-        const hasAi = a.aiFeedback ? 'true' : 'false';
-        const label = `Pregunta ${i + 1}: ${a.isCorrect ? 'acertada' : 'fallada'}${a.aiFeedback ? ' (con feedback IA)' : ''}`;
+        const state = a.is_correct ? 'correct' : 'wrong';
+        const hasAi = a.ai_feedback ? 'true' : 'false';
+        const label = `Pregunta ${i + 1}: ${a.is_correct ? 'acertada' : 'fallada'}${a.ai_feedback ? ' (con feedback IA)' : ''}`;
         return `<li>
             <button type="button" class="review-cell" data-state="${state}" data-has-ai="${hasAi}" data-jump="${i}" aria-label="${escapeHTML(label)}" title="${escapeHTML(label)}">${i + 1}</button>
         </li>`;
@@ -122,9 +138,9 @@ function renderStrip(answers) {
 
 function renderOptions(a) {
     const letters = ['A', 'B', 'C', 'D'];
-    return a.options.map((opt, idx) => {
-        const isCorrect = idx === a.correctIndex;
-        const isPicked = idx === a.selectedIndex;
+    return a.options.map((optText, idx) => {
+        const isCorrect = idx === a.correct_index;
+        const isPicked = idx === a.selected_index;
         let state = '';
         let flag = '';
         if (isCorrect && isPicked) {
@@ -139,7 +155,7 @@ function renderOptions(a) {
         }
         return `<li class="rq__opt" data-state="${state}">
             <span class="rq__opt-letter">${letters[idx]}</span>
-            <span class="rq__opt-text">${escapeHTML(opt.text)}</span>
+            <span class="rq__opt-text">${escapeHTML(optText)}</span>
             ${flag}
         </li>`;
     }).join('');
@@ -147,45 +163,46 @@ function renderOptions(a) {
 
 
 function renderQuestion(a, i) {
-    const conf = a.confidenceDeclared;
-    const mast = Math.round(a.bktMastery * 100);
+    const conf = confidencePct(a);
+    const mast = masteryPct(a);
     const gap = conf - mast;
     const gapT = gapTone(gap);
-    const hasAi = !!a.aiFeedback;
+    const hasAi = !!a.ai_feedback;
+    const nodeName = a.node?.name || '';
+    const nodeTopic = a.node?.description || '';
 
-    const aiBlock = hasAi
-        ? `<aside class="rq__ai" role="note" aria-label="Feedback del tutor cognitivo">
+    let aiBlock = '';
+    if (hasAi) {
+        const text = String(a.ai_feedback || '').trim();
+        const firstSentence = text.split(/(?<=[.!?])\s/)[0] || text;
+        const body = text.length > firstSentence.length
+            ? text.slice(firstSentence.length).trim()
+            : '';
+        aiBlock = `<aside class="rq__ai" role="note" aria-label="Feedback del tutor cognitivo">
             <header class="rq__ai-head">
                 <svg class="icon-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path>
                 </svg>
                 Tutor cognitivo · Claude
             </header>
-            <h4 class="rq__ai-title">${escapeHTML(a.aiFeedback.title)}</h4>
-            <p class="rq__ai-body">${escapeHTML(a.aiFeedback.reasoning)}</p>
-            ${a.aiFeedback.recommendation ? `<div class="rq__ai-rec">
-                <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                    <polyline points="12 5 19 12 12 19"></polyline>
-                </svg>
-                ${escapeHTML(a.aiFeedback.recommendation)}
-            </div>` : ''}
-        </aside>`
-        : '';
+            <h4 class="rq__ai-title">«${escapeHTML(firstSentence)}»</h4>
+            ${body ? `<p class="rq__ai-body">${escapeHTML(body)}</p>` : ''}
+        </aside>`;
+    }
 
-    return `<li class="rq" id="rq-${i}" data-correct="${a.isCorrect}" data-has-ai="${hasAi}" data-filter-key="${filterKeyFor(a)}">
+    return `<li class="rq" id="rq-${i}" data-correct="${a.is_correct}" data-has-ai="${hasAi}" data-filter-key="${filterKeyFor(a)}">
         <button type="button" class="rq__head" aria-expanded="false" data-toggle="${i}">
             <span class="rq__num">${i + 1}</span>
             <div class="rq__head-body">
                 <div class="rq__meta">
-                    <span class="rq__node">${escapeHTML(a.node)}</span>
+                    <span class="rq__node">${escapeHTML(nodeName)}${nodeTopic ? ` · ${escapeHTML(nodeTopic)}` : ''}</span>
                     <span class="rq__statediv">
                         <svg class="icon-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            ${a.isCorrect
+                            ${a.is_correct
                                 ? '<polyline points="20 6 9 17 4 12"></polyline>'
                                 : '<line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>'}
                         </svg>
-                        ${a.isCorrect ? 'Acertada' : 'Fallada'}
+                        ${a.is_correct ? 'Acertada' : 'Fallada'}
                     </span>
                     ${hasAi ? `<span class="rq__ai-tag">
                         <svg class="icon-svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -196,7 +213,7 @@ function renderQuestion(a, i) {
                 </div>
                 <p class="rq__statement">${escapeHTML(a.statement)}</p>
             </div>
-            <span class="rq__time">${fmtTime(a.timeSpentSec)}</span>
+            <span class="rq__time">${fmtTime(a.response_time_sec)}</span>
             <span class="rq__chev" aria-hidden="true">
                 <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="6 9 12 15 18 9"></polyline>
@@ -231,8 +248,8 @@ function renderQuestion(a, i) {
 
 function filterKeyFor(a) {
     const keys = ['all'];
-    keys.push(a.isCorrect ? 'correct' : 'wrong');
-    if (a.aiFeedback) keys.push('ai');
+    keys.push(a.is_correct ? 'correct' : 'wrong');
+    if (a.ai_feedback) keys.push('ai');
     return keys.join(' ');
 }
 
@@ -268,7 +285,7 @@ function updateToggleAllLabel() {
 
 
 function init() {
-    const session = STUDENT_DATA.sessionHistory.find((s) => s.id === SESSION_ID);
+    const session = STUDENT_DATA.sessionHistory.find((s) => s.id_session === SESSION_ID);
     const answers = STUDENT_DATA.sessionAnswers[SESSION_ID]
         || (session ? generateAnswersForSession(session) : null);
 
@@ -281,11 +298,11 @@ function init() {
 
         document.querySelector('.eyebrow').textContent = 'Revisión no disponible';
         document.getElementById('review-room-name').textContent = session
-            ? session.roomName
+            ? (session.room?.name || '')
             : 'Esta sesión aún no se puede revisar';
-        document.getElementById('review-date').textContent = session ? fmtDate(session.startedAt) : '';
-        document.getElementById('review-duration').textContent = session ? fmtDuration(session.durationMin) : '';
-        document.getElementById('review-id').textContent = session ? `Sesión #${session.id}` : '';
+        document.getElementById('review-date').textContent = session ? fmtDate(session.started_at) : '';
+        document.getElementById('review-duration').textContent = session ? fmtDuration(durationMinFromSession(session)) : '';
+        document.getElementById('review-id').textContent = session ? `Sesión #${session.id_session}` : '';
 
         const $empty = document.getElementById('review-empty');
         $empty.hidden = false;

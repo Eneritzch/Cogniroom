@@ -33,7 +33,7 @@
                         <div class="calibration-ring__center">
                             <span class="calibration-ring__value" id="student-ring-value" style="font-size:57.2px;">0.46</span>
                             <span class="calibration-ring__label eyebrow">ICC actual</span>
-                            <span class="calibration-ring__sublabel" id="student-ring-sub">29 respuestas · 7 días</span>
+                            <span class="calibration-ring__sublabel" id="student-ring-sub">29 respuestas</span>
                         </div>
                     </div>
                     <span class="pill" data-profile="overconfident" id="student-pill">Sobreconfiado</span>
@@ -58,31 +58,6 @@
                 </div>
 
                 <div class="student-hero__side">
-                    <article class="student-trend">
-                        <header class="student-trend__head">
-                            <h2 class="student-trend__title">Tendencia · últimas 4 semanas</h2>
-                            <span class="student-trend__delta">
-                                <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
-                                    <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
-                                    <polyline points="16 7 22 7 22 13"></polyline>
-                                </svg>
-                                ICC +0.08
-                            </span>
-                        </header>
-                        <svg class="student-trend__svg" viewBox="0 0 100 50" preserveAspectRatio="none" aria-hidden="true">
-                            <line x1="0" y1="16.7" x2="100" y2="16.7" stroke="var(--paper-border-strong)" stroke-dasharray="2 2"/>
-                            <path d="M0,23.3 L25,18.3 L50,20 L75,15 L100,10" fill="none" stroke="var(--sage)" stroke-width="1.5"/>
-                            <circle cx="0"   cy="23.3" r="1.6" fill="var(--sage)"/>
-                            <circle cx="25"  cy="18.3" r="1.6" fill="var(--sage)"/>
-                            <circle cx="50"  cy="20"   r="1.6" fill="var(--sage)"/>
-                            <circle cx="75"  cy="15"   r="1.6" fill="var(--sage)"/>
-                            <circle cx="100" cy="10"   r="1.6" fill="var(--sage)"/>
-                        </svg>
-                        <div class="student-trend__legend">
-                            <span>S −4</span><span>S −3</span><span>S −2</span><span>S −1</span><span>S 0</span>
-                        </div>
-                    </article>
-
                     <article class="ai-diagnosis" id="student-diagnosis">
                         <header class="ai-diagnosis__head eyebrow">
                             <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
@@ -94,6 +69,11 @@
                         <p class="ai-diagnosis__body" id="student-diag-body">
                             Responde algunas preguntas en una sesión para que el tutor analice tu calibración.
                         </p>
+                        <div class="ai-diagnosis__meta" id="student-diag-meta" hidden>
+                            <span class="pill" data-risk="" id="student-diag-risk">—</span>
+                            <span class="ai-diagnosis__classification num" id="student-diag-classification">—</span>
+                            <span class="ai-diagnosis__failprob num" id="student-diag-failprob">p=—</span>
+                        </div>
                         <div class="ai-diagnosis__suggestion" id="student-diag-suggestion" hidden role="note">
                             <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
                                 <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -101,6 +81,44 @@
                             </svg>
                             <span id="student-diag-suggestion-text"></span>
                         </div>
+                    </article>
+
+                    <article class="hero-focus" id="hero-focus" aria-labelledby="hero-focus-title">
+                        <header class="hero-focus__head eyebrow">
+                            <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <circle cx="12" cy="12" r="6"></circle>
+                                <circle cx="12" cy="12" r="2"></circle>
+                            </svg>
+                            Foco recomendado
+                        </header>
+                        <div class="hero-focus__body">
+                            <div class="hero-focus__node">
+                                <span class="hero-focus__node-name" id="hero-focus-name">—</span>
+                                <span class="hero-focus__node-topic" id="hero-focus-topic">—</span>
+                            </div>
+                            <div class="hero-focus__metrics">
+                                <div class="hero-focus__metric">
+                                    <span class="hero-focus__metric-k num" id="hero-focus-mastery">—</span>
+                                    <span class="hero-focus__metric-v">Mastery</span>
+                                </div>
+                                <div class="hero-focus__metric">
+                                    <span class="hero-focus__metric-k num" id="hero-focus-conf">—</span>
+                                    <span class="hero-focus__metric-v">Confianza</span>
+                                </div>
+                                <div class="hero-focus__metric">
+                                    <span class="hero-focus__metric-k num" data-tone="amber" id="hero-focus-gap">—</span>
+                                    <span class="hero-focus__metric-v">Gap pts</span>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="#" class="hero-focus__cta" id="hero-focus-cta">
+                            Ir al nodo
+                            <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                <polyline points="12 5 19 12 12 19"></polyline>
+                            </svg>
+                        </a>
                     </article>
                 </div>
             </div>
@@ -125,7 +143,7 @@
                     <div>
                         <span class="eyebrow">Grafo de conocimiento</span>
                         <h2 class="dashboard-section__title">
-                            Tu mapa cognitivo · <span class="dashboard-section__title-muted">12 nodos, 14 relaciones</span>
+                            Tu mapa cognitivo · <span class="dashboard-section__title-muted">12 nodos</span>
                         </h2>
                     </div>
                     <span class="dashboard-section__head-meta num">⬡ ring discontinuo = sobreconfianza activa</span>
@@ -135,10 +153,10 @@
                         <span></span><span></span><span></span><span></span>
                     </div>
                     <div class="knowledge-graph__meta knowledge-graph__meta--left">
-                        <span class="num">GRAPH · 12 NODES · 14 EDGES</span>
+                        <span class="num">GRAPH · 12 NODES</span>
                         <span class="knowledge-graph__meta-pulse" aria-hidden="true"></span>
                     </div>
-                    <div class="knowledge-graph__meta knowledge-graph__meta--right num">Δt 14d</div>
+                    <div class="knowledge-graph__meta knowledge-graph__meta--right num">MAPA COGNITIVO</div>
                     <svg class="knowledge-graph__svg" viewBox="0 0 100 70" aria-hidden="true" id="knowledge-graph-svg"></svg>
                     <div class="knowledge-graph__legend">
                         <span class="knowledge-graph__legend-dot"><span style="background:var(--rust);"></span><span class="num">&lt; 0.4</span></span>
@@ -157,7 +175,7 @@
                     <div>
                         <span class="eyebrow">Tus nodos</span>
                         <h2 class="dashboard-section__title" id="nodes-count-title">
-                            <span id="nodes-count">—</span> nodos activos · ordenados por gap
+                            <span id="nodes-count">—</span> nodos activos · ordenados por metacognitive_gap
                         </h2>
                     </div>
                     <div class="student-nodes__legend">
@@ -204,124 +222,40 @@
             </header>
 
             <section class="d-kpis" aria-label="Métricas principales">
-                <article class="d-kpi d-kpi--accent" aria-labelledby="kpi-icc-label">
+                <article class="d-kpi d-kpi--accent" aria-labelledby="kpi-rooms-label">
                     <header class="d-kpi__head">
-                        <span id="kpi-icc-label" class="d-kpi__k">Autoconocimiento del grupo</span>
-                        <span class="d-kpi__chip" id="icc-chip" data-tone="moss">
-                            <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
-                                <line x1="12" y1="19" x2="12" y2="5"></line>
-                                <polyline points="5 12 12 5 19 12"></polyline>
-                            </svg>
-                            <span id="icc-chip-text">+0.04</span>
-                        </span>
+                        <span id="kpi-rooms-label" class="d-kpi__k">Salas activas</span>
                     </header>
-                    <div class="d-kpi__v num" id="icc-value">0.58</div>
-                    <p class="d-kpi__hint" id="icc-hint">Calibración aceptable, hay margen.</p>
-                    <svg class="d-kpi__sparkline" id="spark-icc" viewBox="0 0 100 28" preserveAspectRatio="none" aria-hidden="true"></svg>
+                    <div class="d-kpi__v num" id="rooms-value">4</div>
+                    <p class="d-kpi__hint" id="rooms-hint">Salas con is_active = true.</p>
                 </article>
 
-                <article class="d-kpi" aria-labelledby="kpi-gap-label">
+                <article class="d-kpi" aria-labelledby="kpi-students-label">
                     <header class="d-kpi__head">
-                        <span id="kpi-gap-label" class="d-kpi__k">Creen saber más de lo que saben</span>
-                        <span class="d-kpi__chip" id="gap-chip" data-tone="amber">
-                            <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
-                                <line x1="12" y1="19" x2="12" y2="5"></line>
-                                <polyline points="5 12 12 5 19 12"></polyline>
-                            </svg>
-                            <span id="gap-chip-text">+3 pts</span>
-                        </span>
+                        <span id="kpi-students-label" class="d-kpi__k">Estudiantes inscritos</span>
                     </header>
-                    <div class="d-kpi__v num" data-tone-color="amber" id="gap-value">+24 pts</div>
-                    <p class="d-kpi__hint" id="gap-hint">Sobreconfianza promedio en la cohorte.</p>
-                    <svg class="d-kpi__sparkline d-kpi__sparkline--amber" id="spark-gap" viewBox="0 0 100 28" preserveAspectRatio="none" aria-hidden="true"></svg>
+                    <div class="d-kpi__v num" id="students-value">187</div>
+                    <p class="d-kpi__hint" id="students-hint">Sumatoria de room_membership.</p>
                 </article>
 
                 <article class="d-kpi" aria-labelledby="kpi-answers-label">
                     <header class="d-kpi__head">
-                        <span id="kpi-answers-label" class="d-kpi__k">Respuestas esta semana</span>
-                        <span class="d-kpi__chip" id="answers-chip">
-                            <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
-                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="9" cy="7" r="4"></circle>
-                            </svg>
-                            <span id="answers-chip-text">de 187 estudiantes</span>
-                        </span>
+                        <span id="kpi-answers-label" class="d-kpi__k">Respuestas registradas</span>
                     </header>
                     <div class="d-kpi__v num" id="answers-value">2 471</div>
-                    <p class="d-kpi__hint" id="answers-hint">212 únicos respondieron esta semana.</p>
-                    <svg class="d-kpi__sparkline d-kpi__sparkline--terracotta" id="spark-answers" viewBox="0 0 100 28" preserveAspectRatio="none" aria-hidden="true"></svg>
+                    <p class="d-kpi__hint" id="answers-hint">Total acumulado de student_response.</p>
                 </article>
 
                 <article class="d-kpi" aria-labelledby="kpi-diags-label">
                     <header class="d-kpi__head">
                         <span id="kpi-diags-label" class="d-kpi__k">Notas del tutor IA</span>
-                        <span class="d-kpi__chip" id="diags-chip" data-tone="amber">
-                            <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <line x1="12" y1="8" x2="12" y2="12"></line>
-                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                            </svg>
-                            <span id="diags-chip-text">18 sin revisar</span>
-                        </span>
                     </header>
                     <div class="d-kpi__v num" id="diags-value">47</div>
-                    <p class="d-kpi__hint" id="diags-hint">El IA emitió notas al detectar descalibración.</p>
-                    <svg class="d-kpi__sparkline d-kpi__sparkline--stone" id="spark-diags" viewBox="0 0 100 28" preserveAspectRatio="none" aria-hidden="true"></svg>
+                    <p class="d-kpi__hint" id="diags-hint">Diagnósticos generados al detectar descalibración.</p>
                 </article>
             </section>
 
             <section class="d-row-a">
-
-                <article class="d-card d-card--chart">
-                    <header class="d-card__head">
-                        <div>
-                            <h3 class="d-card__title">Actividad por día</h3>
-                            <p class="d-card__sub" id="d-chart-headline">Respuestas registradas esta semana</p>
-                        </div>
-                        <span class="d-card__hint num" data-bind="week-total">2 471 totales</span>
-                    </header>
-                    <div class="d-chart-legend">
-                        <span class="d-chart-legend__item">
-                            <span class="d-chart-legend__swatch" aria-hidden="true"></span>
-                            Respuestas
-                        </span>
-                        <span class="d-chart-legend__item">
-                            <span class="d-chart-legend__line" aria-hidden="true"></span>
-                            <span id="d-chart-avg-label">Promedio</span>
-                            <span class="d-chart-legend__avg num" id="d-chart-avg">—</span>
-                        </span>
-                    </div>
-                    <div class="d-chart" aria-label="Respuestas por día de la semana">
-                        <div class="d-chart__y" aria-hidden="true">
-                            <span class="num" data-y-max>500</span>
-                            <span class="num" data-y-mid>250</span>
-                            <span class="num">0</span>
-                        </div>
-                        <div class="d-chart__plot" id="d-chart-plot"></div>
-                    </div>
-                </article>
-
-                <article class="d-card d-card--reminder" aria-labelledby="reminder-title">
-                    <header class="d-card__head">
-                        <h3 id="reminder-title" class="d-card__title">Hallazgo de hoy</h3>
-                    </header>
-                    <p class="d-reminder__text" data-bind="insight">
-                        <strong>64 estudiantes</strong> creen dominar «1ª ley aplicada a sistemas abiertos», pero solo el <strong>28%</strong> acertó.
-                    </p>
-                    <div class="d-reminder__meta num">
-                        <svg class="icon-svg" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <polyline points="12 6 12 12 16 14"></polyline>
-                        </svg>
-                        Brecha promedio +56 pts
-                    </div>
-                    <a href="/app/room/1/" class="d-reminder__cta" data-bind="insight-cta-href">
-                        <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
-                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                        </svg>
-                        Revisar tema
-                    </a>
-                </article>
 
                 <article class="d-card d-card--rooms" aria-labelledby="rooms-title">
                     <header class="d-card__head">
@@ -345,7 +279,7 @@
                     <header class="d-card__head">
                         <div>
                             <h3 id="students-title" class="d-card__title">Estudiantes a intervenir</h3>
-                            <p class="d-card__sub">Brecha sostenida los últimos 7 días</p>
+                            <p class="d-card__sub">Riesgo alto detectado por el tutor IA</p>
                         </div>
                         <span class="d-card__hint num" data-bind="ar-count">5 en riesgo</span>
                     </header>
@@ -388,31 +322,6 @@
                             <span class="d-donut__legend-val num" id="donut-und">18</span>
                         </li>
                     </ul>
-                </article>
-
-                <article class="d-card d-card--dark" aria-labelledby="next-title">
-                    <header class="d-card__head">
-                        <span class="d-card__eyebrow eyebrow">Próxima sesión</span>
-                        <span class="d-card__dot" aria-hidden="true"></span>
-                    </header>
-                    <h3 id="next-title" class="d-next__title" data-bind="next-room">Termodinámica I</h3>
-                    <div class="d-next__time num">
-                        <span data-bind="next-h">18</span>
-                        <span class="d-next__sep">:</span>
-                        <span data-bind="next-m">24</span>
-                        <span class="d-next__sep">:</span>
-                        <span data-bind="next-s">08</span>
-                    </div>
-                    <p class="d-next__meta num"><span data-bind="next-students">84</span> estudiantes · <span data-bind="next-questions">12</span> preguntas</p>
-                    <div class="d-next__controls">
-                        <button type="button" class="d-next__btn d-next__btn--ghost" aria-label="Pausar">
-                            <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
-                        </button>
-                        <button type="button" class="d-next__btn d-next__btn--primary" aria-label="Iniciar evaluación">
-                            <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                            Iniciar ahora
-                        </button>
-                    </div>
                 </article>
 
             </section>

@@ -9,6 +9,21 @@ if (!tokens.access) {
 }
 
 
+function formatBytes(bytes) {
+    if (!Number.isFinite(bytes) || bytes <= 0) return '0 KB';
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+
+function formatDate(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return escapeHTML(String(iso));
+    return d.toISOString().slice(0, 10);
+}
+
+
 function render() {
     const room = getActiveRoom();
     const data = ROOM_DATA[room.id];
@@ -17,13 +32,19 @@ function render() {
     document.getElementById('room-name').textContent = data.name;
     document.getElementById('room-pdfs').textContent = String(data.pdfs);
 
-    const totalNodes = data.pdfFiles.reduce((s, p) => s + p.nodes, 0);
-    document.getElementById('room-nodes').textContent = `${totalNodes} nodos extraídos`;
+    // widget "X nodos extraídos" removido (pdf.nodes era columna inventada)
 
     const $list = document.getElementById('pdfs-list');
     if (!$list) return;
 
-    $list.innerHTML = data.pdfFiles.map((p) => `
+    $list.innerHTML = data.pdfFiles.map((p) => {
+        const originalName = p.original_name ?? p.name ?? '';
+        const sizeBytes = typeof p.size_bytes === 'number' ? p.size_bytes : null;
+        const createdAt = p.created_at ?? p.date ?? '';
+        const processed = typeof p.processed === 'boolean'
+            ? p.processed
+            : (p.status === 'processed');
+        return `
         <li class="pdf-item">
             <span class="pdf-item__icon" aria-hidden="true">
                 <svg class="icon-svg" width="20" height="20" viewBox="0 0 24 24">
@@ -32,17 +53,15 @@ function render() {
                 </svg>
             </span>
             <div class="pdf-item__main">
-                <div class="pdf-item__name">${escapeHTML(p.name)}</div>
+                <div class="pdf-item__name">${escapeHTML(originalName)}</div>
                 <div class="pdf-item__meta">
-                    <span>${escapeHTML(p.size)}</span>
+                    <span>${escapeHTML(sizeBytes !== null ? formatBytes(sizeBytes) : (p.size ?? ''))}</span>
                     <span class="pdf-item__meta-sep">·</span>
-                    <span>${escapeHTML(p.date)}</span>
-                    <span class="pdf-item__meta-sep">·</span>
-                    <span>${p.nodes} nodo${p.nodes === 1 ? '' : 's'}</span>
+                    <span>${escapeHTML(formatDate(createdAt))}</span>
                 </div>
             </div>
-            <span class="pdf-item__status" data-status="${p.status}">
-                ${p.status === 'processed' ? 'Procesado' : 'Procesando…'}
+            <span class="pdf-item__status" data-status="${processed ? 'processed' : 'pending'}">
+                ${processed ? 'Procesado' : 'Pendiente'}
             </span>
             <button type="button" class="pdf-item__del" aria-label="Eliminar PDF">
                 <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24">
@@ -51,7 +70,8 @@ function render() {
                 </svg>
             </button>
         </li>
-    `).join('');
+    `;
+    }).join('');
 }
 
 

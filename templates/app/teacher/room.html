@@ -21,6 +21,12 @@
         <div class="room-head">
             <h1 class="room-title" id="room-name">—</h1>
             <div class="room-meta">
+                <span id="room-subject">—</span>
+                <span class="room-meta__sep">·</span>
+                <span id="room-mode">—</span>
+                <span class="room-meta__sep">·</span>
+                <span>Código <code id="room-access-code">—</code></span>
+                <span class="room-meta__sep">·</span>
                 <span><span id="room-students">—</span> estudiantes</span>
                 <span class="room-meta__sep">·</span>
                 <span><span id="room-questions">—</span> preguntas</span>
@@ -92,14 +98,14 @@
 
                 <div class="room-stats">
                     <div class="room-stat">
-                        <div class="room-stat__k eyebrow">ICC sala</div>
-                        <div class="room-stat__v" id="stat-icc">—</div>
-                        <div class="room-stat__t" data-tone="moss">+0.04 sem.</div>
+                        <div class="room-stat__k eyebrow">Nodos con punto ciego</div>
+                        <div class="room-stat__v" id="stat-blind-nodes">—</div>
+                        <div class="room-stat__t" id="stat-blind-detail">—</div>
                     </div>
                     <div class="room-stat">
-                        <div class="room-stat__k eyebrow">IPC promedio</div>
-                        <div class="room-stat__v" id="stat-ipc">—</div>
-                        <div class="room-stat__t" data-tone="amber">−0.06 sem.</div>
+                        <div class="room-stat__k eyebrow">Estudiantes evaluados</div>
+                        <div class="room-stat__v" id="stat-evaluated">—</div>
+                        <div class="room-stat__t" id="stat-evaluated-detail">—</div>
                     </div>
                     <div class="room-stat">
                         <div class="room-stat__k eyebrow">Sobreconfiados</div>
@@ -117,17 +123,17 @@
 
         <section class="room-panel" data-panel="students" role="tabpanel" hidden>
             <div class="room-placeholder">
-                Lista detallada de los estudiantes con perfil, ICC individual y última actividad.
+                Lista detallada de los estudiantes con perfil, ICC individual y fecha de inscripción (joined_at).
             </div>
         </section>
         <section class="room-panel" data-panel="questions" role="tabpanel" hidden>
             <div class="room-placeholder">
-                Preguntas generadas por Claude — revisar, editar y aprobar antes de publicar.
+                Preguntas generadas por Claude — revisar opciones, dificultad y aprobar antes de publicar.
             </div>
         </section>
         <section class="room-panel" data-panel="pdfs" role="tabpanel" hidden>
             <div class="room-placeholder">
-                PDFs procesados de la sala — nodos de conocimiento extraídos.
+                PDFs procesados de la sala — fuente para generación de preguntas.
             </div>
         </section>
     </main>

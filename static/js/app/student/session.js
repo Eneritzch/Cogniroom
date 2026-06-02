@@ -34,36 +34,54 @@ if ($closeBtn) {
 const SESSION_LENGTH = 12;
 let currentIndex = 0;
 let currentQuestion = null;
-let selectedOption = null;
-let confidence = 75;
+let selectedIndex = null;
+let confidenceDeclared = 0.75;
 
 
 const DEMO_QUESTION = {
-    id: 'demo-7',
-    node_name: 'Entropía y 2ª ley',
+    id_question: 7,
+    id_node: 14,
+    node: {
+        id_node: 14,
+        name: 'Entropía y 2ª ley',
+        description: 'Termodinámica clásica',
+    },
     statement: 'En un proceso espontáneo de expansión adiabática irreversible de un gas ideal, ¿qué ocurre con la entropía?',
     options: [
-        { id: 'a', text: 'La entropía del sistema disminuye porque se libera calor al entorno.' },
-        { id: 'b', text: 'La entropía del universo aumenta, incluso si la del sistema disminuye.' },
-        { id: 'c', text: 'La entropía permanece constante por ser proceso reversible.' },
-        { id: 'd', text: 'No es posible determinar el cambio de entropía sin conocer el volumen.' },
+        'La entropía del sistema disminuye porque se libera calor al entorno.',
+        'La entropía del universo aumenta, incluso si la del sistema disminuye.',
+        'La entropía permanece constante por ser proceso reversible.',
+        'No es posible determinar el cambio de entropía sin conocer el volumen.',
     ],
+    correct_index: 1,
+    difficulty: 'hard',
+    source: 'ai',
+    is_approved: true,
 };
 
-const DEMO_CORRECT = 'b';
+const DEMO_CORRECT_INDEX = 1;
 
-function fakeAnswerResult(answer, conf) {
-    const isCorrect = answer === DEMO_CORRECT;
-    const mastery = 0.48;
-    const gap = conf - mastery * 100;
-    const miscalibrated = Math.abs(gap) > 25;
+function fakeAnswerResult(selIndex, confDeclared) {
+    const isCorrect = selIndex === DEMO_CORRECT_INDEX;
+    const bktMastery = 0.48;
+    const gap = confDeclared - bktMastery;
+    const miscalibrated = Math.abs(gap) > 0.25;
     return {
         is_correct: isCorrect,
-        bkt_mastery: mastery,
+        bkt_mastery: bktMastery,
         explanation: 'En un proceso irreversible, ΔS_universo > 0 siempre. La 2ª ley no se aplica al sistema aislado de tu intuición, sino al universo termodinámico completo.',
         ai_feedback: miscalibrated ? {
-            title: '«Tu seguridad va más rápido que tu dominio.»',
-            reasoning: `Declaraste ${conf} de confianza, pero tu probabilidad real de acertar este tipo de pregunta sobre entropía es ${Math.round(mastery * 100)}. No es la primera vez que pasa: en las últimas 5 preguntas del mismo nodo, tu gap promedio es +24 puntos.`,
+            title: 'Tendencia a sobreestimar dominio en entropía',
+            classification: 'overconfident',
+            failure_probability: 0.62,
+            risk_level: 'medium',
+            risk_node: ['Entropía y 2ª ley', 'Procesos irreversibles'],
+            node: {
+                id_node: 14,
+                name: 'Entropía y 2ª ley',
+                description: 'Termodinámica clásica',
+            },
+            reasoning: `Declaraste ${Math.round(confDeclared * 100)} de confianza, pero tu probabilidad real de acertar este tipo de pregunta sobre entropía es ${Math.round(bktMastery * 100)}. La brecha es persistente en este nodo.`,
             recommendation: 'Antes de la próxima sesión, intentá enunciar la 2ª ley en tus propias palabras y aplicarla a un caso que NO esté en el apunte.',
         } : null,
     };
@@ -105,9 +123,10 @@ $total.textContent = String(SESSION_LENGTH);
 
 
 $confSlider.addEventListener('input', (e) => {
-    confidence = Number(e.target.value);
-    $confValue.textContent = String(confidence);
-    $confHint.textContent = String(confidence);
+    const sliderValue = Number(e.target.value);
+    confidenceDeclared = sliderValue / 100;
+    $confValue.textContent = String(sliderValue);
+    $confHint.textContent = String(sliderValue);
 });
 
 
@@ -121,22 +140,21 @@ function showStage(name) {
 
 function renderQuestion(q) {
     currentQuestion = q;
-    selectedOption = null;
+    selectedIndex = null;
     $submit.disabled = true;
 
     $current.textContent = String(currentIndex + 1);
     $progress.style.width = `${((currentIndex + 1) / SESSION_LENGTH) * 100}%`;
-    $questionEyebrow.textContent = `Pregunta ${currentIndex + 1} · ${q.node_name || 'Sin nodo'}`;
-    $questionText.textContent = q.statement || q.text || '—';
+    const nodeName = q.node?.name || 'Sin nodo';
+    $questionEyebrow.textContent = `Pregunta ${currentIndex + 1} · ${nodeName}`;
+    $questionText.textContent = q.statement || '—';
 
     const options = q.options || [];
-    $optionsList.innerHTML = options.map((opt, i) => {
-        const id = opt.id != null ? String(opt.id) : String.fromCharCode(97 + i);
-        const text = opt.text || opt;
+    $optionsList.innerHTML = options.map((optText, i) => {
         return `
-          <button type="button" class="session-option" data-option-id="${escapeHTML(id)}" aria-pressed="false" role="radio" aria-checked="false">
+          <button type="button" class="session-option" data-option-index="${i}" aria-pressed="false" role="radio" aria-checked="false">
             <span class="session-option__id">${escapeHTML(String.fromCharCode(65 + i))}</span>
-            <span class="session-option__text">${escapeHTML(text)}</span>
+            <span class="session-option__text">${escapeHTML(optText)}</span>
           </button>
         `;
     }).join('');
@@ -147,7 +165,7 @@ function renderQuestion(q) {
                 b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
                 b.setAttribute('aria-checked', b === btn ? 'true' : 'false');
             });
-            selectedOption = btn.dataset.optionId;
+            selectedIndex = Number(btn.dataset.optionIndex);
             $submit.disabled = false;
         });
     });
@@ -158,8 +176,9 @@ function renderQuestion(q) {
 
 function renderFeedback(result) {
     const correct = result.is_correct === true;
-    const declared = Math.round(confidence);
-    const mastery = Math.round((result.bkt_mastery ?? result.mastery ?? 0) * 100);
+    const declared = Math.round(confidenceDeclared * 100);
+    const masteryRaw = result.bkt_mastery ?? result.bkt_mastery ?? 0;
+    const mastery = Math.round(masteryRaw * 100);
     const gap = declared - mastery;
     const gapAbs = Math.abs(gap);
     const tone = gapTone(gap);
@@ -211,8 +230,8 @@ function renderFeedback(result) {
     const $diag = document.getElementById('feedback-diagnosis');
     const aiFeedback = result.ai_feedback;
     if (aiFeedback && (aiFeedback.title || aiFeedback.reasoning)) {
-        document.getElementById('feedback-diag-title').textContent = aiFeedback.title || '«Descalibración detectada.»';
-        document.getElementById('feedback-diag-body').textContent = aiFeedback.reasoning || aiFeedback.body || '';
+        document.getElementById('feedback-diag-title').textContent = aiFeedback.title || 'Descalibración detectada';
+        document.getElementById('feedback-diag-body').textContent = aiFeedback.reasoning || '';
         const $sug = document.getElementById('feedback-diag-sug');
         if (aiFeedback.recommendation) {
             document.getElementById('feedback-diag-sug-text').textContent = aiFeedback.recommendation;
@@ -236,20 +255,20 @@ function renderFeedback(result) {
 
 
 $submit.addEventListener('click', async () => {
-    if (!selectedOption || !currentQuestion) return;
+    if (selectedIndex === null || !currentQuestion) return;
     $submit.disabled = true;
     $submit.textContent = 'Enviando…';
 
     if (IS_DEMO) {
-        setTimeout(() => renderFeedback(fakeAnswerResult(selectedOption, confidence)), 300);
+        setTimeout(() => renderFeedback(fakeAnswerResult(selectedIndex, confidenceDeclared)), 300);
         return;
     }
 
     try {
         const result = await sessions.answer(SESSION_ID, {
-            question_id: currentQuestion.id,
-            answer: selectedOption,
-            confidence,
+            id_question: currentQuestion.id_question,
+            selected_index: selectedIndex,
+            confidence_declared: confidenceDeclared,
         });
         renderFeedback(result);
     } catch (err) {

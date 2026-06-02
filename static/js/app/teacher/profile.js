@@ -1,3 +1,4 @@
+// widget teacher-cohort-health removido (avgClassIcc, avgClassMastery, cohort-risk eran promedios docente-wide prohibidos por schema v2026-06)
 const _v = new URL(import.meta.url).searchParams.get('v') || '';
 const { tokens } = await import(`../api.js?v=${_v}`);
 const { toast } = await import(`../toast.js?v=${_v}`);
@@ -26,41 +27,12 @@ function fmtDateLong(iso) {
 }
 
 
-function relDate(iso) {
-    const d = new Date(iso);
-    const now = new Date();
-    const diffMs = now - d;
-    const diffH = Math.round(diffMs / (1000 * 60 * 60));
-    if (diffH < 1)  return 'hace minutos';
-    if (diffH < 24) return `hace ${diffH} h`;
-    const diffD = Math.round(diffH / 24);
-    if (diffD === 1) return 'ayer';
-    if (diffD < 7)   return `hace ${diffD} días`;
-    return `hace ${Math.round(diffD / 7)} sem`;
-}
-
-
-function iccTone(icc) {
-    if (icc >= 0.65) return 'moss';
-    if (icc >= 0.5)  return 'amber';
-    return 'rust';
-}
-
-
-function iccLabel(icc) {
-    if (icc >= 0.65) return 'cohorte calibrada';
-    if (icc >= 0.5)  return 'cohorte con desviación moderada';
-    return 'cohorte descalibrada';
-}
-
-
 function paintHero(p) {
     document.getElementById('profile-avatar').textContent = initials(p.first_name, p.last_name, p.username);
     const fullName = `${p.first_name || ''} ${p.last_name || ''}`.trim() || p.username;
     document.getElementById('profile-name').textContent = fullName;
     document.getElementById('profile-institution').textContent = p.institution || '—';
-    document.getElementById('profile-member').textContent = `Miembro desde ${fmtDateLong(p.memberSince)}`;
-    document.getElementById('profile-last').textContent = `Último acceso: ${relDate(p.lastActiveAt)}`;
+    document.getElementById('profile-member').textContent = `Miembro desde ${fmtDateLong(p.date_joined)}`;
 }
 
 
@@ -72,29 +44,11 @@ function paintStats(p) {
     document.getElementById('stat-questions-sub').textContent = `${p.questionsPending} pendientes`;
     document.getElementById('stat-pdfs').textContent = p.pdfsUploaded;
     document.getElementById('stat-diagnoses').textContent = p.aiDiagnosesGenerated;
-    document.getElementById('stat-streak').textContent = p.streakDays;
 }
 
 
-function paintCohortHealth(p) {
-    const icc = p.avgClassIcc || 0;
-    const mastery = p.avgClassMastery || 0;
-
-    document.getElementById('cohort-icc-text').textContent = `ICC ${icc.toFixed(2)}`;
-    document.getElementById('cohort-icc-label').textContent = `· ${iccLabel(icc)}`;
-
-    document.getElementById('cohort-icc-num').textContent = icc.toFixed(2);
-    document.getElementById('cohort-icc-fill').style.width = `${Math.round(icc * 100)}%`;
-    document.getElementById('cohort-icc-fill').dataset.tone = iccTone(icc);
-
-    document.getElementById('cohort-mastery-num').textContent = mastery.toFixed(2);
-    document.getElementById('cohort-mastery-fill').style.width = `${Math.round(mastery * 100)}%`;
-
-    document.getElementById('cohort-risk-num').textContent = `${p.atRiskStudents} estudiantes`;
-    const pct = p.totalStudents ? Math.round((p.atRiskStudents / p.totalStudents) * 100) : 0;
-    document.getElementById('cohort-risk-hint').textContent =
-        `${pct}% de tu cohorte con brecha sostenida los últimos 7 días.`;
-}
+// widget teacher-cohort-health removido (schema v2026-06: avgClassIcc/avgClassMastery/atRiskStudents
+// son promedios docente-wide no derivables del schema, y "brecha sostenida los últimos 7 días" es una ventana temporal inventada)
 
 
 function paintPersonal(p) {
@@ -195,7 +149,6 @@ function init() {
     const p = TEACHER_DATA.profile;
     paintHero(p);
     paintStats(p);
-    paintCohortHealth(p);
     paintPersonal(p);
     bindPersonalForm();
     bindPasswordForm();

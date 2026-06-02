@@ -1,6 +1,6 @@
 const _v = new URL(import.meta.url).searchParams.get('v') || '';
 const { tokens } = await import(`../api.js?v=${_v}`);
-const { STUDENT_DATA, escapeHTML, fmt } = await import(`./student-mock.js?v=${_v}`);
+const { STUDENT_DATA, escapeHTML } = await import(`./student-mock.js?v=${_v}`);
 
 
 if (!tokens.access) {
@@ -42,6 +42,15 @@ function relDate(iso) {
 }
 
 
+function durationMinFromIso(startedIso, finishedIso) {
+    if (!startedIso || !finishedIso) return null;
+    const start = new Date(startedIso);
+    const end = new Date(finishedIso);
+    const diffMin = Math.round((end - start) / (1000 * 60));
+    return diffMin >= 0 ? diffMin : null;
+}
+
+
 function fmtDuration(min) {
     if (min == null) return '—';
     if (min < 60) return `${min} min`;
@@ -58,22 +67,6 @@ function accuracyTone(pct) {
 }
 
 
-function iccTone(delta) {
-    if (delta == null) return 'amber';
-    if (delta > 0.02)  return 'moss';
-    if (delta < -0.02) return 'rust';
-    return 'amber';
-}
-
-
-function iccArrow(delta) {
-    if (delta == null) return '·';
-    if (delta > 0.02)  return '▲';
-    if (delta < -0.02) return '▼';
-    return '◇';
-}
-
-
 function statusLabel(status) {
     return status === 'completed' ? 'Completada' : 'En curso';
 }
@@ -82,60 +75,58 @@ function statusLabel(status) {
 function filtered() {
     const list = STUDENT_DATA.sessionHistory.filter((s) => {
         if (currentStatus !== 'all' && s.status !== currentStatus) return false;
-        if (currentMode !== 'all' && s.mode !== currentMode) return false;
-        if (currentSearch && !s.roomName.toLowerCase().includes(currentSearch)) return false;
+        if (currentMode !== 'all' && s.room.mode !== currentMode) return false;
+        if (currentSearch && !s.room.name.toLowerCase().includes(currentSearch)) return false;
         return true;
     });
-    return list.sort((a, b) => new Date(b.startedAt) - new Date(a.startedAt));
+    return list.sort((a, b) => new Date(b.started_at) - new Date(a.started_at));
 }
 
 
 function renderRow(s) {
     const pct = s.answered ? Math.round((s.correct / s.answered) * 100) : 0;
     const accTone = accuracyTone(pct);
-    const dTone = iccTone(s.iccDelta);
-    const dSign = s.iccDelta == null ? '' : (s.iccDelta > 0 ? '+' : '');
-    const dValue = s.iccDelta == null ? '—' : `${dSign}${fmt(s.iccDelta)}`;
-    const modeDotClass = s.mode === 'individual' ? 'history-cell__mode--individual' : '';
+    const durationMin = durationMinFromIso(s.started_at, s.finished_at);
+    const modeDotClass = s.room.mode === 'individual' ? 'history-cell__mode--individual' : '';
 
     const actionBtn = s.status === 'completed'
-        ? `<a class="history-action" href="/app/session/${s.id}/review/" data-session-id="${s.id}">
+        ? `<a class="history-action" href="/app/session/${s.id_session}/review/" data-session-id="${s.id_session}">
                Revisar
                <svg class="icon-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                    <line x1="5" y1="12" x2="19" y2="12"></line>
                    <polyline points="12 5 19 12 12 19"></polyline>
                </svg>
            </a>`
-        : `<a class="history-action" href="/app/session/" data-session-id="${s.id}">
+        : `<a class="history-action" href="/app/session/" data-session-id="${s.id_session}">
                Continuar
                <svg class="icon-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
                </svg>
            </a>`;
 
+    const finishedLine = s.finished_at
+        ? `<span class="history-cell__rel">fin ${fmtDate(s.finished_at)}</span>`
+        : `<span class="history-cell__rel">${relDate(s.started_at)}</span>`;
+
     return `
     <li class="history-row" role="row">
         <div class="history-cell history-cell--room" role="cell">
-            <span class="history-cell__mode ${modeDotClass}" aria-hidden="true" title="${s.mode === 'individual' ? 'Sala de estudio' : 'Sala grupal'}"></span>
-            <span class="history-cell__name">${escapeHTML(s.roomName)}</span>
+            <span class="history-cell__mode ${modeDotClass}" aria-hidden="true" title="${s.room.mode === 'individual' ? 'Sala de estudio' : 'Sala grupal'}"></span>
+            <span class="history-cell__name">${escapeHTML(s.room.name)}</span>
         </div>
         <div class="history-cell history-cell--when" role="cell">
             <span class="history-mobile-label">Cuándo</span>
-            <span class="history-cell__date">${fmtDate(s.startedAt)}</span>
-            <span class="history-cell__rel">${relDate(s.startedAt)}</span>
+            <span class="history-cell__date">${fmtDate(s.started_at)}</span>
+            ${finishedLine}
         </div>
         <div class="history-cell history-cell--duration" role="cell">
             <span class="history-mobile-label">Duración</span>
-            ${fmtDuration(s.durationMin)}
+            ${fmtDuration(durationMin)}
         </div>
         <div class="history-cell history-cell--accuracy" role="cell">
             <span class="history-mobile-label">Aciertos</span>
             <span class="history-cell__accuracy-pct" data-tone="${accTone}">${pct}%</span>
             <span class="history-cell__accuracy-sub">${s.correct}/${s.answered}</span>
-        </div>
-        <div class="history-cell history-cell--icc" role="cell">
-            <span class="history-mobile-label">ICC</span>
-            <span class="history-cell__icc" data-tone="${dTone}">${iccArrow(s.iccDelta)} ${dValue}</span>
         </div>
         <div class="history-cell history-cell--status" role="cell">
             <span class="history-mobile-label">Estado</span>
@@ -188,17 +179,17 @@ function renderStats() {
     const completed = all.filter((s) => s.status === 'completed');
     const totalAns = completed.reduce((sum, s) => sum + s.answered, 0);
     const totalCor = completed.reduce((sum, s) => sum + s.correct, 0);
-    const totalMin = completed.reduce((sum, s) => sum + (s.durationMin || 0), 0);
+    const totalMin = completed.reduce((sum, s) => {
+        const d = durationMinFromIso(s.started_at, s.finished_at);
+        return sum + (d || 0);
+    }, 0);
     const accPct = totalAns ? Math.round((totalCor / totalAns) * 100) : 0;
-    const iccSum = completed.reduce((sum, s) => sum + (s.iccDelta || 0), 0);
 
     document.getElementById('h-total').textContent = all.length;
     document.getElementById('h-accuracy').textContent = `${accPct}%`;
     document.getElementById('h-accuracy').dataset.tone = accuracyTone(accPct);
     document.getElementById('h-time').textContent = fmtDuration(totalMin);
-    const iccEl = document.getElementById('h-icc');
-    iccEl.textContent = `${iccSum >= 0 ? '+' : ''}${fmt(iccSum)}`;
-    iccEl.dataset.tone = iccTone(iccSum);
+    // widget h-icc removido: iccDelta no es campo del schema v2026-06
 }
 
 

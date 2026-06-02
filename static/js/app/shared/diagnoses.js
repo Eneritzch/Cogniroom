@@ -41,11 +41,8 @@ function predominantProfile(list) {
 
 
 function renderDiagnosis(diag) {
+    const title = diag.title || '';
     const reasoning = diag.reasoning || '';
-    const firstSentence = reasoning.split(/(?<=[.!?])\s/)[0] || reasoning;
-    const body = reasoning.length > firstSentence.length
-        ? reasoning.slice(firstSentence.length).trim()
-        : '';
     const recommendation = diag.recommendation || '';
     const date = formatDate(diag.generated_at);
     const risk = diag.risk_level || 'medium';
@@ -53,6 +50,9 @@ function renderDiagnosis(diag) {
     const failureProb = diag.failure_probability != null
         ? Number(diag.failure_probability).toFixed(2)
         : '—';
+    const roomName = (diag.room && diag.room.name) || '';
+    const mainNode = diag.node || null;
+    const riskNodes = Array.isArray(diag.risk_node) ? diag.risk_node : [];
 
     return `
       <article class="ai-diagnosis" data-risk="${escapeHTML(risk)}" data-profile="${escapeHTML(classification)}">
@@ -62,13 +62,15 @@ function renderDiagnosis(diag) {
           </svg>
           Tutor cognitivo · Claude
           <span class="ai-diagnosis__context">
-            <span class="ai-diagnosis__context-room">${escapeHTML(diag.roomName || '')}</span>
-            ${diag.nodeName ? `<span class="ai-diagnosis__context-sep">·</span>
-              <span class="ai-diagnosis__context-node">${escapeHTML(diag.nodeName)}</span>` : ''}
+            <span class="ai-diagnosis__context-room">${escapeHTML(roomName)}</span>
+            ${mainNode ? `<span class="ai-diagnosis__context-sep">·</span>
+              <span class="ai-diagnosis__context-node">${escapeHTML(mainNode.name || '')}${mainNode.description ? ` <span class="ai-diagnosis__context-topic">(${escapeHTML(mainNode.description)})</span>` : ''}</span>` : ''}
+            ${riskNodes.length ? `<span class="ai-diagnosis__context-sep">·</span>
+              <span class="ai-diagnosis__context-node">${riskNodes.map((n) => escapeHTML(n)).join(', ')}</span>` : ''}
           </span>
         </header>
-        <h3 class="ai-diagnosis__title">«${escapeHTML(firstSentence)}»</h3>
-        ${body ? `<p class="ai-diagnosis__body">${escapeHTML(body)}</p>` : ''}
+        <h3 class="ai-diagnosis__title">${escapeHTML(title)}</h3>
+        ${reasoning ? `<p class="ai-diagnosis__body">${escapeHTML(reasoning)}</p>` : ''}
         ${recommendation ? `
           <div class="ai-diagnosis__suggestion" role="note">
             <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -82,7 +84,7 @@ function renderDiagnosis(diag) {
           <span class="pill" data-profile="${escapeHTML(classification)}">${profileLabel(classification)}</span>
           <span class="pill" data-risk="${escapeHTML(risk)}">${riskLabel(risk)}</span>
           <span class="diagnoses-item__failure">Predicción de fallo: <span class="num">${failureProb}</span></span>
-          ${diag.sessionId ? `<a class="diagnoses-item__link" href="/app/session/${diag.sessionId}/review/">Ver sesión →</a>` : ''}
+          ${diag.id_session ? `<a class="diagnoses-item__link" href="/app/session/${diag.id_session}/review/">Ver sesión →</a>` : ''}
           <span class="diagnoses-item__date">${escapeHTML(date)}</span>
         </footer>
       </article>

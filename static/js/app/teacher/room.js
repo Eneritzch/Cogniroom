@@ -32,12 +32,6 @@ function escapeHTML(s) {
         .replaceAll('"', '&quot;');
 }
 
-function fmt(n, digits = 2) {
-    if (n == null || Number.isNaN(n)) return '—';
-    return Number(n).toFixed(digits);
-}
-
-
 document.querySelectorAll('.room-tab').forEach((btn) => {
     btn.addEventListener('click', () => {
         const target = btn.dataset.tab;
@@ -52,20 +46,31 @@ document.querySelectorAll('.room-tab').forEach((btn) => {
 
 
 const DEMO_HEATMAP = {
-    nodeLabels: ['1ª ley', 'Entropía', 'Cinética 2°', 'Eq. químico', 'Gibbs', 'Le Chatelier'],
+    nodes: [
+        { id_node: 1, name: '1ª ley',       description: 'Termodinámica clásica' },
+        { id_node: 2, name: 'Entropía',     description: 'Termodinámica clásica' },
+        { id_node: 3, name: 'Cinética 2°',  description: 'Cinética' },
+        { id_node: 4, name: 'Eq. químico',  description: 'Equilibrio' },
+        { id_node: 5, name: 'Gibbs',        description: 'Termodinámica clásica' },
+        { id_node: 6, name: 'Le Chatelier', description: 'Equilibrio' },
+    ],
     rows: [
-        { student: 'Andrea Molina',   profile: 'overconfident',  cells: [0.32, 0.41, 0.78, 0.65, 0.50, 0.72] },
-        { student: 'Bruno Cárdenas',  profile: 'overconfident',  cells: [0.28, 0.39, 0.66, 0.58, 0.44, 0.61] },
-        { student: 'Camila Reyes',    profile: 'underconfident', cells: [0.71, 0.82, 0.78, 0.69, 0.74, 0.81] },
-        { student: 'Daniel Tovar',    profile: 'calibrated',     cells: [0.60, 0.62, 0.65, 0.58, 0.61, 0.66] },
-        { student: 'Elena Pinto',     profile: 'underconfident', cells: [0.55, 0.60, 0.72, 0.68, 0.70, 0.74] },
-        { student: 'Felipe Marín',    profile: 'calibrated',     cells: [0.70, 0.68, 0.75, 0.71, 0.69, 0.76] },
-        { student: 'Gabriela Soto',   profile: 'overconfident',  cells: [0.35, 0.40, 0.55, 0.48, 0.41, 0.50] },
+        { user: { id_user: 11, first_name: 'Andrea',   last_name: 'Molina'   }, profile: 'overconfident',  cells: [0.32, 0.41, 0.78, 0.65, 0.50, 0.72] },
+        { user: { id_user: 12, first_name: 'Bruno',    last_name: 'Cárdenas' }, profile: 'overconfident',  cells: [0.28, 0.39, 0.66, 0.58, 0.44, 0.61] },
+        { user: { id_user: 13, first_name: 'Camila',   last_name: 'Reyes'    }, profile: 'underconfident', cells: [0.71, 0.82, 0.78, 0.69, 0.74, 0.81] },
+        { user: { id_user: 14, first_name: 'Daniel',   last_name: 'Tovar'    }, profile: 'calibrated',     cells: [0.60, 0.62, 0.65, 0.58, 0.61, 0.66] },
+        { user: { id_user: 15, first_name: 'Elena',    last_name: 'Pinto'    }, profile: 'underconfident', cells: [0.55, 0.60, 0.72, 0.68, 0.70, 0.74] },
+        { user: { id_user: 16, first_name: 'Felipe',   last_name: 'Marín'    }, profile: 'calibrated',     cells: [0.70, 0.68, 0.75, 0.71, 0.69, 0.76] },
+        { user: { id_user: 17, first_name: 'Gabriela', last_name: 'Soto'     }, profile: 'overconfident',  cells: [0.35, 0.40, 0.55, 0.48, 0.41, 0.50] },
     ],
 };
 
 function profileLabel(p) {
     return ({ calibrated: 'Cal.', overconfident: 'Sobre.', underconfident: 'Sub.' })[p] || '—';
+}
+
+function fullName(user) {
+    return `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim();
 }
 
 function cellColor(v) {
@@ -78,24 +83,27 @@ function renderHeatmap(data) {
     const $header = document.getElementById('heatmap-header');
     const $rows = document.getElementById('heatmap-rows');
 
-    $header.innerHTML = data.nodeLabels
-        .map((n) => `<div class="heatmap__header-cell eyebrow">${escapeHTML(n)}</div>`)
+    $header.innerHTML = data.nodes
+        .map((n) => `<div class="heatmap__header-cell eyebrow" title="${escapeHTML(n.description)}">${escapeHTML(n.name)}</div>`)
         .join('');
 
-    $rows.innerHTML = data.rows.map((row) => `
+    $rows.innerHTML = data.rows.map((row) => {
+        const name = fullName(row.user);
+        return `
       <div class="heatmap__row">
         <div class="heatmap__row-name">
-          <span class="heatmap__row-name-text">${escapeHTML(row.student)}</span>
+          <span class="heatmap__row-name-text">${escapeHTML(name)}</span>
           <span class="pill" data-profile="${row.profile}">${profileLabel(row.profile)}</span>
         </div>
         ${row.cells.map((v, i) => `
           <div class="heatmap__cell" style="background:${cellColor(v)};"
-               title="${escapeHTML(row.student)} · ${escapeHTML(data.nodeLabels[i])} · ${v.toFixed(2)}">
+               title="${escapeHTML(name)} · ${escapeHTML(data.nodes[i].name)} · ${v.toFixed(2)}">
             <span class="heatmap__cell-value">${v.toFixed(2)}</span>
           </div>
         `).join('')}
       </div>
-    `).join('');
+    `;
+    }).join('');
 }
 
 
@@ -104,8 +112,6 @@ function renderDemo() {
     document.getElementById('room-students').textContent = '84';
     document.getElementById('room-questions').textContent = '312';
     document.getElementById('room-pdfs').textContent = '5';
-    document.getElementById('stat-icc').textContent = '0.58';
-    document.getElementById('stat-ipc').textContent = '0.34';
     document.getElementById('stat-over').textContent = '38%';
     document.getElementById('stat-cal').textContent = '41%';
     document.getElementById('stat-over-detail').textContent = '32 de 84';
@@ -129,15 +135,12 @@ async function bootstrap() {
         ]);
 
         const allRooms = await rooms.list().catch(() => []);
-        const current = allRooms.find((r) => r.id === ROOM_ID);
+        const current = allRooms.find((r) => r.id_room === ROOM_ID);
 
         document.getElementById('room-name').textContent = current?.name || `Sala ${ROOM_ID}`;
         document.getElementById('room-students').textContent = String(members.length || 0);
         document.getElementById('room-questions').textContent = String(questionList.length || 0);
         document.getElementById('room-pdfs').textContent = String(pdfList.length || 0);
-
-        document.getElementById('stat-icc').textContent = fmt(current?.icc_avg);
-        document.getElementById('stat-ipc').textContent = fmt(current?.ipc_avg);
 
         const overCount = members.filter((m) => m.profile === 'overconfident').length;
         const calCount = members.filter((m) => m.profile === 'calibrated').length;
@@ -146,8 +149,6 @@ async function bootstrap() {
         document.getElementById('stat-cal').textContent = `${Math.round((calCount / total) * 100)}%`;
         document.getElementById('stat-over-detail').textContent = `${overCount} de ${members.length}`;
         document.getElementById('stat-cal-detail').textContent = `${calCount} de ${members.length}`;
-
-        renderHeatmap(DEMO_HEATMAP);
 
         if (blindSpots && blindSpots.length === 0) {
             toast('Sala sin puntos ciegos detectados todavía.', { kind: 'success' });
@@ -159,7 +160,6 @@ async function bootstrap() {
             return;
         }
         toast(err?.message || 'Error al cargar la sala', { kind: 'error' });
-        renderHeatmap(DEMO_HEATMAP);
     }
 }
 

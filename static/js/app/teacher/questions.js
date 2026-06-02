@@ -17,23 +17,52 @@ let currentSearch = '';
 let currentPage = 1;
 
 
-function difficulty(correctPct) {
-    if (correctPct == null) return null;
-    if (correctPct >= 75) return { label: 'Fácil',   tone: 'moss' };
-    if (correctPct >= 40) return { label: 'Media',   tone: 'amber' };
-    return                       { label: 'Difícil', tone: 'rust' };
+function difficultyMeta(level) {
+    if (level === 'easy')   return { label: 'Fácil',   tone: 'moss' };
+    if (level === 'medium') return { label: 'Media',   tone: 'amber' };
+    if (level === 'hard')   return { label: 'Difícil', tone: 'rust' };
+    return null;
+}
+
+
+function nodeName(node) {
+    if (!node) return '';
+    if (typeof node === 'string') return node;
+    return node.name || '';
+}
+
+
+function nodeTopic(node) {
+    if (!node || typeof node === 'string') return '';
+    return node.description || '';
+}
+
+
+function questionText(q) {
+    return q.statement || '';
 }
 
 
 function applyFilters(bank) {
     const q = currentSearch.trim().toLowerCase();
     return bank.filter((qst) => {
-        if (currentStatus === 'pending'  && qst.approved) return false;
-        if (currentStatus === 'approved' && !qst.approved) return false;
+        if (currentStatus === 'pending'  && qst.is_approved) return false;
+        if (currentStatus === 'approved' && !qst.is_approved) return false;
         if (currentSource !== 'all' && qst.source !== currentSource) return false;
-        if (q && !qst.text.toLowerCase().includes(q) && !qst.node.toLowerCase().includes(q)) return false;
+        if (q) {
+            const text = questionText(qst).toLowerCase();
+            const name = nodeName(qst.node).toLowerCase();
+            const topic = nodeTopic(qst.node).toLowerCase();
+            if (!text.includes(q) && !name.includes(q) && !topic.includes(q)) return false;
+        }
         return true;
     });
+}
+
+
+function formatDate(iso) {
+    if (!iso) return '';
+    return String(iso).slice(0, 10);
 }
 
 
@@ -68,8 +97,29 @@ function renderList() {
     }
 
     $list.innerHTML = visible.map((q) => {
-        const diff = difficulty(q.correctPct);
-        const status = q.approved ? 'approved' : 'pending';
+        const diff = difficultyMeta(q.difficulty);
+        const status = q.is_approved ? 'approved' : 'pending';
+        const name = nodeName(q.node);
+        const topic = nodeTopic(q.node);
+        const sourcePdf = q.source_pdf;
+        const options = Array.isArray(q.options) ? q.options : [];
+        const correctIdx = Number.isInteger(q.correct_index) ? q.correct_index : -1;
+
+        const optionsHTML = options.length === 4 ? `
+            <ol class="qcard__options">
+                ${options.map((opt, idx) => `
+                    <li class="qcard__option${idx === correctIdx ? ' qcard__option--correct' : ''}">
+                        <span class="qcard__option-letter num">${String.fromCharCode(65 + idx)}</span>
+                        <span class="qcard__option-text">${escapeHTML(opt)}</span>
+                        ${idx === correctIdx ? `
+                            <svg class="icon-svg" width="12" height="12" viewBox="0 0 24 24" aria-label="Respuesta correcta">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        ` : ''}
+                    </li>
+                `).join('')}
+            </ol>
+        ` : '';
 
         return `
         <li class="qcard" data-status="${status}">
@@ -80,19 +130,21 @@ function renderList() {
                         <circle cx="12" cy="12" r="9"></circle>
                         <circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"></circle>
                     </svg>
-                    ${escapeHTML(q.node)}
+                    ${escapeHTML(name)}${topic ? ` <span class="qcard__topic">· ${escapeHTML(topic)}</span>` : ''}
                 </span>
-                ${q.pdf ? `<span class="qcard__pdf" title="Origen: ${escapeHTML(q.pdf)}">
+                ${sourcePdf ? `<span class="qcard__pdf" title="Generada de: ${escapeHTML(sourcePdf.original_name)}">
                     <svg class="icon-svg" width="11" height="11" viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                         <polyline points="14 2 14 8 20 8"></polyline>
                     </svg>
-                    ${escapeHTML(q.pdf)}
+                    ${escapeHTML(sourcePdf.original_name)}
                 </span>` : ''}
-                <span class="qcard__date num">${escapeHTML(q.date)}</span>
+                <span class="qcard__date num">${escapeHTML(formatDate(q.created_at))}</span>
             </header>
 
-            <p class="qcard__text">${escapeHTML(q.text)}</p>
+            <p class="qcard__text">${escapeHTML(questionText(q))}</p>
+
+            ${optionsHTML}
 
             <footer class="qcard__foot">
                 <span class="qcard__status" data-status="${status}">
@@ -103,23 +155,6 @@ function renderList() {
                     </svg>
                     ${status === 'approved' ? 'Activa' : 'Por revisar'}
                 </span>
-
-                <span class="qcard__stat" title="Veces respondida en sesiones">
-                    <svg class="icon-svg" width="11" height="11" viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="9" cy="7" r="4"></circle>
-                    </svg>
-                    <span class="num">${q.uses}</span> usos
-                </span>
-
-                ${q.correctPct != null ? `
-                <span class="qcard__stat" title="Porcentaje de acierto promedio">
-                    <svg class="icon-svg" width="11" height="11" viewBox="0 0 24 24" aria-hidden="true">
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                    <span class="num">${q.correctPct}%</span> acierto
-                </span>
-                ` : ''}
 
                 ${diff ? `<span class="qcard__diff" data-tone="${diff.tone}">${diff.label}</span>` : ''}
 
@@ -207,7 +242,7 @@ function render() {
     document.getElementById('room-name').textContent = data.name;
     document.getElementById('room-questions').textContent = String(data.questions);
 
-    const pendingTotal = data.questionBank.filter((q) => !q.approved).length;
+    const pendingTotal = data.questionBank.filter((q) => !q.is_approved).length;
     document.getElementById('room-pending').textContent = `${pendingTotal} pendiente${pendingTotal === 1 ? '' : 's'} de aprobación`;
 
     currentPage = 1;

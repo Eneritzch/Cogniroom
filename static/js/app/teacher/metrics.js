@@ -57,14 +57,32 @@ function initials(name) {
 }
 
 
+function fullName(s) {
+    if (s.first_name || s.last_name) {
+        return `${s.first_name || ''} ${s.last_name || ''}`.trim();
+    }
+    return s.name || '';
+}
+
+
 function applyFilters(roster) {
     const q = currentSearch.trim().toLowerCase();
     return roster.filter((s) => {
         if (currentProfile !== 'all' && s.profile !== currentProfile) return false;
-        if (currentCurso !== 'all' && s.curso !== currentCurso) return false;
-        if (q && !s.name.toLowerCase().includes(q)) return false;
+        if (currentCurso !== 'all' && s.id_section !== currentCurso) return false;
+        if (q && !fullName(s).toLowerCase().includes(q)) return false;
         return true;
     });
+}
+
+
+function nodeName(n) {
+    return typeof n === 'string' ? n : (n && n.name) || '';
+}
+
+
+function nodeTopic(n) {
+    return (n && typeof n === 'object' && n.description) ? n.description : '';
 }
 
 
@@ -77,7 +95,7 @@ function renderInsights(data) {
     const weakest = nodeAverages[0];
     const strongest = nodeAverages[nodeAverages.length - 1];
 
-    const studentAverages = data.roster.map((s) => ({ name: s.name, avg: rowAvg(s), profile: s.profile }));
+    const studentAverages = data.roster.map((s) => ({ name: fullName(s), avg: rowAvg(s), profile: s.profile }));
     studentAverages.sort((a, b) => a.avg - b.avg);
     const lowest = studentAverages[0];
     const highest = studentAverages[studentAverages.length - 1];
@@ -85,14 +103,14 @@ function renderInsights(data) {
     $wrap.innerHTML = `
         <article class="insight-card insight-card--weak">
             <span class="insight-card__k">Tema más débil</span>
-            <strong class="insight-card__v">${escapeHTML(weakest.node)}</strong>
+            <strong class="insight-card__v">${escapeHTML(nodeName(weakest.node))}</strong>
             <span class="insight-card__sub">
                 <span class="num">${Math.round(weakest.avg * 100)}%</span> de dominio promedio
             </span>
         </article>
         <article class="insight-card insight-card--strong">
             <span class="insight-card__k">Tema más fuerte</span>
-            <strong class="insight-card__v">${escapeHTML(strongest.node)}</strong>
+            <strong class="insight-card__v">${escapeHTML(nodeName(strongest.node))}</strong>
             <span class="insight-card__sub">
                 <span class="num">${Math.round(strongest.avg * 100)}%</span> de dominio promedio
             </span>
@@ -115,25 +133,25 @@ function renderInsights(data) {
 }
 
 
-function renderCursoChips(cursos) {
+function renderCursoChips(sections) {
     const $wrap = document.getElementById('metrics-curso-chips');
     const $group = document.getElementById('metrics-curso-group');
     if (!$wrap || !$group) return;
 
-    if (!cursos || cursos.length <= 1) {
+    if (!sections || sections.length <= 1) {
         $group.hidden = true;
         return;
     }
     $group.hidden = false;
 
-    const totalStudents = cursos.reduce((s, c) => s + c.students, 0);
+    const totalStudents = sections.reduce((s, c) => s + (c.students || 0), 0);
     const chips = [
         `<button type="button" class="metrics-chip" data-curso="all" aria-pressed="${currentCurso === 'all' ? 'true' : 'false'}">
             Todos <span class="metrics-chip__count num">${totalStudents}</span>
         </button>`,
-        ...cursos.map((c) => `
-            <button type="button" class="metrics-chip" data-curso="${c.id}" aria-pressed="${currentCurso === c.id ? 'true' : 'false'}">
-                ${escapeHTML(c.name.split(' · ')[0])} <span class="metrics-chip__count num">${c.students}</span>
+        ...sections.map((c) => `
+            <button type="button" class="metrics-chip" data-curso="${c.id_section}" aria-pressed="${currentCurso === c.id_section ? 'true' : 'false'}">
+                ${escapeHTML(c.code || c.name)} <span class="metrics-chip__count num">${c.students || 0}</span>
             </button>
         `),
     ];
@@ -187,22 +205,26 @@ function renderHeatmap() {
         <div class="heatmap__row-name heatmap__row-name--header">
             <span class="eyebrow">Estudiante</span>
         </div>
-        ${data.nodes.map((n) => `<div class="heatmap__header-cell eyebrow">${escapeHTML(n)}</div>`).join('')}
+        ${data.nodes.map((n) => {
+            const topic = nodeTopic(n);
+            return `<div class="heatmap__header-cell eyebrow" ${topic ? `title="${escapeHTML(topic)}"` : ''}>${escapeHTML(nodeName(n))}</div>`;
+        }).join('')}
         <div class="heatmap__summary heatmap__summary--header eyebrow">Promedio</div>
     `;
 
     $rows.innerHTML = visible.map((row) => {
         const rAvg = rowAvg(row);
+        const displayName = fullName(row);
         return `
         <div class="heatmap__row">
             <div class="heatmap__row-name">
-                <span class="heatmap__row-avatar" aria-hidden="true">${initials(row.name)}</span>
-                <span class="heatmap__row-name-text">${escapeHTML(row.name)}</span>
+                <span class="heatmap__row-avatar" aria-hidden="true">${initials(displayName)}</span>
+                <span class="heatmap__row-name-text">${escapeHTML(displayName)}</span>
                 <span class="pill" data-profile="${row.profile}">${profileShort(row.profile)}</span>
             </div>
             ${row.cells.map((v, i) => `
                 <div class="heatmap__cell" style="background:${cellColor(v)};"
-                     title="${escapeHTML(row.name)} · ${escapeHTML(data.nodes[i])} · ${Math.round(v * 100)}%">
+                     title="${escapeHTML(displayName)} · ${escapeHTML(nodeName(data.nodes[i]))} · ${Math.round(v * 100)}%">
                     <span class="heatmap__cell-value">${Math.round(v * 100)}</span>
                 </div>
             `).join('')}
@@ -285,7 +307,7 @@ function render() {
     currentCurso = 'all';
 
     renderInsights(data);
-    renderCursoChips(data.cursos);
+    renderCursoChips(data.sections || data.cursos);
     renderHeatmap();
 }
 

@@ -83,21 +83,21 @@ function updateCalibrationRing(container, value, profile, sublabel) {
 
 
 function renderStudentNodeCard(node) {
-    const declared = Math.round((node.icc_value ?? 0) * 100 + (node.p_mastery ?? 0) * 100) / 2 || 50;
     const mastery = Math.round((node.p_mastery ?? 0) * 100);
-    const conf = Math.min(100, Math.max(0, Math.round(declared)));
+    const conf = Math.round((node.avg_confidence ?? 0) * 100);
     const gap = conf - mastery;
     const gapAbs = Math.abs(gap);
     const tone = gapTone(gap);
     const attempts = node.attempts ?? 0;
     const bkt = node.p_mastery ?? 0;
+    const topic = node.description ? `<span class="node-card__topic eyebrow">${escapeHTML(node.description)}</span>` : '';
 
     return `
       <article class="node-card">
         <header class="node-card__head">
           <div style="min-width:0;">
-            ${node.topic ? `<div class="node-card__topic eyebrow">${escapeHTML(node.topic)}</div>` : ''}
-            <h3 class="node-card__name">${escapeHTML(node.node_name)}</h3>
+            ${topic}
+            <h3 class="node-card__name">${escapeHTML(node.name)}</h3>
           </div>
           <div class="node-card__mastery">
             <span class="node-card__mastery-value num">${mastery}<span class="node-card__mastery-value-unit">%</span></span>
@@ -152,14 +152,12 @@ function renderStudentDiagnosis(diag) {
 
     if (!diag) return;
 
+    const title = diag.title || '';
     const reasoning = diag.reasoning || '';
     const recommendation = diag.recommendation || '';
-    const firstSentence = reasoning.split(/(?<=[.!?])\s/)[0] || reasoning;
 
-    $title.textContent = firstSentence ? `«${firstSentence}»` : '«Diagnóstico disponible.»';
-    $body.textContent = reasoning.length > firstSentence.length
-        ? reasoning.slice(firstSentence.length).trim()
-        : reasoning;
+    $title.textContent = title ? `«${title}»` : '«Diagnóstico disponible.»';
+    $body.textContent = reasoning;
 
     if (recommendation) {
         $sugText.textContent = recommendation;
@@ -171,46 +169,28 @@ function renderStudentDiagnosis(diag) {
 
 
 const DEMO_GRAPH_NODES = [
-    { id: 'ley1',  topic: 'Termodinámica I', label: '1ª ley',           mastery: 0.47, declared: 0.84, attempts: 14, x: 22, y: 22 },
-    { id: 'ley2',  topic: 'Termodinámica I', label: '2ª ley',           mastery: 0.55, declared: 0.78, attempts: 10, x: 42, y: 14 },
-    { id: 'entr',  topic: 'Termodinámica I', label: 'Entropía',         mastery: 0.52, declared: 0.71, attempts: 9,  x: 60, y: 24 },
-    { id: 'gibbs', topic: 'Termodinámica I', label: 'Gibbs',            mastery: 0.38, declared: 0.66, attempts: 7,  x: 78, y: 16 },
-    { id: 'sis',   topic: 'Termodinámica I', label: 'Sist. abiertos',   mastery: 0.41, declared: 0.80, attempts: 8,  x: 35, y: 36 },
-    { id: 'eq',    topic: 'Equilibrio',      label: 'Eq. químico',      mastery: 0.62, declared: 0.74, attempts: 9,  x: 86, y: 34 },
-    { id: 'lech',  topic: 'Equilibrio',      label: 'Le Chatelier',     mastery: 0.61, declared: 0.80, attempts: 11, x: 72, y: 44 },
-    { id: 'kpkc',  topic: 'Equilibrio',      label: 'Kp / Kc',          mastery: 0.70, declared: 0.66, attempts: 7,  x: 88, y: 52 },
-    { id: 'cin1',  topic: 'Cinética',        label: 'Velocidad',        mastery: 0.66, declared: 0.55, attempts: 9,  x: 18, y: 50 },
-    { id: 'cin2',  topic: 'Cinética',        label: 'Reacc. 2° orden',  mastery: 0.74, declared: 0.58, attempts: 12, x: 32, y: 58 },
-    { id: 'act',   topic: 'Cinética',        label: 'E. activación',    mastery: 0.68, declared: 0.49, attempts: 8,  x: 50, y: 58 },
-    { id: 'cat',   topic: 'Cinética',        label: 'Catálisis',        mastery: 0.81, declared: 0.72, attempts: 6,  x: 64, y: 60 },
-];
-
-const DEMO_GRAPH_EDGES = [
-    { from: 'ley1', to: 'ley2' }, { from: 'ley1', to: 'sis' }, { from: 'ley2', to: 'entr' },
-    { from: 'entr', to: 'gibbs' }, { from: 'gibbs', to: 'eq' }, { from: 'eq', to: 'lech' },
-    { from: 'eq', to: 'kpkc' }, { from: 'lech', to: 'kpkc' }, { from: 'cin1', to: 'cin2' },
-    { from: 'cin1', to: 'act' }, { from: 'act', to: 'cat' }, { from: 'cin2', to: 'cat' },
-    { from: 'sis', to: 'cin1' }, { from: 'gibbs', to: 'eq' },
+    { id_node: 'ley1',  name: '1ª ley',           description: 'Termodinámica clásica', p_mastery: 0.47, avg_confidence: 0.84, attempts: 14, x: 10, y: 18 },
+    { id_node: 'ley2',  name: '2ª ley',           description: 'Termodinámica clásica', p_mastery: 0.55, avg_confidence: 0.78, attempts: 10, x: 28, y: 12 },
+    { id_node: 'entr',  name: 'Entropía',         description: 'Termodinámica clásica', p_mastery: 0.52, avg_confidence: 0.71, attempts: 9,  x: 46, y: 18 },
+    { id_node: 'gibbs', name: 'Gibbs',            description: 'Termodinámica clásica', p_mastery: 0.38, avg_confidence: 0.66, attempts: 7,  x: 66, y: 12 },
+    { id_node: 'sis',   name: 'Sist. abiertos',   description: 'Termodinámica clásica', p_mastery: 0.41, avg_confidence: 0.80, attempts: 8,  x: 86, y: 20 },
+    { id_node: 'eq',    name: 'Eq. químico',      description: 'Equilibrio',            p_mastery: 0.62, avg_confidence: 0.74, attempts: 9,  x: 20, y: 40 },
+    { id_node: 'lech',  name: 'Le Chatelier',     description: 'Equilibrio',            p_mastery: 0.61, avg_confidence: 0.80, attempts: 11, x: 50, y: 38 },
+    { id_node: 'kpkc',  name: 'Kp / Kc',          description: 'Equilibrio',            p_mastery: 0.70, avg_confidence: 0.66, attempts: 7,  x: 80, y: 40 },
+    { id_node: 'cin1',  name: 'Velocidad',        description: 'Cinética',              p_mastery: 0.66, avg_confidence: 0.55, attempts: 9,  x: 12, y: 60 },
+    { id_node: 'cin2',  name: 'Reacc. 2° orden',  description: 'Cinética',              p_mastery: 0.74, avg_confidence: 0.58, attempts: 12, x: 35, y: 62 },
+    { id_node: 'act',   name: 'E. activación',    description: 'Cinética',              p_mastery: 0.68, avg_confidence: 0.49, attempts: 8,  x: 58, y: 62 },
+    { id_node: 'cat',   name: 'Catálisis',        description: 'Cinética',              p_mastery: 0.81, avg_confidence: 0.72, attempts: 6,  x: 82, y: 60 },
 ];
 
 
-function renderKnowledgeGraph(graphNodes, graphEdges) {
+function renderKnowledgeGraph(graphNodes) {
     const $svg = document.getElementById('knowledge-graph-svg');
     const $readout = document.getElementById('knowledge-graph-readout');
     if (!$svg) return;
 
-    const byId = Object.fromEntries(graphNodes.map((n) => [n.id, n]));
+    const byId = Object.fromEntries(graphNodes.map((n) => [n.id_node, n]));
     let hover = null;
-
-    const isLit = (id) => {
-        if (!hover) return true;
-        if (id === hover) return true;
-        return graphEdges.some(
-            (e) => (e.from === hover && e.to === id) || (e.to === hover && e.from === id),
-        );
-    };
-
-    const isEdgeLit = (e) => !hover || e.from === hover || e.to === hover;
 
     const buildSvg = () => {
         const svgNS = 'http://www.w3.org/2000/svg';
@@ -229,27 +209,11 @@ function renderKnowledgeGraph(graphNodes, graphEdges) {
         bg.setAttribute('opacity', '0.6');
         $svg.appendChild(bg);
 
-        graphEdges.forEach((e) => {
-            const a = byId[e.from];
-            const b = byId[e.to];
-            if (!a || !b) return;
-            const lit = isEdgeLit(e);
-            const line = document.createElementNS(svgNS, 'line');
-            line.setAttribute('x1', a.x);
-            line.setAttribute('y1', a.y);
-            line.setAttribute('x2', b.x);
-            line.setAttribute('y2', b.y);
-            line.setAttribute('stroke', lit ? 'var(--ink-faint)' : 'var(--paper-border)');
-            line.setAttribute('stroke-width', lit ? '0.25' : '0.15');
-            if (!lit) line.setAttribute('stroke-dasharray', '0.6 0.6');
-            $svg.appendChild(line);
-        });
-
         graphNodes.forEach((n) => {
-            const lit = isLit(n.id);
+            const lit = !hover || hover === n.id_node;
             const r = 1.6 + n.attempts * 0.12;
-            const color = masteryColor(n.mastery);
-            const gap = n.declared - n.mastery;
+            const color = masteryColor(n.p_mastery);
+            const gap = n.avg_confidence - n.p_mastery;
             const isOver = gap > 0.15;
 
             const g = document.createElementNS(svgNS, 'g');
@@ -311,7 +275,7 @@ function renderKnowledgeGraph(graphNodes, graphEdges) {
             label.setAttribute('fill', 'var(--ink)');
             label.setAttribute('font-family', 'Inter');
             label.setAttribute('font-weight', '500');
-            label.textContent = n.label;
+            label.textContent = n.name;
             g.appendChild(label);
 
             const mlabel = document.createElementNS(svgNS, 'text');
@@ -321,12 +285,12 @@ function renderKnowledgeGraph(graphNodes, graphEdges) {
             mlabel.setAttribute('font-size', '1.3');
             mlabel.setAttribute('fill', 'var(--ink-faint)');
             mlabel.setAttribute('font-family', 'JetBrains Mono');
-            mlabel.textContent = n.mastery.toFixed(2);
+            mlabel.textContent = n.p_mastery.toFixed(2);
             g.appendChild(mlabel);
 
-            g.addEventListener('mouseenter', () => { hover = n.id; buildSvg(); updateReadout(); });
+            g.addEventListener('mouseenter', () => { hover = n.id_node; buildSvg(); updateReadout(); });
             g.addEventListener('mouseleave', () => { hover = null; buildSvg(); updateReadout(); });
-            g.addEventListener('click', () => { location.href = `/app/node/${n.id}/`; });
+            g.addEventListener('click', () => { location.href = `/app/node/${n.id_node}/`; });
 
             $svg.appendChild(g);
         });
@@ -339,11 +303,10 @@ function renderKnowledgeGraph(graphNodes, graphEdges) {
         }
         const n = byId[hover];
         $readout.innerHTML = `
-            <span class="knowledge-graph__readout-topic eyebrow">${escapeHTML(n.topic)}</span>
-            <span class="knowledge-graph__readout-name">${escapeHTML(n.label)}</span>
+            <span class="knowledge-graph__readout-name">${escapeHTML(n.name)}</span>
             <div class="knowledge-graph__readout-nums">
-                <span>m <b>${n.mastery.toFixed(2)}</b></span>
-                <span>c <b>${n.declared.toFixed(2)}</b></span>
+                <span>m <b>${n.p_mastery.toFixed(2)}</b></span>
+                <span>c <b>${n.avg_confidence.toFixed(2)}</b></span>
                 <span>n <b>${n.attempts}</b></span>
             </div>
         `;
@@ -365,10 +328,9 @@ function renderRooms(items) {
     if ($headerCount) $headerCount.textContent = String(items.length);
 
     $list.innerHTML = items.map((r) => {
-        const ipc = r.ipc_avg ?? 0;
-        const ipcTone = ipc < 0.35 ? 'rust' : ipc < 0.5 ? 'amber' : 'moss';
+        const subject = r.subject || '';
         return `
-          <a href="/app/room/${r.id}/" class="room-card" style="text-decoration:none;color:inherit;">
+          <a href="/app/room/${r.id_room ?? r.id}/" class="room-card" style="text-decoration:none;color:inherit;">
             <header class="room-card__head">
               <div>
                 <h3 class="room-card__name">${escapeHTML(r.name)}</h3>
@@ -387,8 +349,8 @@ function renderRooms(items) {
                 <div class="room-card__meta-v num">${r.member_count ?? 0}</div>
               </div>
               <div class="room-card__meta-end">
-                <div class="room-card__meta-eyebrow eyebrow">IPC promedio</div>
-                <div class="room-card__meta-v num" data-tone="${ipcTone}">${fmt(ipc)}</div>
+                <div class="room-card__meta-eyebrow eyebrow">Materia</div>
+                <div class="room-card__meta-v">${escapeHTML(subject)}</div>
               </div>
             </div>
           </a>
@@ -403,10 +365,12 @@ function renderBlindSpots(items) {
     $list.innerHTML = items.map((b) => {
         const ipc = b.ipc_value ?? 0;
         const tone = ipc < 0.25 ? 'rust' : ipc < 0.4 ? 'amber' : 'sage';
+        const nodeName = b.node?.name ?? b.node_name ?? '—';
+        const topic = b.node?.description ?? b.description ?? '';
         return `
           <div class="blind-spots__item">
             <div class="blind-spots__row">
-              <p class="blind-spots__node">${escapeHTML(b.node_name)}</p>
+              <p class="blind-spots__node">${escapeHTML(nodeName)}${topic ? ` <span class="eyebrow">· ${escapeHTML(topic)}</span>` : ''}</p>
               <span class="blind-spots__ipc num">${fmt(ipc)}</span>
             </div>
             <div class="blind-spots__bar">
@@ -426,20 +390,21 @@ function renderAtRisk(items) {
     const $list = document.getElementById('teacher-at-risk');
     if (!items || items.length === 0) return;
     $list.innerHTML = items.map((s) => {
-        const initials = (s.student_name || '?').split(' ').map((p) => p[0]).join('').slice(0, 2);
-        const gap = s.gap ?? 0;
+        const fullName = `${s.first_name ?? ''} ${s.last_name ?? ''}`.trim() || s.username || '—';
+        const initials = fullName.split(/\s+/).map((p) => p[0]).join('').slice(0, 2).toUpperCase();
+        const gapValue = s.metacognitive_gap ?? 0;
+        const gapPts = Math.round(gapValue * 100);
         const risk = s.risk_level || 'medium';
         const profile = s.profile || 'overconfident';
-        const tone = gap >= 0 ? 'amber' : 'stone';
+        const tone = gapPts >= 0 ? 'amber' : 'stone';
         return `
           <li class="at-risk__row">
             <div class="at-risk__student">
               <span class="at-risk__avatar" aria-hidden="true">${escapeHTML(initials)}</span>
-              <span class="at-risk__name">${escapeHTML(s.student_name)}</span>
+              <span class="at-risk__name">${escapeHTML(fullName)}</span>
             </div>
             <div><span class="pill" data-profile="${profile}">${profileLabel(profile)}</span></div>
-            <div class="at-risk__gap" data-tone="${tone}">${gap > 0 ? '+' : ''}${gap} pts</div>
-            <div class="at-risk__last">${escapeHTML(s.last_seen || '—')}</div>
+            <div class="at-risk__gap" data-tone="${tone}">${gapPts > 0 ? '+' : ''}${gapPts} pts</div>
             <div><span class="pill" data-risk="${risk}">Riesgo ${risk === 'high' ? 'alto' : risk === 'medium' ? 'medio' : 'bajo'}</span></div>
           </li>
         `;
@@ -454,7 +419,7 @@ async function startSession(roomId, $btn) {
     }
     try {
         const session = await sessions.create(roomId);
-        const sessionId = session.id || session.session_id;
+        const sessionId = session.id || session.id_session;
         if (!sessionId) throw new Error('La API no devolvió un id de sesión.');
         location.href = `/app/session/${sessionId}/`;
     } catch (err) {
@@ -479,13 +444,13 @@ function renderStudentRooms(items) {
 
     $count.textContent = `${items.length} sala${items.length === 1 ? '' : 's'}`;
     $list.innerHTML = items.map((r) => `
-      <article class="room-card" data-room-id="${r.id}">
+      <article class="room-card" data-room-id="${r.id_room ?? r.id}">
         <header class="room-card__head">
           <div>
             <h3 class="room-card__name">${escapeHTML(r.name)}</h3>
             <p class="room-card__used">${escapeHTML(r.mode || 'group')} · código ${escapeHTML(r.access_code || '—')}</p>
           </div>
-          <button type="button" class="teacher-btn teacher-btn--primary" data-start-session="${r.id}">
+          <button type="button" class="teacher-btn teacher-btn--primary" data-start-session="${r.id_room ?? r.id}">
             Empezar evaluación
             <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
               <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -506,10 +471,11 @@ function renderStudentRooms(items) {
 
 function studentRoomsFromMock() {
     return STUDENT_DATA.joinedRooms.map((r) => ({
-        id: r.id,
+        id_room: r.id_room ?? r.id,
         name: r.name,
         mode: r.mode,
-        access_code: r.accessCode,
+        access_code: r.access_code ?? r.accessCode,
+        subject: r.subject,
     }));
 }
 
@@ -521,14 +487,13 @@ function studentNodesFromMock() {
         .map((id) => details[id])
         .filter(Boolean)
         .map((n) => ({
-            node_id: n.id,
-            node_name: n.name,
-            topic: n.topic,
-            p_mastery: n.bktMastery,
-            icc_value: n.iccValue,
+            id_node: n.id_node ?? n.id,
+            name: n.name,
+            description: n.description ?? 'Termodinámica clásica',
+            p_mastery: n.p_mastery ?? n.bktMastery,
+            avg_confidence: n.avg_confidence ?? ((n.iccValue != null && n.bktMastery != null) ? Math.max(0, Math.min(1, n.bktMastery + (n.metacognitive_gap ?? 0.15))) : 0.7),
             profile: n.profile,
             attempts: n.attempts,
-            trend: 'estable',
         }));
 }
 
@@ -544,17 +509,18 @@ async function bootstrapStudent(user) {
     renderStudentRooms(mockRooms);
 
     const nodes = studentNodesFromMock();
-    const iccAvg = mockProfile.avgIcc ?? 0;
-    const masteryAvg = mockProfile.avgMastery ?? 0;
-    const declaredAvg = iccAvg + masteryAvg;
-    const gap = (declaredAvg - masteryAvg) * 100;
-    const profileKey = mockProfile.predominantProfile || profileFromGap((declaredAvg - masteryAvg));
+    const iccAvg = mockProfile.avg_icc ?? mockProfile.avgIcc ?? 0;
+    const masteryAvg = mockProfile.avg_mastery ?? mockProfile.avgMastery ?? 0;
+    const confAvg = mockProfile.avg_confidence ?? Math.max(0, Math.min(1, masteryAvg + 0.15));
+    const gapDecimal = confAvg - masteryAvg;
+    const gap = Math.round(gapDecimal * 100);
+    const profileKey = profileFromGap(gapDecimal);
 
     updateCalibrationRing(
         document.getElementById('student-ring'),
         iccAvg,
         profileKey,
-        `${mockProfile.totalAnswers} respuestas · 7 días`,
+        `${mockProfile.total_answers ?? mockProfile.totalAnswers ?? 0} respuestas`,
     );
 
     const $pill = document.getElementById('student-pill');
@@ -564,7 +530,7 @@ async function bootstrapStudent(user) {
     document.getElementById('student-mini-icc').textContent = fmt(iccAvg);
     document.getElementById('student-mini-icc').dataset.tone = profileKey === 'overconfident' ? 'amber' : '';
     document.getElementById('student-mini-mastery').textContent = fmt(masteryAvg);
-    document.getElementById('student-mini-gap').textContent = `${gap >= 0 ? '+' : ''}${Math.round(gap)}`;
+    document.getElementById('student-mini-gap').textContent = `${gap >= 0 ? '+' : ''}${gap}`;
     document.getElementById('student-mini-gap').dataset.tone = gapTone(gap);
 
     renderStudentNodes(nodes);
@@ -572,12 +538,44 @@ async function bootstrapStudent(user) {
     const latestDiag = (STUDENT_DATA.diagnosesHistory || [])[0];
     if (latestDiag) {
         renderStudentDiagnosis({
+            title: latestDiag.title,
             reasoning: latestDiag.reasoning,
             recommendation: latestDiag.recommendation,
+            classification: latestDiag.classification,
+            failure_probability: latestDiag.failure_probability,
+            risk_level: latestDiag.risk_level,
         });
     }
 
-    renderKnowledgeGraph(DEMO_GRAPH_NODES, DEMO_GRAPH_EDGES);
+    renderKnowledgeGraph(DEMO_GRAPH_NODES);
+    renderHeroFocus(DEMO_GRAPH_NODES);
+}
+
+
+function renderHeroFocus(graphNodes) {
+    if (!graphNodes || !graphNodes.length) return;
+    const ranked = graphNodes
+        .map((n) => ({ ...n, gap: (n.avg_confidence ?? 0) - (n.p_mastery ?? 0) }))
+        .sort((a, b) => b.gap - a.gap);
+    const focus = ranked[0];
+    if (!focus) return;
+
+    const $name = document.getElementById('hero-focus-name');
+    const $topic = document.getElementById('hero-focus-topic');
+    const $mastery = document.getElementById('hero-focus-mastery');
+    const $conf = document.getElementById('hero-focus-conf');
+    const $gap = document.getElementById('hero-focus-gap');
+    const $cta = document.getElementById('hero-focus-cta');
+    if (!$name) return;
+
+    $name.textContent = focus.name;
+    $topic.textContent = focus.description || '';
+    $mastery.textContent = (focus.p_mastery ?? 0).toFixed(2);
+    $conf.textContent = (focus.avg_confidence ?? 0).toFixed(2);
+    const gapPts = Math.round(focus.gap * 100);
+    $gap.textContent = `${gapPts > 0 ? '+' : ''}${gapPts}`;
+    $gap.dataset.tone = gapPts > 15 ? 'amber' : gapPts < -15 ? 'rust' : 'moss';
+    $cta.href = `/app/node/${focus.id_node}/`;
 }
 
 
@@ -599,14 +597,11 @@ async function bootstrapTeacher(user) {
 
         const $tcr2 = document.getElementById('teacher-current-room');
         if ($tcr2) $tcr2.textContent = firstRoom.name;
-        if (firstRoom.ipc_avg != null) {
-            document.getElementById('metric-ipc').textContent = fmt(firstRoom.ipc_avg);
-        }
 
         try {
             const [blindSpots, atRisk] = await Promise.all([
-                rooms.blindSpots(firstRoom.id),
-                rooms.atRisk(firstRoom.id),
+                rooms.blindSpots(firstRoom.id_room ?? firstRoom.id),
+                rooms.atRisk(firstRoom.id_room ?? firstRoom.id),
             ]);
             renderBlindSpots(blindSpots);
             renderAtRisk(atRisk);
@@ -660,120 +655,96 @@ bootstrap();
 
 const ROOMS = {
     '0': {
+        id_room: 0,
         name: 'Todas las salas',
+        subject: 'Resumen global',
+        mode: 'group',
+        access_code: '',
+        is_active: true,
         students: 187,
-        icc: '0.57', iccDelta: '+0.03 esta semana', iccDeltaTone: 'moss', iccHint: 'En promedio, tus salas se conocen aceptablemente.',
-        gap: '+24 pts', gapDelta: '+2 pts esta semana', gapDeltaTone: 'amber', gapHint: 'Los estudiantes creen saber más de lo que saben.',
-        answers: '5 299', answersDelta: 'de 187 estudiantes', answersHint: '404 únicos respondieron esta semana.',
-        diags: '99', diagsDelta: '38 sin revisar', diagsDeltaTone: 'amber', diagsHint: 'El IA emitió notas al detectar descalibración.',
-        weeklyActivity: { days: ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'], values: [628, 885, 784, 1100, 878, 595, 429], todayIndex: 3, total: '5 299 totales', avgLabel: 'Promedio diario' },
-        kpiSparklines: { icc: [0.48, 0.50, 0.53, 0.55, 0.57], gap: [27, 26, 25, 23, 24], answers: [3950, 4380, 4720, 5050, 5299], diags: [72, 80, 88, 94, 99] },
-        trend: [0.49, 0.52, 0.55, 0.57],
-        trendFooter: 'Calibración global sube <span class="num" style="color:var(--moss);">+0.08</span> en el último mes.',
-        profiles: { cal: 42, over: 38, und: 20 },
         profileCounts: { cal: 78, over: 72, und: 37 },
-        insight: '<strong>Termodinámica I</strong> concentra el mayor riesgo: <strong>64 estudiantes</strong> creen dominar <em>«1ª ley»</em> pero solo <strong>28%</strong> acertó.',
-        insightHref: '/app/room/1/',
         blindSpots: [
-            { node: 'Termodinámica I · 1ª ley aplicada',         ipc: 0.18, affected: 64 },
-            { node: 'Fisicoquímica · Entalpías de formación',     ipc: 0.19, affected: 35 },
-            { node: 'Fisicoquímica · Equilibrio iónico',          ipc: 0.22, affected: 31 },
-            { node: 'Termodinámica I · Entropía',                 ipc: 0.24, affected: 52 },
-            { node: 'Cinética · Arrhenius',                       ipc: 0.42, affected: 24 },
+            { id_node: 'tm-1ley',    node_name: '1ª ley aplicada',          description: 'Termodinámica clásica', ipc_value: 0.18, total_student: 64 },
+            { id_node: 'fq-entalp',  node_name: 'Entalpías de formación',   description: 'Termoquímica',          ipc_value: 0.19, total_student: 35 },
+            { id_node: 'fq-eqion',   node_name: 'Equilibrio iónico',        description: 'Fisicoquímica',         ipc_value: 0.22, total_student: 31 },
+            { id_node: 'tm-entropia',node_name: 'Entropía',                 description: 'Termodinámica clásica', ipc_value: 0.24, total_student: 52 },
+            { id_node: 'cin-arr',    node_name: 'Arrhenius',                description: 'Cinética',              ipc_value: 0.42, total_student: 24 },
         ],
         atRisk: [
-            { name: 'Hugo Iturra',     initials: 'HI', profile: 'overconfident', gap: 42, last: 'Hoy, 12:15', risk: 'high', room: 'Fisicoquímica' },
-            { name: 'Inés Quispe',     initials: 'IQ', profile: 'overconfident', gap: 38, last: 'Hoy, 09:30', risk: 'high', room: 'Fisicoquímica' },
-            { name: 'Andrea Molina',   initials: 'AM', profile: 'overconfident', gap: 31, last: 'Hoy, 09:14', risk: 'high', room: 'Termodinámica I' },
-            { name: 'Joaquín Riveros', initials: 'JR', profile: 'overconfident', gap: 35, last: 'Ayer',       risk: 'high', room: 'Fisicoquímica' },
-            { name: 'Bruno Cárdenas',  initials: 'BC', profile: 'overconfident', gap: 24, last: 'Ayer',       risk: 'high', room: 'Termodinámica I' },
+            { id_student: 11, first_name: 'Hugo',    last_name: 'Iturra',   profile: 'overconfident', metacognitive_gap: 0.42, risk_level: 'high' },
+            { id_student: 12, first_name: 'Inés',    last_name: 'Quispe',   profile: 'overconfident', metacognitive_gap: 0.38, risk_level: 'high' },
+            { id_student: 13, first_name: 'Andrea',  last_name: 'Molina',   profile: 'overconfident', metacognitive_gap: 0.31, risk_level: 'high' },
+            { id_student: 14, first_name: 'Joaquín', last_name: 'Riveros',  profile: 'overconfident', metacognitive_gap: 0.35, risk_level: 'high' },
+            { id_student: 15, first_name: 'Bruno',   last_name: 'Cárdenas', profile: 'overconfident', metacognitive_gap: 0.24, risk_level: 'high' },
         ],
     },
     '1': {
+        id_room: 1,
         name: 'Termodinámica I · 2026·I',
+        subject: 'Termodinámica',
+        mode: 'group',
+        access_code: 'TM7A9K2B',
+        is_active: true,
         students: 84,
-        icc: '0.58', iccDelta: '+0.04 esta semana', iccDeltaTone: 'moss', iccHint: 'La sala se conoce aceptablemente.',
-        gap: '+24 pts', gapDelta: '+3 pts esta semana', gapDeltaTone: 'amber', gapHint: 'Creen saber 24 pts más que su nivel real.',
-        answers: '2 471', answersDelta: 'de 84 estudiantes', answersHint: '212 únicos respondieron esta semana.',
-        diags: '47', diagsDelta: '18 sin revisar', diagsDeltaTone: 'amber', diagsHint: 'El IA emitió notas cuando detectó descalibración.',
-        weeklyActivity: { days: ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'], values: [288, 412, 374, 512, 408, 287, 190], todayIndex: 3, total: '2 471 totales', avgLabel: 'Promedio diario' },
-        kpiSparklines: { icc: [0.50, 0.53, 0.54, 0.56, 0.58], gap: [21, 22, 23, 23, 24], answers: [1810, 2030, 2210, 2350, 2471], diags: [32, 36, 40, 44, 47] },
-        trend: [0.50, 0.53, 0.56, 0.58],
-        trendFooter: 'Calibración sube <span class="num" style="color:var(--moss);">+0.08</span> en el último mes.',
-        profiles: { cal: 41, over: 38, und: 21 },
         profileCounts: { cal: 34, over: 32, und: 18 },
-        insight: '<strong>64 estudiantes</strong> creen dominar <em>«1ª ley aplicada a sistemas abiertos»</em>, pero solo el <strong>28%</strong> acertó. Brecha promedio <span class="num">+56 pts</span>.',
-        insightHref: '/app/room/1/',
         blindSpots: [
-            { node: '1ª ley aplicada a sistemas abiertos', ipc: 0.18, affected: 64 },
-            { node: 'Entropía como función de estado',     ipc: 0.24, affected: 52 },
-            { node: 'Equilibrio químico — Le Chatelier',   ipc: 0.31, affected: 47 },
-            { node: 'Energía libre de Gibbs',              ipc: 0.36, affected: 39 },
-            { node: 'Cinética de reacciones de 2° orden',  ipc: 0.41, affected: 33 },
+            { id_node: 'tm-1ley-sa', node_name: '1ª ley aplicada a sistemas abiertos', description: 'Termodinámica clásica', ipc_value: 0.18, total_student: 64 },
+            { id_node: 'tm-entropia',node_name: 'Entropía como función de estado',      description: 'Termodinámica clásica', ipc_value: 0.24, total_student: 52 },
+            { id_node: 'eq-lech',    node_name: 'Equilibrio químico — Le Chatelier',    description: 'Equilibrio',            ipc_value: 0.31, total_student: 47 },
+            { id_node: 'tm-gibbs',   node_name: 'Energía libre de Gibbs',               description: 'Termodinámica clásica', ipc_value: 0.36, total_student: 39 },
+            { id_node: 'cin-2orden', node_name: 'Cinética de reacciones de 2° orden',   description: 'Cinética',              ipc_value: 0.41, total_student: 33 },
         ],
         atRisk: [
-            { name: 'Andrea Molina',   initials: 'AM', profile: 'overconfident',  gap: 31,  last: 'Hoy, 09:14',  risk: 'high' },
-            { name: 'Bruno Cárdenas',  initials: 'BC', profile: 'overconfident',  gap: 24,  last: 'Ayer',        risk: 'high' },
-            { name: 'Camila Reyes',    initials: 'CR', profile: 'underconfident', gap: -18, last: 'Hoy, 11:02',  risk: 'medium' },
-            { name: 'Daniel Tovar',    initials: 'DT', profile: 'overconfident',  gap: 19,  last: 'Hace 2 días', risk: 'medium' },
-            { name: 'Elena Pinto',     initials: 'EP', profile: 'underconfident', gap: -22, last: 'Hoy, 08:40',  risk: 'medium' },
+            { id_student: 13, first_name: 'Andrea',  last_name: 'Molina',   profile: 'overconfident',  metacognitive_gap:  0.31, risk_level: 'high' },
+            { id_student: 15, first_name: 'Bruno',   last_name: 'Cárdenas', profile: 'overconfident',  metacognitive_gap:  0.24, risk_level: 'high' },
+            { id_student: 16, first_name: 'Camila',  last_name: 'Reyes',    profile: 'underconfident', metacognitive_gap: -0.18, risk_level: 'medium' },
+            { id_student: 17, first_name: 'Daniel',  last_name: 'Tovar',    profile: 'overconfident',  metacognitive_gap:  0.19, risk_level: 'medium' },
+            { id_student: 18, first_name: 'Elena',   last_name: 'Pinto',    profile: 'underconfident', metacognitive_gap: -0.22, risk_level: 'medium' },
         ],
     },
     '2': {
+        id_room: 2,
         name: 'Cinética Química · 2026·I',
+        subject: 'Cinética',
+        mode: 'group',
+        access_code: 'CN4M83GQ',
+        is_active: true,
         students: 62,
-        icc: '0.66', iccDelta: '+0.06 esta semana', iccDeltaTone: 'moss', iccHint: 'Buen autoconocimiento del grupo.',
-        gap: '+12 pts', gapDelta: '−4 pts esta semana', gapDeltaTone: 'moss', gapHint: 'La brecha se está cerrando — buen signo.',
-        answers: '1 842', answersDelta: 'de 62 estudiantes', answersHint: '154 únicos respondieron esta semana.',
-        diags: '23', diagsDelta: '6 sin revisar', diagsDeltaTone: 'amber', diagsHint: 'Pocas alertas — la clase va bien encarrilada.',
-        weeklyActivity: { days: ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'], values: [220, 305, 268, 392, 310, 198, 149], todayIndex: 3, total: '1 842 totales', avgLabel: 'Promedio diario' },
-        kpiSparklines: { icc: [0.58, 0.60, 0.63, 0.64, 0.66], gap: [18, 16, 15, 13, 12], answers: [1380, 1520, 1620, 1740, 1842], diags: [14, 17, 19, 21, 23] },
-        trend: [0.55, 0.59, 0.62, 0.66],
-        trendFooter: 'Mejoría sostenida <span class="num" style="color:var(--moss);">+0.11</span> en el último mes.',
-        profiles: { cal: 56, over: 24, und: 20 },
         profileCounts: { cal: 35, over: 15, und: 12 },
-        insight: 'Solo <strong>15 estudiantes</strong> sobreconfiados. La clase mejoró su autoconocimiento tras la unidad de <em>velocidades de reacción</em>.',
-        insightHref: '/app/room/2/',
         blindSpots: [
-            { node: 'Energía de activación (Arrhenius)',  ipc: 0.42, affected: 24 },
-            { node: 'Mecanismos de reacción',             ipc: 0.45, affected: 18 },
-            { node: 'Catálisis heterogénea',              ipc: 0.48, affected: 14 },
+            { id_node: 'cin-arr',  node_name: 'Energía de activación (Arrhenius)', description: 'Cinética', ipc_value: 0.42, total_student: 24 },
+            { id_node: 'cin-mec',  node_name: 'Mecanismos de reacción',            description: 'Cinética', ipc_value: 0.45, total_student: 18 },
+            { id_node: 'cin-cat',  node_name: 'Catálisis heterogénea',             description: 'Cinética', ipc_value: 0.48, total_student: 14 },
         ],
         atRisk: [
-            { name: 'Felipe Marín',   initials: 'FM', profile: 'overconfident', gap: 22, last: 'Hoy, 10:30', risk: 'medium' },
-            { name: 'Gabriela Soto',  initials: 'GS', profile: 'overconfident', gap: 19, last: 'Ayer',       risk: 'medium' },
+            { id_student: 21, first_name: 'Felipe',   last_name: 'Marín', profile: 'overconfident', metacognitive_gap: 0.22, risk_level: 'medium' },
+            { id_student: 22, first_name: 'Gabriela', last_name: 'Soto',  profile: 'overconfident', metacognitive_gap: 0.19, risk_level: 'medium' },
         ],
     },
     '3': {
+        id_room: 3,
         name: 'Fisicoquímica · Repaso',
+        subject: 'Fisicoquímica',
+        mode: 'group',
+        access_code: 'FQ1P9X4D',
+        is_active: true,
         students: 41,
-        icc: '0.41', iccDelta: '−0.03 esta semana', iccDeltaTone: 'rust', iccHint: 'La sala está descalibrada — necesita refuerzo.',
-        gap: '+38 pts', gapDelta: '+6 pts esta semana', gapDeltaTone: 'rust', gapHint: 'Creen saber 38 pts más que su nivel real.',
-        answers: '986', answersDelta: 'de 41 estudiantes', answersHint: '38 únicos respondieron esta semana.',
-        diags: '29', diagsDelta: '14 sin revisar', diagsDeltaTone: 'rust', diagsHint: 'Muchas alertas — el IA ve descalibración recurrente.',
-        weeklyActivity: { days: ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'], values: [120, 168, 142, 196, 160, 110, 90], todayIndex: 3, total: '986 totales', avgLabel: 'Promedio diario' },
-        kpiSparklines: { icc: [0.48, 0.46, 0.44, 0.43, 0.41], gap: [32, 33, 35, 37, 38], answers: [720, 800, 870, 930, 986], diags: [18, 21, 24, 27, 29] },
-        trend: [0.48, 0.45, 0.43, 0.41],
-        trendFooter: 'Calibración baja <span class="num" style="color:var(--rust);">−0.07</span>. Grupo necesita refuerzo.',
-        profiles: { cal: 22, over: 61, und: 17 },
         profileCounts: { cal: 9, over: 25, und: 7 },
-        insight: '<strong>25 estudiantes</strong> (61%) están sobreconfiados. Es la sala con mayor brecha de toda la cohorte.',
-        insightHref: '/app/room/3/',
         blindSpots: [
-            { node: 'Termoquímica — entalpías de formación', ipc: 0.15, affected: 35 },
-            { node: 'Equilibrio iónico en disoluciones',     ipc: 0.19, affected: 31 },
-            { node: 'Cinética enzimática',                   ipc: 0.22, affected: 28 },
-            { node: 'Termodinámica de mezclas',              ipc: 0.27, affected: 24 },
-            { node: 'Potenciales electroquímicos',           ipc: 0.33, affected: 19 },
-            { node: 'Capacidad calorífica molar',            ipc: 0.38, affected: 16 },
+            { id_node: 'fq-entalp',  node_name: 'Termoquímica — entalpías de formación', description: 'Termoquímica',    ipc_value: 0.15, total_student: 35 },
+            { id_node: 'fq-eqion',   node_name: 'Equilibrio iónico en disoluciones',     description: 'Fisicoquímica',   ipc_value: 0.19, total_student: 31 },
+            { id_node: 'fq-cinenz',  node_name: 'Cinética enzimática',                   description: 'Cinética',        ipc_value: 0.22, total_student: 28 },
+            { id_node: 'fq-mezclas', node_name: 'Termodinámica de mezclas',              description: 'Termodinámica',   ipc_value: 0.27, total_student: 24 },
+            { id_node: 'fq-electro', node_name: 'Potenciales electroquímicos',           description: 'Electroquímica',  ipc_value: 0.33, total_student: 19 },
+            { id_node: 'fq-cp',      node_name: 'Capacidad calorífica molar',            description: 'Termodinámica',   ipc_value: 0.38, total_student: 16 },
         ],
         atRisk: [
-            { name: 'Hugo Iturra',     initials: 'HI', profile: 'overconfident',  gap: 42, last: 'Hoy, 12:15',  risk: 'high' },
-            { name: 'Inés Quispe',     initials: 'IQ', profile: 'overconfident',  gap: 38, last: 'Hoy, 09:30',  risk: 'high' },
-            { name: 'Joaquín Riveros', initials: 'JR', profile: 'overconfident',  gap: 35, last: 'Ayer',        risk: 'high' },
-            { name: 'Karina Núñez',    initials: 'KN', profile: 'overconfident',  gap: 29, last: 'Hace 2 días', risk: 'medium' },
-            { name: 'Lautaro Espina',  initials: 'LE', profile: 'underconfident', gap: -24,last: 'Hoy, 08:10',  risk: 'medium' },
-            { name: 'Mariana Vega',    initials: 'MV', profile: 'overconfident',  gap: 21, last: 'Hace 3 días', risk: 'medium' },
+            { id_student: 11, first_name: 'Hugo',    last_name: 'Iturra',   profile: 'overconfident',  metacognitive_gap:  0.42, risk_level: 'high' },
+            { id_student: 12, first_name: 'Inés',    last_name: 'Quispe',   profile: 'overconfident',  metacognitive_gap:  0.38, risk_level: 'high' },
+            { id_student: 14, first_name: 'Joaquín', last_name: 'Riveros',  profile: 'overconfident',  metacognitive_gap:  0.35, risk_level: 'high' },
+            { id_student: 31, first_name: 'Karina',  last_name: 'Núñez',    profile: 'overconfident',  metacognitive_gap:  0.29, risk_level: 'medium' },
+            { id_student: 32, first_name: 'Lautaro', last_name: 'Espina',   profile: 'underconfident', metacognitive_gap: -0.24, risk_level: 'medium' },
+            { id_student: 33, first_name: 'Mariana', last_name: 'Vega',     profile: 'overconfident',  metacognitive_gap:  0.21, risk_level: 'medium' },
         ],
     },
 };
@@ -781,16 +752,18 @@ const ROOMS = {
 
 function renderBlindSpotsList(items) {
     return items.map((b) => {
-        const tone = b.ipc < 0.25 ? 'rust' : b.ipc < 0.4 ? 'amber' : 'sage';
+        const ipc = b.ipc_value ?? 0;
+        const tone = ipc < 0.25 ? 'rust' : ipc < 0.4 ? 'amber' : 'sage';
+        const topic = b.description ? ` <span class="eyebrow">· ${escapeHTML(b.description)}</span>` : '';
         return `
           <div class="blind-spots__item">
             <div class="blind-spots__row">
-              <p class="blind-spots__node">${escapeHTML(b.node)}</p>
-              <span class="blind-spots__ipc num">${b.ipc.toFixed(2)}</span>
+              <p class="blind-spots__node">${escapeHTML(b.node_name)}${topic}</p>
+              <span class="blind-spots__ipc num">${ipc.toFixed(2)}</span>
             </div>
-            <div class="blind-spots__bar"><div class="blind-spots__bar-fill" data-tone="${tone}" style="width:${Math.round((1 - b.ipc) * 100)}%;"></div></div>
+            <div class="blind-spots__bar"><div class="blind-spots__bar-fill" data-tone="${tone}" style="width:${Math.round((1 - ipc) * 100)}%;"></div></div>
             <div class="blind-spots__meta">
-              <span><span class="num">${b.affected}</span> estudiantes</span>
+              <span><span class="num">${b.total_student ?? 0}</span> estudiantes</span>
               <button class="blind-spots__action" type="button">Ver →</button>
             </div>
           </div>
@@ -801,190 +774,22 @@ function renderBlindSpotsList(items) {
 function renderAtRiskList(items) {
     const profileLabelMap = { calibrated: 'Calibrado', overconfident: 'Sobreconfiado', underconfident: 'Subconfiado' };
     return items.map((s) => {
-        const tone = s.gap >= 0 ? 'amber' : 'stone';
+        const fullName = `${s.first_name ?? ''} ${s.last_name ?? ''}`.trim();
+        const initials = fullName.split(/\s+/).map((p) => p[0]).join('').slice(0, 2).toUpperCase();
+        const gapPts = Math.round((s.metacognitive_gap ?? 0) * 100);
+        const tone = gapPts >= 0 ? 'amber' : 'stone';
         return `
           <li class="d-students__row">
-            <span class="d-students__avatar" aria-hidden="true">${escapeHTML(s.initials)}</span>
+            <span class="d-students__avatar" aria-hidden="true">${escapeHTML(initials)}</span>
             <div class="d-students__main">
-              <span class="d-students__name">${escapeHTML(s.name)}</span>
-              <span class="d-students__sub">${profileLabelMap[s.profile]} · ${escapeHTML(s.last)}</span>
+              <span class="d-students__name">${escapeHTML(fullName)}</span>
+              <span class="d-students__sub">${profileLabelMap[s.profile]}</span>
             </div>
-            <span class="num" style="color:var(--${tone});font-size:13px;font-weight:500;white-space:nowrap;">${s.gap > 0 ? '+' : ''}${s.gap} pts</span>
-            <span class="pill" data-risk="${s.risk}" style="font-size:10px;padding:2px 8px;">${s.risk === 'high' ? 'Alto' : s.risk === 'medium' ? 'Medio' : 'Bajo'}</span>
+            <span class="num" style="color:var(--${tone});font-size:13px;font-weight:500;white-space:nowrap;">${gapPts > 0 ? '+' : ''}${gapPts} pts</span>
+            <span class="pill" data-risk="${s.risk_level}" style="font-size:10px;padding:2px 8px;">${s.risk_level === 'high' ? 'Alto' : s.risk_level === 'medium' ? 'Medio' : 'Bajo'}</span>
           </li>
         `;
     }).join('');
-}
-
-
-function updateLineChart(trend) {
-    const xs = [50, 165, 280, 395];
-    const yFor = (v) => 130 - ((v - 0.25) / 0.50) * 90;
-    const points = trend.map((v, i) => `${xs[i]},${yFor(v).toFixed(1)}`);
-    const polyline = document.getElementById('line-stroke');
-    const area = document.getElementById('line-area');
-    if (!polyline || !area) return;
-    polyline.setAttribute('points', points.join(' '));
-    area.setAttribute('d', `M ${points.join(' L ')} L ${xs[xs.length - 1]},150 L ${xs[0]},150 Z`);
-    trend.forEach((v, i) => {
-        const group = document.getElementById(`line-dot-${i + 1}`);
-        if (!group) return;
-        const y = yFor(v).toFixed(1);
-        const circle = group.querySelector('circle');
-        const text = group.querySelector('text');
-        if (circle) circle.setAttribute('cy', y);
-        if (text) {
-            text.setAttribute('y', (parseFloat(y) - 11).toFixed(1));
-            text.textContent = v.toFixed(2);
-        }
-    });
-}
-
-
-function updateGauge(value) {
-    const $arc = document.getElementById('gauge-arc');
-    if (!$arc) return;
-    const clamped = Math.max(0, Math.min(1, value));
-    const startAngle = 180;
-    const endAngle = 180 - (180 * clamped);
-    const cx = 80, cy = 90, r = 60;
-    const rad = (deg) => (deg * Math.PI) / 180;
-    const x1 = cx + r * Math.cos(rad(startAngle));
-    const y1 = cy + r * Math.sin(rad(startAngle));
-    const x2 = cx + r * Math.cos(rad(endAngle));
-    const y2 = cy + r * Math.sin(rad(endAngle));
-    const largeArc = clamped > 0.5 ? 1 : 0;
-    $arc.setAttribute('d', `M ${x1.toFixed(2)},${y1.toFixed(2)} A ${r},${r} 0 ${largeArc} 1 ${x2.toFixed(2)},${y2.toFixed(2)}`);
-}
-
-
-function renderWeekChart(week) {
-    const $plot = document.getElementById('d-chart-plot');
-    if (!$plot || !week) return;
-
-    const max = Math.max(...week.values, 1);
-    const ceiling = niceCeiling(max);
-    const avg = Math.round(week.values.reduce((s, v) => s + v, 0) / week.values.length);
-    const avgPct = (avg / ceiling) * 100;
-
-    document.querySelectorAll('[data-y-max]').forEach((el) => { el.textContent = ceiling; });
-    document.querySelectorAll('[data-y-mid]').forEach((el) => { el.textContent = Math.round(ceiling / 2); });
-
-    const $avg = document.getElementById('d-chart-avg');
-    if ($avg) $avg.textContent = avg;
-
-    const peakIndex = week.values.indexOf(max);
-    const $headline = document.getElementById('d-chart-headline');
-    if ($headline) {
-        $headline.innerHTML = `Día más activo: <strong>${escapeHTML(week.days[peakIndex])}</strong> con <strong class="num">${max}</strong> respuestas`;
-    }
-
-    const bars = week.values.map((v, i) => {
-        const pct = (v / ceiling) * 100;
-        const isActive = i === week.todayIndex;
-        return `
-            <div class="d-chart__col${isActive ? ' d-chart__col--active' : ''}">
-                ${isActive ? '<span class="d-chart__today">Hoy</span>' : ''}
-                <span class="d-chart__value num">${v}</span>
-                <div class="d-chart__bar-wrap">
-                    <div class="d-chart__bar" style="height:${pct.toFixed(1)}%"></div>
-                </div>
-                <span class="d-chart__day${isActive ? ' d-chart__day--active' : ''}">${escapeHTML(week.days[i])}</span>
-            </div>
-        `;
-    }).join('');
-
-    const PLOT_H = 220, TOP_PAD = 18, BOT_PAD = 28;
-    const barArea = PLOT_H - TOP_PAD - BOT_PAD;
-    const avgBottomPx = BOT_PAD + (avgPct / 100) * barArea;
-
-    $plot.innerHTML = `
-        <div class="d-chart__avg-line" style="bottom:${avgBottomPx.toFixed(1)}px"></div>
-        ${bars}
-    `;
-}
-
-
-function niceCeiling(max) {
-    if (max <= 50) return 50;
-    if (max <= 100) return 100;
-    if (max <= 200) return 200;
-    if (max <= 500) return Math.ceil(max / 100) * 100;
-    if (max <= 1000) return Math.ceil(max / 100) * 100;
-    return Math.ceil(max / 250) * 250;
-}
-
-
-function renderSparkline($svg, values) {
-    if (!$svg || !values || values.length < 2) return;
-    const w = 100, h = 28, pad = 2;
-    const min = Math.min(...values);
-    const max = Math.max(...values);
-    const range = (max - min) || 1;
-    const pts = values.map((v, i) => {
-        const x = pad + (i / (values.length - 1)) * (w - 2 * pad);
-        const y = h - pad - ((v - min) / range) * (h - 2 * pad);
-        return [x, y];
-    });
-    const path = pts.map((p, i) => (i === 0 ? 'M' : 'L') + `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ');
-    const last = pts[pts.length - 1];
-    const area = `${path} L ${last[0].toFixed(1)},${h} L ${pts[0][0].toFixed(1)},${h} Z`;
-    $svg.innerHTML = `
-        <path class="d-kpi__sparkline-area" d="${area}"/>
-        <path class="d-kpi__sparkline-line" d="${path}"/>
-        <circle class="d-kpi__sparkline-dot" cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="2.2"/>
-    `;
-}
-
-
-function setKpi(key, opts) {
-    const $v = document.getElementById(`${key}-value`);
-    const $chip = document.getElementById(`${key}-chip`);
-    const $chipText = document.getElementById(`${key}-chip-text`);
-    const $hint = document.getElementById(`${key}-hint`);
-    const $spark = document.getElementById(`spark-${key}`);
-
-    if ($v && opts.value != null) $v.textContent = opts.value;
-    if ($chipText && opts.chipText != null) $chipText.textContent = opts.chipText;
-    if ($chip) {
-        if (opts.tone) $chip.dataset.tone = opts.tone;
-        else $chip.removeAttribute('data-tone');
-    }
-    if ($hint && opts.hint != null) $hint.textContent = opts.hint;
-    if ($spark && opts.spark) renderSparkline($spark, opts.spark);
-}
-
-
-function renderKpis(room) {
-    const sparks = room.kpiSparklines || {};
-    setKpi('icc', {
-        value: room.icc,
-        chipText: room.iccDelta,
-        tone: room.iccDeltaTone || 'moss',
-        hint: room.iccHint,
-        spark: sparks.icc,
-    });
-    setKpi('gap', {
-        value: room.gap,
-        chipText: room.gapDelta,
-        tone: room.gapDeltaTone || 'amber',
-        hint: room.gapHint,
-        spark: sparks.gap,
-    });
-    setKpi('answers', {
-        value: room.answers,
-        chipText: room.answersDelta,
-        tone: null,
-        hint: room.answersHint,
-        spark: sparks.answers,
-    });
-    setKpi('diags', {
-        value: room.diags,
-        chipText: room.diagsDelta,
-        tone: room.diagsDeltaTone || 'amber',
-        hint: room.diagsHint,
-        spark: sparks.diags,
-    });
 }
 
 
@@ -1061,7 +866,7 @@ function renderRoomsCompare() {
           <span class="d-rooms__name">${escapeHTML(room.name.split(' · ')[0])}</span>
           <span class="d-rooms__sub">${room.students} est.</span>
         </div>
-        <span class="d-rooms__icc num">${room.icc}</span>
+        <span class="d-rooms__subject">${escapeHTML(room.subject || '')}</span>
       </li>
     `).join('');
 
@@ -1093,16 +898,9 @@ function switchRoom(roomId) {
     const $tcr = document.getElementById('teacher-current-room');
     if ($tcr) $tcr.textContent = room.name;
 
-    renderKpis(room);
-
-    bind('insight', room.insight, true);
-    document.querySelectorAll('[data-bind="insight-cta-href"]').forEach((el) => {
-        el.setAttribute('href', room.insightHref);
-    });
-
-    room.trend.forEach((v, i) => bind(`trend-${i}`, v.toFixed(2)));
-    bind('trend-footer', room.trendFooter, true);
-    updateLineChart(room.trend);
+    bind('room-subject', room.subject || '');
+    bind('room-access-code', room.access_code || '');
+    bind('room-mode', room.mode || 'group');
 
     bind('donut-total', `${room.students} est.`);
     bind('prof-cal-count',  String(room.profileCounts.cal));
@@ -1110,16 +908,6 @@ function switchRoom(roomId) {
     bind('prof-und-count',  String(room.profileCounts.und));
     renderDotMatrix(room.profileCounts);
     renderDonut(room.profileCounts);
-
-    if (room.weeklyActivity) {
-        renderWeekChart(room.weeklyActivity);
-        bind('week-total', room.weeklyActivity.total);
-    }
-
-    const iccPct = Math.round(parseFloat(room.icc) * 100);
-    bind('gauge-pct', `${iccPct}%`);
-    bind('gauge-label', 'Calibración del grupo');
-    updateGauge(parseFloat(room.icc));
 
     bind('next-room', room.name.split(' · ')[0]);
     bind('next-students', String(room.students));
@@ -1152,4 +940,9 @@ if (document.querySelector('[data-view="teacher"]')) {
     });
 }
 
-
+// widget "Próxima sesión Termodinámica I" con countdown removido — bindings 'next-room/students/questions' permanecen para no romper template
+// widget weekly activity chart removido — funciones renderWeekChart/niceCeiling eliminadas
+// widget KPI sparklines + chips removidos — funciones renderSparkline/setKpi/renderKpis eliminadas
+// widget gauge ICC removido — función updateGauge eliminada
+// widget line chart de tendencia removido — función updateLineChart eliminada
+// widget insight narrativo removido — binding 'insight' eliminado del switchRoom

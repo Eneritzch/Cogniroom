@@ -25,8 +25,8 @@ async function copyToClipboard(text) {
 
 
 function deriveAlerts(data) {
-    const pendingAI = (data.questionBank || []).filter((q) => !q.approved).length;
-    const atRisk = (data.roster || []).filter((s) => Math.abs(s.gap) > 0.2).length;
+    const pendingAI = (data.questionBank || []).filter((q) => !q.is_approved).length;
+    const atRisk = (data.roster || []).filter((s) => Math.abs(s.metacognitive_gap) > 0.2).length;
     return { pendingAI, atRisk };
 }
 
@@ -41,7 +41,7 @@ function healthTone(icc) {
 function renderCard(r, isActive) {
     const d = r.data;
     const alerts = deriveAlerts(d);
-    const cursoCount = (d.cursos || []).filter((c) => c.id !== 'unico').length;
+    const sectionCount = (d.sections || []).length;
     const tone = healthTone(d.icc);
 
     return `
@@ -51,24 +51,22 @@ function renderCard(r, isActive) {
             <div class="rcard__id">
                 <h3 class="rcard__name">${escapeHTML(d.name)}</h3>
                 <div class="rcard__submeta">
-                    <span>Creada ${escapeHTML(d.createdAt)}</span>
-                    <span class="rcard__submeta-sep">·</span>
-                    <span>Activa ${escapeHTML(d.lastActivity)}</span>
+                    <span>Creada ${escapeHTML(d.created_at)}</span>
                 </div>
             </div>
         </header>
 
         <div class="rcard__code">
             <span class="rcard__code-label eyebrow">Código</span>
-            <span class="rcard__code-value num">${escapeHTML(d.accessCode)}</span>
+            <span class="rcard__code-value num">${escapeHTML(d.access_code)}</span>
             <div class="rcard__code-actions">
-                <button type="button" class="rcard__icon-btn" data-copy="${escapeHTML(d.accessCode)}" aria-label="Copiar código" title="Copiar">
+                <button type="button" class="rcard__icon-btn" data-copy="${escapeHTML(d.access_code)}" aria-label="Copiar código" title="Copiar">
                     <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
                         <rect x="9" y="9" width="13" height="13" rx="2"></rect>
                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                     </svg>
                 </button>
-                <button type="button" class="rcard__icon-btn" data-share="${escapeHTML(d.name)}|${escapeHTML(d.accessCode)}" aria-label="Compartir" title="Compartir">
+                <button type="button" class="rcard__icon-btn" data-share="${escapeHTML(d.name)}|${escapeHTML(d.access_code)}" aria-label="Compartir" title="Compartir">
                     <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
                         <circle cx="18" cy="5" r="3"></circle>
                         <circle cx="6" cy="12" r="3"></circle>
@@ -106,16 +104,16 @@ function renderCard(r, isActive) {
                 <span class="num">${d.pdfs}</span>
                 <span class="rcard__stat-label">PDFs</span>
             </div>
-            ${cursoCount > 0 ? `
-            <div class="rcard__stat" title="Cursos paralelos dentro de la sala">
+            ${sectionCount > 0 ? `
+            <div class="rcard__stat" title="Secciones paralelas dentro de la sala">
                 <svg class="icon-svg" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true">
                     <rect x="3" y="3" width="7" height="7"></rect>
                     <rect x="14" y="3" width="7" height="7"></rect>
                     <rect x="3" y="14" width="7" height="7"></rect>
                     <rect x="14" y="14" width="7" height="7"></rect>
                 </svg>
-                <span class="num">${cursoCount}</span>
-                <span class="rcard__stat-label">${cursoCount === 1 ? 'curso' : 'cursos'}</span>
+                <span class="num">${sectionCount}</span>
+                <span class="rcard__stat-label">${sectionCount === 1 ? 'sección' : 'secciones'}</span>
             </div>
             ` : ''}
             <div class="rcard__stat rcard__stat--health" data-tone="${tone}" title="Calibración promedio del grupo (qué tan bien se conocen)">

@@ -108,6 +108,38 @@
   color: var(--ink-muted);
 }
 
+
+.rcard__section {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 3px 9px;
+  background: color-mix(in srgb, var(--sage) 12%, transparent);
+  border-radius: 999px;
+  font-size: 11px;
+  color: var(--sage-strong, var(--sage));
+  font-weight: var(--fw-medium);
+}
+
+.rcard__section .icon-svg {
+  color: var(--sage);
+}
+
+.rcard__section-name {
+  font-weight: var(--fw-semibold);
+}
+
+.rcard__section-sep {
+  opacity: 0.5;
+}
+
+.rcard__section-schedule {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.02em;
+}
+
 .rcard__teacher .icon-svg {
   width: 12px;
   height: 12px;

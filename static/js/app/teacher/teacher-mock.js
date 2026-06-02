@@ -1,12 +1,14 @@
 export const TEACHER_DATA = {
     profile: {
+        id_user: 1,
         first_name: 'Carlos',
         last_name: 'Ramírez',
         username: 'teacher',
         email: 'teacher@cogniroom.com',
+        role: 'teacher',
         institution: 'CogniRoom Demo',
-        memberSince: '2026-01-20',
-        lastActiveAt: '2026-05-25T08:45:00',
+        date_joined: '2026-01-20T09:00:00Z',
+        is_active: true,
         totalRooms: 7,
         activeRooms: 5,
         totalStudents: 187,
@@ -14,17 +16,7 @@ export const TEACHER_DATA = {
         questionsPending: 14,
         pdfsUploaded: 10,
         aiDiagnosesGenerated: 47,
-        avgClassIcc: 0.58,
-        avgClassMastery: 0.61,
-        atRiskStudents: 23,
-        streakDays: 12,
     },
 
-    recentActivity: [
-        { id: 1, type: 'approval',  text: 'Aprobaste 4 preguntas IA en Termodinámica I',          when: '2026-05-25T08:30:00' },
-        { id: 2, type: 'pdf',       text: 'Subiste "LeChatelier.pdf" a Mi repaso · Equilibrio',   when: '2026-05-24T17:12:00' },
-        { id: 3, type: 'session',   text: '12 estudiantes completaron evaluación en Cinética',    when: '2026-05-24T15:00:00' },
-        { id: 4, type: 'diagnosis', text: 'Claude generó 6 diagnósticos en tu cohorte',           when: '2026-05-23T22:18:00' },
-        { id: 5, type: 'room',      text: 'Creaste sala "Mecánica Cuántica · 2026·I"',            when: '2026-05-22T11:00:00' },
-    ],
+    // recentActivity feed removido (schema v2026-06: no existe entidad activity)
 };

@@ -33,35 +33,6 @@ document.querySelectorAll('.auth-segmented__option').forEach((btn) => {
 });
 
 
-const TERMINAL_LINES = [
-    '> auth.handshake          OK',
-    '> bkt.engine v3.1         READY',
-    '> cohort.load 2026·I      1 284 students',
-    '> calibration.scan        Δ ICC −0.02',
-    '> ai.tutor                claude-3.7 ONLINE',
-    '> session.ready           waiting for input_',
-];
-
-const $terminal = document.getElementById('auth-terminal');
-if ($terminal) {
-    let i = 1;
-    const renderTerminal = () => {
-        $terminal.innerHTML = TERMINAL_LINES.slice(0, i)
-            .map((line, idx) => {
-                const cls = idx === i - 1 ? 'auth-terminal__line--active' : '';
-                return `<span class="${cls}">${line.replace(/</g, '&lt;')}</span>`;
-            })
-            .join('');
-    };
-    renderTerminal();
-    const interval = setInterval(() => {
-        i += 1;
-        renderTerminal();
-        if (i >= TERMINAL_LINES.length) clearInterval(interval);
-    }, 380);
-}
-
-
 document.querySelectorAll('.auth-form__switch-link').forEach((link) => {
     link.addEventListener('click', (e) => e.preventDefault());
 });

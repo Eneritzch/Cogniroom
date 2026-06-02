@@ -8,7 +8,7 @@
     {% include 'app/partials/_styles.html' %}
     <link rel="stylesheet" href="{% static 'css/app/public/auth.css' %}?v={% now "U" %}">
 </head>
-<body>
+<body class="auth-page">
     <main class="auth-shell">
 
         <svg class="auth-grid-backdrop" aria-hidden="true">
@@ -30,32 +30,23 @@
                     </svg>
                     CogniRoom
                 </a>
-                <div class="auth-instrument__instance">
-                    <span class="auth-instrument__pulse" aria-hidden="true"></span>
-                    INSTANCE · UN-EAFIT-01 / 200ms
-                </div>
+                <span class="auth-instrument__eyebrow">§ 01.0 · COGNITIVE ROOM</span>
             </header>
-
-            <div class="auth-instrument__coords">
-                <span>§ 01.0 · COGNITIVE ROOM</span>
-                <span>LAT 06.244 · LON −75.581</span>
-            </div>
 
             <div class="auth-instrument__hero">
                 <h1 class="auth-instrument__title">
-                    <span class="auth-instrument__title-num">001 ·</span>
                     Un instrumento para<br>
                     <span class="auth-instrument__title-muted">medir el</span>
                     <span class="auth-instrument__underlined">autoconocimiento</span><br>
                     <span class="auth-instrument__title-muted">de una cohorte.</span>
                 </h1>
                 <p class="auth-instrument__body">
-                    // CogniRoom v0.4 — bayesian knowledge tracing + métricas
-                    de calibración cognitiva. Sin gamificación, sin distracciones.
+                    Bayesian knowledge tracing + métricas de calibración cognitiva.
+                    Sin gamificación, sin distracciones.
                 </p>
             </div>
 
-            <section>
+            <section class="auth-instrument__center">
                 <div class="auth-framed">
                     <span class="auth-framed__corner auth-framed__corner--tl" aria-hidden="true"></span>
                     <span class="auth-framed__corner auth-framed__corner--tr" aria-hidden="true"></span>
@@ -68,68 +59,35 @@
                     </div>
 
                     <div class="auth-framed__body">
-                        <div class="auth-crosshair">
-                            <span class="auth-crosshair__axis auth-crosshair__axis--v" aria-hidden="true"></span>
-                            <span class="auth-crosshair__axis auth-crosshair__axis--h" aria-hidden="true"></span>
-                            <span class="auth-crosshair__tick auth-crosshair__tick--tl" aria-hidden="true"></span>
-                            <span class="auth-crosshair__tick auth-crosshair__tick--tr" aria-hidden="true"></span>
-                            <span class="auth-crosshair__tick auth-crosshair__tick--bl" aria-hidden="true"></span>
-                            <span class="auth-crosshair__tick auth-crosshair__tick--br" aria-hidden="true"></span>
-                            <div class="auth-crosshair__center">
-                                <div class="calibration-ring" data-profile="calibrated" style="width:200px;height:200px;">
-                                    <svg class="calibration-ring__svg" width="200" height="200" aria-hidden="true">
-                                        <circle class="calibration-ring__track" cx="100" cy="100" r="93" stroke-width="14"></circle>
-                                        <circle class="calibration-ring__fill" cx="100" cy="100" r="93" stroke-width="14"
+                        <div class="calibration-ring" data-profile="calibrated" style="width:200px;height:200px;">
+                            <svg class="calibration-ring__svg" width="200" height="200" aria-hidden="true">
+                                <circle class="calibration-ring__track" cx="100" cy="100" r="93" stroke-width="14"></circle>
+                                <circle class="calibration-ring__fill" cx="100" cy="100" r="93" stroke-width="14"
                                                 stroke-dasharray="584.34" stroke-dashoffset="128.55"></circle>
-                                    </svg>
-                                    <div class="calibration-ring__center">
-                                        <span class="calibration-ring__value" style="font-size:52px;">0.78</span>
-                                        <span class="calibration-ring__label eyebrow">ICC</span>
-                                        <span class="calibration-ring__sublabel">Cohorte 2026·I</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="auth-readouts">
-                            <div class="auth-readout">
-                                <div class="auth-readout__title">ESTUDIANTES</div>
-                                <div class="auth-readout__value">1 284</div>
-                                <div class="auth-readout__delta">+47 / 7d</div>
-                            </div>
-                            <div class="auth-readout">
-                                <div class="auth-readout__title">SOBRECONFIADOS</div>
-                                <div class="auth-readout__value" data-tone="amber">38 %</div>
-                                <div class="auth-readout__delta">−2.1 pp</div>
-                            </div>
-                            <div class="auth-readout">
-                                <div class="auth-readout__title">DIAGNÓSTICOS IA (24h)</div>
-                                <div class="auth-readout__value">047</div>
-                                <div class="auth-readout__delta">18 abiertos</div>
-                            </div>
-                            <div class="auth-bar-feed" aria-hidden="true">
-                                <span class="auth-bar-feed__bar" style="height:9px;opacity:0.2;"></span>
-                                <span class="auth-bar-feed__bar" style="height:15px;opacity:0.25;"></span>
-                                <span class="auth-bar-feed__bar" style="height:12px;opacity:0.3;"></span>
-                                <span class="auth-bar-feed__bar" style="height:21px;opacity:0.36;"></span>
-                                <span class="auth-bar-feed__bar" style="height:18px;opacity:0.43;"></span>
-                                <span class="auth-bar-feed__bar" style="height:24px;opacity:0.5;"></span>
-                                <span class="auth-bar-feed__bar" style="height:15px;opacity:0.56;"></span>
-                                <span class="auth-bar-feed__bar" style="height:27px;opacity:0.62;"></span>
-                                <span class="auth-bar-feed__bar" style="height:18px;opacity:0.7;"></span>
-                                <span class="auth-bar-feed__bar" style="height:21px;opacity:0.78;"></span>
-                                <span class="auth-bar-feed__bar" style="height:24px;opacity:0.85;"></span>
-                                <span class="auth-bar-feed__bar" style="height:27px;opacity:0.9;"></span>
-                                <span class="auth-bar-feed__bar" style="height:30px;opacity:0.95;"></span>
-                                <span class="auth-bar-feed__label">RESP·15min</span>
+                            </svg>
+                            <div class="calibration-ring__center">
+                                <span class="calibration-ring__value" style="font-size:48px;">0.78</span>
+                                <span class="calibration-ring__label eyebrow">ICC</span>
+                                <span class="calibration-ring__sublabel">Cohorte 2026·I</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="auth-terminal" id="auth-terminal" aria-hidden="true">
-                    <span data-line>&gt; auth.handshake          OK</span>
-                </div>
+                <dl class="auth-glossary">
+                    <div class="auth-glossary__item">
+                        <dt>BKT</dt>
+                        <dd>Bayesian Knowledge Tracing — estima qué sabe cada estudiante por nodo.</dd>
+                    </div>
+                    <div class="auth-glossary__item">
+                        <dt>ICC</dt>
+                        <dd>Índice de Calibración Cognitiva — qué tan alineada está su confianza con lo que sabe.</dd>
+                    </div>
+                    <div class="auth-glossary__item">
+                        <dt>IPC</dt>
+                        <dd>Índice de Punto Ciego — promedio grupal: detecta nodos donde la cohorte se sobreestima.</dd>
+                    </div>
+                </dl>
             </section>
 
             <footer class="auth-instrument__footer">

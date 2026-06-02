@@ -1,27 +1,27 @@
 :root {
-  --paper:               #f5efe3;
-  --paper-elevated:      #efe7d6;
-  --paper-surface:       #faf6ec;
-  --paper-border:        #e1d7c0;
-  --paper-border-strong: #c9bca0;
+  --paper:               #0a0e1f;
+  --paper-elevated:      #11162e;
+  --paper-surface:       #161d3d;
+  --paper-border:        #252d56;
+  --paper-border-strong: #3a4380;
 
-  --ink:       #2b2620;
-  --ink-muted: #6b6357;
-  --ink-faint: #9a8f7e;
+  --ink:       #e6e9fa;
+  --ink-muted: #9ba4d4;
+  --ink-faint: #6b75a8;
 
-  --sage:            #5b7a6e;
-  --sage-strong:     #4a655b;
-  --sage-soft:       #d6e0db;
-  --terracotta:      #9b6b3f;
-  --terracotta-soft: #ead9c6;
-  --moss:            #4f7a4a;
-  --moss-soft:       #d4dfce;
-  --amber:           #b8804a;
-  --amber-soft:      #ecddc8;
-  --rust:            #a14b3d;
-  --rust-soft:       #ebd0ca;
-  --stone:           #6b7a95;
-  --stone-soft:      #d6dbe3;
+  --sage:            #5dd5ff;
+  --sage-strong:     #7de4ff;
+  --sage-soft:       #1d2e4a;
+  --terracotta:      #a78bfa;
+  --terracotta-soft: #2a234a;
+  --moss:            #34d399;
+  --moss-soft:       #0e2e2a;
+  --amber:           #fbbf24;
+  --amber-soft:      #3a2e10;
+  --rust:            #fb7185;
+  --rust-soft:       #3a1c25;
+  --stone:           #60a5fa;
+  --stone-soft:      #1a2342;
 
   --color-bg:            var(--paper);
   --color-bg-elevated:   var(--paper-elevated);
@@ -65,7 +65,7 @@
   --color-risk-medium: var(--color-warning);
   --color-risk-low:    var(--color-success);
 
-  --gradient-brand: linear-gradient(135deg, var(--sage), var(--terracotta));
+  --gradient-brand: linear-gradient(135deg, #5dd5ff 0%, #6366f1 50%, #a78bfa 100%);
 
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
     Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
@@ -113,10 +113,10 @@
   --r-xl:   24px;
   --r-pill: 999px;
 
-  --shadow-sm:   0 1px 2px rgba(91, 71, 41, 0.06), 0 1px 1px rgba(91, 71, 41, 0.04);
-  --shadow-md:   0 4px 12px rgba(91, 71, 41, 0.08), 0 2px 4px rgba(91, 71, 41, 0.05);
-  --shadow-lg:   0 16px 48px rgba(91, 71, 41, 0.10), 0 4px 12px rgba(91, 71, 41, 0.06);
-  --shadow-glow: 0 0 0 1px var(--color-primary-glow), 0 8px 32px rgba(91, 122, 110, 0.18);
+  --shadow-sm:   0 1px 2px rgba(8, 10, 28, 0.55), 0 1px 1px rgba(8, 10, 28, 0.4);
+  --shadow-md:   0 4px 14px rgba(8, 10, 28, 0.6), 0 2px 4px rgba(8, 10, 28, 0.4);
+  --shadow-lg:   0 18px 50px rgba(8, 10, 28, 0.7), 0 4px 14px rgba(8, 10, 28, 0.5);
+  --shadow-glow: 0 0 0 1px var(--color-primary-glow), 0 8px 32px rgba(93, 213, 255, 0.22);
 
   --ease-out:    cubic-bezier(0.22, 1, 0.36, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -153,45 +153,19 @@
   --bs-link-hover-color: var(--color-primary-strong);
 
   --bs-primary:       var(--color-primary);
-  --bs-primary-rgb:   91, 122, 110;
+  --bs-primary-rgb:   93, 213, 255;
   --bs-secondary:     var(--color-secondary);
-  --bs-secondary-rgb: 155, 107, 63;
-  --bs-success: var(--color-success);  --bs-success-rgb: 79, 122, 74;
-  --bs-info:    var(--color-info);     --bs-info-rgb:    107, 122, 149;
-  --bs-warning: var(--color-warning);  --bs-warning-rgb: 184, 128, 74;
-  --bs-danger:  var(--color-danger);   --bs-danger-rgb:  161, 75, 61;
+  --bs-secondary-rgb: 167, 139, 250;
+  --bs-success: var(--color-success);  --bs-success-rgb: 52, 211, 153;
+  --bs-info:    var(--color-info);     --bs-info-rgb:    96, 165, 250;
+  --bs-warning: var(--color-warning);  --bs-warning-rgb: 251, 191, 36;
+  --bs-danger:  var(--color-danger);   --bs-danger-rgb:  251, 113, 133;
   --bs-light: var(--paper-surface);
   --bs-dark:  var(--ink);
 
   --bs-box-shadow-sm: var(--shadow-sm);
   --bs-box-shadow:    var(--shadow-md);
   --bs-box-shadow-lg: var(--shadow-lg);
-}
-
-[data-theme='dark'] {
-  --paper:               #1c1915;
-  --paper-elevated:      #252119;
-  --paper-surface:       #2e2820;
-  --paper-border:        #3a3328;
-  --paper-border-strong: #524835;
-
-  --ink:       #ece4d2;
-  --ink-muted: #b8ae98;
-  --ink-faint: #7e7561;
-
-  --sage:            #8db0a2;
-  --sage-strong:     #a3c4b7;
-  --sage-soft:       #2f3d37;
-  --terracotta:      #d09368;
-  --terracotta-soft: #3d2f23;
-  --moss:            #95b88c;
-  --moss-soft:       #2e3a2a;
-  --amber:           #d9a66e;
-  --amber-soft:      #3d2f1f;
-  --rust:            #d17a68;
-  --rust-soft:       #3d2520;
-  --stone:           #9eafc7;
-  --stone-soft:      #2a313d;
 }
 
 @media (prefers-reduced-motion: reduce) {

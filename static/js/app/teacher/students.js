@@ -12,13 +12,20 @@ if (!tokens.access) {
 const PAGE_SIZE = 20;
 
 let currentProfile = 'all';
-let currentCurso = 'all';
+let currentSection = 'all';
 let currentSearch = '';
 let visibleCount = PAGE_SIZE;
 
 
-function initials(name) {
-    return name.split(/\s+/).map((p) => p[0]).join('').slice(0, 2).toUpperCase();
+function fullName(user) {
+    if (!user) return '';
+    return `${user.first_name || ''} ${user.last_name || ''}`.trim();
+}
+
+
+function initials(user) {
+    const parts = [user?.first_name, user?.last_name].filter(Boolean);
+    return parts.map((p) => p[0]).join('').slice(0, 2).toUpperCase();
 }
 
 
@@ -44,25 +51,25 @@ function summaryShort(profile, gapPts) {
 }
 
 
-function renderCursoChips(cursos) {
+function renderSectionChips(sections) {
     const $wrap = document.getElementById('curso-chips');
     const $group = document.getElementById('students-curso-group');
     if (!$wrap || !$group) return;
 
-    if (!cursos || cursos.length <= 1) {
+    if (!sections || sections.length <= 1) {
         $group.hidden = true;
         return;
     }
     $group.hidden = false;
 
-    const totalStudents = cursos.reduce((s, c) => s + c.students, 0);
+    const totalStudents = sections.reduce((s, c) => s + (c.total_student || 0), 0);
     const chips = [
-        `<button type="button" class="students-chip" data-curso="all" aria-pressed="${currentCurso === 'all' ? 'true' : 'false'}">
+        `<button type="button" class="students-chip" data-curso="all" aria-pressed="${currentSection === 'all' ? 'true' : 'false'}">
             Todos <span class="students-chip__count num">${totalStudents}</span>
         </button>`,
-        ...cursos.map((c) => `
-            <button type="button" class="students-chip" data-curso="${c.id}" aria-pressed="${currentCurso === c.id ? 'true' : 'false'}">
-                ${escapeHTML(c.name)} <span class="students-chip__count num">${c.students}</span>
+        ...sections.map((c) => `
+            <button type="button" class="students-chip" data-curso="${c.id_section}" aria-pressed="${currentSection === c.id_section ? 'true' : 'false'}">
+                ${escapeHTML(`${c.code} · ${c.schedule}`)} <span class="students-chip__count num">${c.total_student || 0}</span>
             </button>
         `),
     ];
@@ -70,7 +77,7 @@ function renderCursoChips(cursos) {
 
     $wrap.querySelectorAll('[data-curso]').forEach((btn) => {
         btn.addEventListener('click', () => {
-            currentCurso = btn.dataset.curso;
+            currentSection = btn.dataset.curso;
             visibleCount = PAGE_SIZE;
             $wrap.querySelectorAll('[data-curso]').forEach((b) => {
                 b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
@@ -85,8 +92,8 @@ function applyFilters(roster) {
     const q = currentSearch.trim().toLowerCase();
     return roster.filter((s) => {
         if (currentProfile !== 'all' && s.profile !== currentProfile) return false;
-        if (currentCurso !== 'all' && s.curso !== currentCurso) return false;
-        if (q && !s.name.toLowerCase().includes(q)) return false;
+        if (currentSection !== 'all' && s.membership?.section?.id_section !== currentSection) return false;
+        if (q && !fullName(s.user).toLowerCase().includes(q)) return false;
         return true;
     });
 }
@@ -107,8 +114,12 @@ function renderList() {
     const visible = filtered.slice(0, visibleCount);
 
     if ($meta) {
-        const cursoLabel = currentCurso === 'all' ? '' : ` · ${data.cursos.find((c) => c.id === currentCurso)?.name || currentCurso}`;
-        $meta.textContent = `Mostrando ${visible.length} de ${filtered.length}${cursoLabel}`;
+        let sectionLabel = '';
+        if (currentSection !== 'all') {
+            const sec = (data.sections || []).find((c) => c.id_section === currentSection);
+            sectionLabel = sec ? ` · ${sec.code}` : '';
+        }
+        $meta.textContent = `Mostrando ${visible.length} de ${filtered.length}${sectionLabel}`;
     }
 
     if (filtered.length === 0) {
@@ -118,21 +129,23 @@ function renderList() {
     }
 
     $rows.innerHTML = visible.map((s) => {
-        const mastery = Math.round(s.bkt * 100);
-        const gapPts = Math.round(s.gap * 100);
-        const confidence = Math.min(100, Math.max(0, mastery + gapPts));
-        const tone = gapTone(s.gap);
+        const mastery = Math.round((s.bkt_mastery ?? 0) * 100);
+        const gap = s.metacognitive_gap ?? 0;
+        const gapPts = Math.round(gap * 100);
+        const confidence = Math.round((s.avg_confidence ?? 0) * 100);
+        const tone = gapTone(gap);
         const gapText = gapPts > 0 ? `+${gapPts}` : `${gapPts}`;
+        const sectionCode = s.membership?.section?.code || '';
+        const name = fullName(s.user);
 
         return `
         <li class="student-card" data-profile="${s.profile}">
             <div class="student-card__head">
-                <span class="student-card__avatar" aria-hidden="true">${initials(s.name)}</span>
+                <span class="student-card__avatar" aria-hidden="true">${initials(s.user)}</span>
                 <div class="student-card__id">
-                    <div class="student-card__name">${escapeHTML(s.name)}</div>
+                    <div class="student-card__name">${escapeHTML(name)}</div>
                     <div class="student-card__meta">
-                        ${s.curso ? `<span class="student-card__curso">${escapeHTML(s.curso)}</span>` : ''}
-                        <span class="student-card__last">${escapeHTML(s.last)}</span>
+                        ${sectionCode ? `<span class="student-card__curso">${escapeHTML(sectionCode)}</span>` : ''}
                     </div>
                 </div>
                 <span class="pill student-card__pill" data-profile="${s.profile}">${profileLabel(s.profile)}</span>
@@ -190,9 +203,9 @@ function render() {
     document.getElementById('room-students').textContent = String(data.students);
 
     visibleCount = PAGE_SIZE;
-    currentCurso = 'all';
+    currentSection = 'all';
 
-    renderCursoChips(data.cursos);
+    renderSectionChips(data.sections);
     renderList();
 }
 

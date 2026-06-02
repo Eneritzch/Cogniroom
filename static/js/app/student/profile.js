@@ -26,24 +26,19 @@ function fmtDateLong(iso) {
 }
 
 
-function relDate(iso) {
-    const d = new Date(iso);
-    const now = new Date();
-    const diffMs = now - d;
-    const diffH = Math.round(diffMs / (1000 * 60 * 60));
-    if (diffH < 1)  return 'hace minutos';
-    if (diffH < 24) return `hace ${diffH} h`;
-    const diffD = Math.round(diffH / 24);
-    if (diffD === 1) return 'ayer';
-    if (diffD < 7)   return `hace ${diffD} días`;
-    return `hace ${Math.round(diffD / 7)} sem`;
-}
-
-
 function iccTone(icc) {
     if (icc >= 0.65) return 'moss';
     if (icc >= 0.5)  return 'amber';
     return 'rust';
+}
+
+
+function deriveProfile(p) {
+    const conf = typeof p.avg_confidence === 'number' ? p.avg_confidence : p.avgMastery;
+    const gap = conf - (p.avgMastery || 0);
+    if (gap > 0.2)  return 'overconfident';
+    if (gap < -0.2) return 'underconfident';
+    return 'calibrated';
 }
 
 
@@ -52,26 +47,26 @@ function paintHero(p) {
     const fullName = `${p.first_name || ''} ${p.last_name || ''}`.trim() || p.username;
     document.getElementById('profile-name').textContent = fullName;
     document.getElementById('profile-institution').textContent = p.institution || '—';
-    document.getElementById('profile-member').textContent = `Miembro desde ${fmtDateLong(p.memberSince)}`;
-    document.getElementById('profile-last').textContent = `Último acceso: ${relDate(p.lastActiveAt)}`;
+    document.getElementById('profile-member').textContent = `Miembro desde ${fmtDateLong(p.date_joined)}`;
 
+    const profile = deriveProfile(p);
     const $pill = document.getElementById('profile-pill');
-    $pill.textContent = profileLabel(p.predominantProfile);
-    $pill.dataset.profile = p.predominantProfile;
+    $pill.textContent = profileLabel(profile);
+    $pill.dataset.profile = profile;
 }
 
 
 function paintStats(p) {
+    const profile = deriveProfile(p);
     document.getElementById('stat-icc').textContent = fmt(p.avgIcc);
     document.getElementById('stat-icc').dataset.tone = iccTone(p.avgIcc);
-    document.getElementById('stat-icc-sub').textContent = profileLabel(p.predominantProfile).toLowerCase();
+    document.getElementById('stat-icc-sub').textContent = profileLabel(profile).toLowerCase();
 
     document.getElementById('stat-mastery').textContent = fmt(p.avgMastery);
     document.getElementById('stat-sessions').textContent = p.totalSessions;
     document.getElementById('stat-answers-sub').textContent = `${p.totalAnswers} respuestas`;
     document.getElementById('stat-nodes').textContent = p.nodesTracked;
     document.getElementById('stat-diagnoses-sub').textContent = `${p.aiDiagnoses} diagnósticos IA`;
-    document.getElementById('stat-streak').textContent = p.streakDays;
 }
 
 

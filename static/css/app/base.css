@@ -7,16 +7,10 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-image:
-    radial-gradient(rgba(91, 71, 41, 0.035) 1px, transparent 1px),
-    radial-gradient(rgba(91, 71, 41, 0.025) 1px, transparent 1px);
+    radial-gradient(rgba(167, 139, 250, 0.05) 1px, transparent 1px),
+    radial-gradient(rgba(93, 213, 255, 0.035) 1px, transparent 1px);
   background-size: 3px 3px, 7px 7px;
   background-position: 0 0, 1px 2px;
-}
-
-[data-theme='dark'] body {
-  background-image:
-    radial-gradient(rgba(236, 228, 210, 0.025) 1px, transparent 1px),
-    radial-gradient(rgba(236, 228, 210, 0.018) 1px, transparent 1px);
 }
 
 :focus-visible {
