@@ -588,6 +588,10 @@ async function bootstrapTeacher(user) {
             : user.username;
     }
 
+    if (localStorage.getItem('cogniroom.demo_user')) {
+        return;
+    }
+
     try {
         const list = await rooms.list();
         renderRooms(list);

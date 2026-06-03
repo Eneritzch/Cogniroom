@@ -30,7 +30,7 @@
                     </svg>
                     CogniRoom
                 </a>
-                <span class="auth-instrument__eyebrow">§ 01.0 · COGNITIVE ROOM</span>
+                <span class="auth-instrument__eyebrow">01 · COGNITIVE ROOM</span>
             </header>
 
             <div class="auth-instrument__hero">
@@ -99,7 +99,7 @@
         <section class="auth-form-shell" aria-labelledby="login-heading">
             <div class="auth-form">
                 <div class="auth-form__section-head">
-                    <span>§ 02.0 · ACCESO</span>
+                    <span>02 · ACCESO</span>
                     <span>[ AUTH ]</span>
                 </div>
 
@@ -179,19 +179,22 @@
 
                 <div class="auth-divider">
                     <span class="auth-divider__rule" aria-hidden="true"></span>
-                    <span class="auth-divider__label">O · SSO</span>
+                    <span class="auth-divider__label">DEMO · NAVEGAR SIN AUTH</span>
                     <span class="auth-divider__rule" aria-hidden="true"></span>
                 </div>
 
-                <button type="button" class="auth-sso">
-                    <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M12 11v6"></path>
-                        <path d="M9 18a3 3 0 0 0 6 0"></path>
-                        <path d="M5 14a7 7 0 1 1 14 0"></path>
-                        <path d="M3 11a9 9 0 0 1 18 0"></path>
-                    </svg>
-                    Continuar con SSO institucional
-                </button>
+                <div class="auth-demo">
+                    <button type="button" class="auth-demo__btn" data-demo-role="student">
+                        <span class="auth-demo__btn-num">01</span>
+                        <span class="auth-demo__btn-label">Estudiante</span>
+                        <span class="auth-demo__btn-sub">Andrea Molina</span>
+                    </button>
+                    <button type="button" class="auth-demo__btn" data-demo-role="teacher">
+                        <span class="auth-demo__btn-num">02</span>
+                        <span class="auth-demo__btn-label">Docente</span>
+                        <span class="auth-demo__btn-sub">Carlos Ramírez</span>
+                    </button>
+                </div>
 
                 <p class="auth-form__switch">
                     ¿Sin instancia activa? <button type="button" class="auth-form__switch-link">Solicitá una →</button>

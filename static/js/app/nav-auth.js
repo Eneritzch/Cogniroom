@@ -134,6 +134,7 @@ function setupSidebarToggle() {
     if ($logout && !$logout.dataset.bound) {
         $logout.dataset.bound = '1';
         $logout.addEventListener('click', () => {
+            localStorage.removeItem('cogniroom.demo_user');
             tokens.clear();
             location.href = '/';
         });

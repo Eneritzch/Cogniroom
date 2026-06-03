@@ -51,12 +51,21 @@ async function request(path, { method = 'GET', body, auth = true, isFormData = f
 }
 
 /* ---------- Auth ---------- */
+const DEMO_USER_KEY = 'cogniroom.demo_user';
+
 export const auth = {
     login: (email, password) => request('/auth/login/', {
         method: 'POST', body: { email, password }, auth: false,
     }),
-    me: () => request('/auth/me/'),
-    logout: () => tokens.clear(),
+    me: () => {
+        const demo = localStorage.getItem(DEMO_USER_KEY);
+        if (demo) return Promise.resolve(JSON.parse(demo));
+        return request('/auth/me/');
+    },
+    logout: () => {
+        localStorage.removeItem(DEMO_USER_KEY);
+        tokens.clear();
+    },
 };
 
 /* ---------- Me (datos del usuario actual) ---------- */

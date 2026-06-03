@@ -942,8 +942,10 @@
 
 .ds-buttons {
   display: flex;
+  flex-direction: row;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: flex-start;
   gap: var(--s-3);
 }
 
@@ -1007,8 +1009,10 @@
 
 .ds-radii {
   display: flex;
+  flex-direction: row;
   flex-wrap: wrap;
   align-items: flex-end;
+  justify-content: flex-start;
   gap: var(--s-5);
 }
 
@@ -1035,6 +1039,7 @@
 
 .ds-ring-row {
   display: flex;
+  flex-direction: row;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-around;
