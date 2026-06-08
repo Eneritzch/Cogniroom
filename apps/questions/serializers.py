@@ -11,13 +11,15 @@ class KnowledgeNodeSerializer(serializers.ModelSerializer):
 
 
 class QuestionSerializer(serializers.ModelSerializer):
+    is_approved = serializers.BooleanField(read_only=True)
+
     class Meta:
         model = Question
         fields = [
             'id', 'node', 'statement', 'difficulty', 'options',
-            'correct_index', 'source', 'is_approved', 'created_at',
+            'correct_index', 'source', 'status', 'is_approved', 'created_at',
         ]
-        read_only_fields = ['id', 'source', 'is_approved', 'created_at']
+        read_only_fields = ['id', 'source', 'status', 'is_approved', 'created_at']
 
 
 class QuestionPublicSerializer(serializers.ModelSerializer):
@@ -58,20 +60,24 @@ class ApproveQuestionsSerializer(serializers.Serializer):
 class PDFDocumentSerializer(serializers.ModelSerializer):
     """List/detail serializer (without extracted text — keeps payload light)."""
 
+    processed = serializers.BooleanField(read_only=True)
+
     class Meta:
         model = PDFDocument
-        fields = ['id', 'room', 'uploaded_by', 'file_path', 'processed', 'created_at']
+        fields = ['id', 'room', 'uploaded_by', 'file_path', 'status', 'processed', 'created_at']
         read_only_fields = fields
 
 
 class PDFDocumentDetailSerializer(serializers.ModelSerializer):
     """Detail serializer — includes the full extracted text."""
 
+    processed = serializers.BooleanField(read_only=True)
+
     class Meta:
         model = PDFDocument
         fields = [
             'id', 'room', 'uploaded_by', 'file_path',
-            'extracted_text', 'processed', 'created_at',
+            'extracted_text', 'status', 'processed', 'created_at',
         ]
         read_only_fields = fields
 

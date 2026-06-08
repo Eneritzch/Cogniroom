@@ -92,6 +92,12 @@ class AIDiagnosis(models.Model):
         on_delete=models.SET_NULL,
         related_name='ai_diagnoses',
     )
+    node = models.ForeignKey(
+        'questions.KnowledgeNode',
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name='ai_diagnoses',
+    )
     classification = models.CharField(max_length=20)
     risk_level = models.CharField(max_length=10, choices=RISK_CHOICES)
     risk_node = models.JSONField(default=list)
@@ -99,3 +105,42 @@ class AIDiagnosis(models.Model):
     reasoning = models.TextField()
     recommendation = models.TextField()
     generated_at = models.DateTimeField(auto_now_add=True)
+
+
+class StudentProgressSnapshot(models.Model):
+
+    PROFILE_CHOICES = [
+        ('overconfident', 'Overconfident'),
+        ('underconfident', 'Underconfident'),
+        ('calibrated', 'Calibrated'),
+    ]
+
+    student = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='progress_snapshots',
+    )
+    room = models.ForeignKey(
+        'rooms.Room',
+        on_delete=models.CASCADE,
+        related_name='progress_snapshots',
+    )
+    session = models.ForeignKey(
+        'evaluation_sessions.EvaluationSession',
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name='progress_snapshots',
+    )
+    avg_icc = models.FloatField()
+    avg_bkt_mastery = models.FloatField()
+    avg_gap = models.FloatField()
+    dominant_profile = models.CharField(max_length=20, choices=PROFILE_CHOICES)
+    questions_answered = models.IntegerField()
+    correct_count = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+        indexes = [
+            models.Index(fields=['student', 'room', 'created_at']),
+        ]

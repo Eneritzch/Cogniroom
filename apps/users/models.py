@@ -12,6 +12,7 @@ class User(AbstractUser):
         (ROLE_COORDINATOR, 'Coordinator'),
     ]
 
+    email = models.EmailField(unique=True)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default=ROLE_STUDENT)
     institution = models.CharField(max_length=200, blank=True)
 

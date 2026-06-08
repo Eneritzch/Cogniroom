@@ -13,6 +13,7 @@ def api_root(request):
         'auth': {
             'register': 'POST /api/v1/auth/register/',
             'login':    'POST /api/v1/auth/login/',
+            'logout':   'POST /api/v1/auth/logout/',
             'refresh':  'POST /api/v1/auth/refresh/',
             'me':       'GET  /api/v1/auth/me/',
         },
@@ -57,6 +58,7 @@ def api_root(request):
 html_routes = [
     path('',                                  TemplateView.as_view(template_name='landing.html'),                      name='landing'),
     path('app/',                              TemplateView.as_view(template_name='app/public/login.html'),             name='login'),
+    path('app/register/',                     TemplateView.as_view(template_name='app/public/register.html'),          name='register'),
     path('app/dashboard/',                    TemplateView.as_view(template_name='app/shared/dashboard.html'),         name='dashboard'),
     path('app/diagnoses/',                    TemplateView.as_view(template_name='app/shared/diagnoses.html'),         name='diagnoses'),
     path('app/students/',                     TemplateView.as_view(template_name='app/teacher/students.html'),         name='teacher-students'),

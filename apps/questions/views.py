@@ -180,7 +180,7 @@ class ApproveQuestionsView(APIView):
 
         updated = Question.objects.filter(
             id__in=ids, node__room=room
-        ).update(is_approved=True)
+        ).update(status=Question.STATUS_APPROVED)
 
         return Response({'approved_count': updated})
 
@@ -195,7 +195,9 @@ class QuestionListView(APIView):
                 {'detail': 'Not a member of this room.'},
                 status=status.HTTP_403_FORBIDDEN,
             )
-        qs = Question.objects.filter(node__room=room, is_approved=True).order_by('id')
+        qs = Question.objects.filter(
+            node__room=room, status=Question.STATUS_APPROVED
+        ).order_by('id')
 
         if request.user.id == room.teacher_id:
             return Response(QuestionSerializer(qs, many=True).data)
@@ -255,11 +257,11 @@ class PDFUploadListView(APIView):
         try:
             pdf.file_path.open('rb')
             pdf.extracted_text = _extract_pdf_text(pdf.file_path)
-            pdf.processed = True
-            pdf.save(update_fields=['extracted_text', 'processed'])
+            pdf.status = PDFDocument.STATUS_PROCESSED
+            pdf.save(update_fields=['extracted_text', 'status'])
         except Exception as e:
-            pdf.processed = False
-            pdf.save(update_fields=['processed'])
+            pdf.status = PDFDocument.STATUS_FAILED
+            pdf.save(update_fields=['status'])
             return Response(
                 {
                     'detail': f'PDF uploaded but extraction failed: {e}',

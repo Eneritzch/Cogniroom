@@ -17,14 +17,29 @@ def _pdf_upload_path(instance, filename):
 
 
 class PDFDocument(models.Model):
+    STATUS_UPLOADED = 'uploaded'
+    STATUS_PROCESSING = 'processing'
+    STATUS_PROCESSED = 'processed'
+    STATUS_FAILED = 'failed'
+    STATUS_CHOICES = [
+        (STATUS_UPLOADED, 'Uploaded'),
+        (STATUS_PROCESSING, 'Processing'),
+        (STATUS_PROCESSED, 'Processed'),
+        (STATUS_FAILED, 'Failed'),
+    ]
+
     room = models.ForeignKey('rooms.Room', on_delete=models.CASCADE, related_name='pdfs')
     uploaded_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='pdfs'
     )
     file_path = models.FileField(upload_to=_pdf_upload_path, max_length=500)
     extracted_text = models.TextField(blank=True)
-    processed = models.BooleanField(default=False)
+    status = models.CharField(max_length=12, choices=STATUS_CHOICES, default=STATUS_UPLOADED)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def processed(self):
+        return self.status == self.STATUS_PROCESSED
 
     def __str__(self):
         return f'PDF#{self.pk} ({self.room.name})'
@@ -47,14 +62,27 @@ class Question(models.Model):
         (SOURCE_MANUAL, 'Manual'),
     ]
 
+    STATUS_PENDING = 'pending'
+    STATUS_APPROVED = 'approved'
+    STATUS_REJECTED = 'rejected'
+    STATUS_CHOICES = [
+        (STATUS_PENDING, 'Pending'),
+        (STATUS_APPROVED, 'Approved'),
+        (STATUS_REJECTED, 'Rejected'),
+    ]
+
     node = models.ForeignKey(KnowledgeNode, on_delete=models.CASCADE, related_name='questions')
     statement = models.TextField()
     difficulty = models.CharField(max_length=10, choices=DIFFICULTY_CHOICES)
     options = models.JSONField()
     correct_index = models.IntegerField()
     source = models.CharField(max_length=10, choices=SOURCE_CHOICES, default=SOURCE_AI)
-    is_approved = models.BooleanField(default=False)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def is_approved(self):
+        return self.status == self.STATUS_APPROVED
 
     def clean(self):
         if not isinstance(self.options, list) or len(self.options) != 4:
@@ -65,13 +93,10 @@ class Question(models.Model):
     def save(self, *args, **kwargs):
         if self._state.adding:
             if self.source == self.SOURCE_MANUAL:
-                self.is_approved = True
+                self.status = self.STATUS_APPROVED
             elif self.source == self.SOURCE_AI:
                 room_mode = self.node.room.mode
-                if room_mode == 'individual':
-                    self.is_approved = True
-                else:
-                    self.is_approved = False
+                self.status = self.STATUS_APPROVED if room_mode == 'individual' else self.STATUS_PENDING
         super().save(*args, **kwargs)
 
     def __str__(self):

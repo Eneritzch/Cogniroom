@@ -1,4 +1,6 @@
+from django.conf import settings
 from django.contrib.auth import authenticate
+from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -13,15 +15,58 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, min_length=6)
+    # El auto-registro público solo permite student/teacher; coordinator se crea
+    # por admin/seed para no exponer un rol con permisos transversales.
+    PUBLIC_ROLE_CHOICES = [
+        (User.ROLE_STUDENT, 'Student'),
+        (User.ROLE_TEACHER, 'Teacher'),
+    ]
+
+    password = serializers.CharField(write_only=True, validators=[validate_password])
+    role = serializers.ChoiceField(choices=PUBLIC_ROLE_CHOICES, default=User.ROLE_STUDENT)
+    # Solo se exige cuando role == teacher. write_only: nunca se devuelve.
+    teacher_code = serializers.CharField(write_only=True, required=False, allow_blank=True)
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password', 'role', 'institution']
+        fields = [
+            'username', 'email', 'password', 'role', 'teacher_code',
+            'institution', 'first_name', 'last_name',
+        ]
         extra_kwargs = {
             'institution': {'required': False, 'allow_blank': True},
-            'role': {'required': False},
+            'first_name': {'required': True, 'allow_blank': False},
+            'last_name': {'required': True, 'allow_blank': False},
         }
+
+    def validate_email(self, value):
+        value = value.strip().lower()
+        if User.objects.filter(email__iexact=value).exists():
+            raise serializers.ValidationError('Ya existe una cuenta con este correo.')
+        return value
+
+    def validate_username(self, value):
+        value = value.strip()
+        if User.objects.filter(username__iexact=value).exists():
+            raise serializers.ValidationError('Este nombre de usuario ya está en uso.')
+        return value
+
+    def validate(self, attrs):
+        # El rol docente nunca se confía del cliente: exige el código de invitación.
+        # Multi-institución futura: reemplazar la comparación contra el secreto
+        # único por una búsqueda de Institution por código.
+        code = (attrs.pop('teacher_code', '') or '').strip()
+        if attrs.get('role') == User.ROLE_TEACHER:
+            expected = settings.TEACHER_SIGNUP_CODE
+            if not expected:
+                raise serializers.ValidationError(
+                    {'teacher_code': 'El registro de docentes no está habilitado. Contactá a tu institución.'}
+                )
+            if code != expected:
+                raise serializers.ValidationError(
+                    {'teacher_code': 'Código de docente inválido.'}
+                )
+        return attrs
 
     def create(self, validated_data):
         password = validated_data.pop('password')

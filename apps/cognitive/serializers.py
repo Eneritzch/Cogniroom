@@ -1,6 +1,12 @@
 from rest_framework import serializers
 
-from .models import AIDiagnosis, BKTState, BlindSpotIndex, CognitiveIndex
+from .models import (
+    AIDiagnosis,
+    BKTState,
+    BlindSpotIndex,
+    CognitiveIndex,
+    StudentProgressSnapshot,
+)
 
 
 class BKTStateSerializer(serializers.ModelSerializer):
@@ -43,9 +49,23 @@ class BlindSpotIndexSerializer(serializers.ModelSerializer):
 
 
 class AIDiagnosisSerializer(serializers.ModelSerializer):
+    node_name = serializers.CharField(source='node.name', read_only=True)
+
     class Meta:
         model = AIDiagnosis
         fields = [
-            'id', 'student', 'session', 'classification', 'risk_level',
+            'id', 'student', 'session', 'node', 'node_name', 'classification', 'risk_level',
             'risk_node', 'failure_probability', 'reasoning', 'recommendation', 'generated_at',
+        ]
+
+
+class StudentProgressSnapshotSerializer(serializers.ModelSerializer):
+    room_name = serializers.CharField(source='room.name', read_only=True)
+
+    class Meta:
+        model = StudentProgressSnapshot
+        fields = [
+            'id', 'student', 'room', 'room_name', 'session',
+            'avg_icc', 'avg_bkt_mastery', 'avg_gap', 'dominant_profile',
+            'questions_answered', 'correct_count', 'created_at',
         ]

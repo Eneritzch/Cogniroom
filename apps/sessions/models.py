@@ -5,9 +5,13 @@ from django.db import models
 class EvaluationSession(models.Model):
     STATUS_ACTIVE = 'active'
     STATUS_COMPLETED = 'completed'
+    STATUS_ABANDONED = 'abandoned'
+    STATUS_EXPIRED = 'expired'
     STATUS_CHOICES = [
         (STATUS_ACTIVE, 'Active'),
         (STATUS_COMPLETED, 'Completed'),
+        (STATUS_ABANDONED, 'Abandoned'),
+        (STATUS_EXPIRED, 'Expired'),
     ]
 
     student = models.ForeignKey(
@@ -42,6 +46,7 @@ class Answer(models.Model):
     selected_index = models.IntegerField()
     is_correct = models.BooleanField()
     confidence_declared = models.FloatField()
+    bkt_mastery_snapshot = models.FloatField(default=0.0)
     response_time_sec = models.IntegerField(default=0)
     ai_feedback = models.TextField(blank=True)
     answered_at = models.DateTimeField(auto_now_add=True)

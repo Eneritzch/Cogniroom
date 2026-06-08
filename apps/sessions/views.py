@@ -1,6 +1,6 @@
 import random
 
-from django.db.models import Avg
+from django.db.models import Avg, Count
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import status
@@ -13,6 +13,7 @@ from apps.cognitive.models import (
     BKTState,
     BlindSpotIndex,
     CognitiveIndex,
+    StudentProgressSnapshot,
 )
 from apps.questions.models import Question
 from apps.questions.serializers import QuestionPublicSerializer
@@ -92,11 +93,48 @@ def _recalc_blind_spot(node, room):
         CognitiveIndex.objects.filter(node=node)
         .values('student').distinct().count()
     )
-    bsi, _ = BlindSpotIndex.objects.get_or_create(node=node, room=room)
+    bsi, _ = BlindSpotIndex.objects.get_or_create(
+        node=node, room=room,
+        defaults={'ipc_value': 0.0, 'total_student': 0},
+    )
     bsi.ipc_value = round(float(avg_icc), 4)
     bsi.total_student = total_student
     bsi.save()
     return bsi
+
+
+def _write_progress_snapshot(session):
+    """Una foto histórica por sesión cerrada. Sin respuestas → no se escribe."""
+    cog = CognitiveIndex.objects.filter(session=session)
+    answers = Answer.objects.filter(session=session)
+    questions_answered = answers.count()
+    if questions_answered == 0:
+        return None
+
+    aggs = cog.aggregate(
+        avg_icc=Avg('icc_value'),
+        avg_bkt=Avg('bkt_mastery'),
+        avg_gap=Avg('metacognitive_gap'),
+    )
+
+    profile_counts = (
+        cog.values('profile')
+        .annotate(n=Count('profile'))
+        .order_by('-n')
+    )
+    dominant_profile = profile_counts[0]['profile'] if profile_counts else 'calibrated'
+
+    return StudentProgressSnapshot.objects.create(
+        student=session.student,
+        room=session.room,
+        session=session,
+        avg_icc=round(float(aggs['avg_icc'] or 0.0), 4),
+        avg_bkt_mastery=round(float(aggs['avg_bkt'] or 0.0), 4),
+        avg_gap=round(float(aggs['avg_gap'] or 0.0), 4),
+        dominant_profile=dominant_profile,
+        questions_answered=questions_answered,
+        correct_count=answers.filter(is_correct=True).count(),
+    )
 
 
 class CreateSessionView(APIView):
@@ -135,7 +173,7 @@ class NextQuestionView(APIView):
 
         candidates = Question.objects.filter(
             node__room=session.room,
-            is_approved=True,
+            status=Question.STATUS_APPROVED,
         ).exclude(id__in=answered_ids)
 
         if not candidates.exists():
@@ -224,6 +262,7 @@ class SubmitAnswerView(APIView):
             selected_index=data['selected_index'],
             is_correct=is_correct,
             confidence_declared=data['confidence_declared'],
+            bkt_mastery_snapshot=new_mastery,
             response_time_sec=data.get('response_time_sec', 0),
             ai_feedback='',
         )
@@ -255,6 +294,7 @@ class SubmitAnswerView(APIView):
             ai_diag = AIDiagnosis.objects.create(
                 student=request.user,
                 session=session,
+                node=question.node,
                 classification=diagnosis.get('profile', 'calibrated'),
                 risk_level=diagnosis.get('risk_level', 'low'),
                 risk_node=diagnosis.get('risk_nodes', []) or [],
@@ -290,4 +330,5 @@ class CompleteSessionView(APIView):
         session.status = EvaluationSession.STATUS_COMPLETED
         session.finished_at = timezone.now()
         session.save(update_fields=['status', 'finished_at'])
+        _write_progress_snapshot(session)
         return Response(EvaluationSessionSerializer(session).data)
