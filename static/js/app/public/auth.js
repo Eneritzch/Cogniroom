@@ -14,6 +14,9 @@
 const _v = new URL(import.meta.url).searchParams.get('v') || '';
 const { auth, tokens, ApiError } = await import(`../api.js?v=${_v}`);
 const { toast } = await import(`../toast.js?v=${_v}`);
+const { initPasswordToggles } = await import(`./password-toggle.js?v=${_v}`);
+
+initPasswordToggles();
 
 const $form = document.getElementById('login-form');
 const $email = document.getElementById('email');
@@ -30,11 +33,6 @@ document.querySelectorAll('.auth-segmented__option').forEach((btn) => {
             b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
         });
     });
-});
-
-
-document.querySelectorAll('.auth-form__switch-link').forEach((link) => {
-    link.addEventListener('click', (e) => e.preventDefault());
 });
 
 
@@ -139,6 +137,11 @@ $form.addEventListener('submit', async (event) => {
 function handleServerError(err) {
     if (!(err instanceof ApiError)) {
         toast('No se pudo conectar con el servidor.', { kind: 'error' });
+        return;
+    }
+
+    if (err.status === 429) {
+        toast('Demasiados intentos. Esperá un momento e inténtalo de nuevo.', { kind: 'error' });
         return;
     }
 

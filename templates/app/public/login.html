@@ -20,103 +20,22 @@
             <rect width="100%" height="100%" fill="url(#auth-grid)"/>
         </svg>
 
-        <aside class="auth-instrument">
-            <header class="auth-instrument__head">
-                <a href="/" class="auth-instrument__brand">
-                    <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-                        <circle cx="16" cy="16" r="13" stroke="var(--ink)" stroke-width="1.5"/>
-                        <circle cx="16" cy="16" r="7" stroke="var(--sage)" stroke-width="1.5"/>
-                        <circle cx="16" cy="16" r="1.8" fill="var(--terracotta)"/>
-                    </svg>
-                    CogniRoom
-                </a>
-                <span class="auth-instrument__eyebrow">01 · COGNITIVE ROOM</span>
-            </header>
-
-            <div class="auth-instrument__hero">
-                <h1 class="auth-instrument__title">
-                    Un instrumento para<br>
-                    <span class="auth-instrument__title-muted">medir el</span>
-                    <span class="auth-instrument__underlined">autoconocimiento</span><br>
-                    <span class="auth-instrument__title-muted">de una cohorte.</span>
-                </h1>
-                <p class="auth-instrument__body">
-                    Bayesian knowledge tracing + métricas de calibración cognitiva.
-                    Sin gamificación, sin distracciones.
-                </p>
-            </div>
-
-            <section class="auth-instrument__center">
-                <div class="auth-framed">
-                    <span class="auth-framed__corner auth-framed__corner--tl" aria-hidden="true"></span>
-                    <span class="auth-framed__corner auth-framed__corner--tr" aria-hidden="true"></span>
-                    <span class="auth-framed__corner auth-framed__corner--bl" aria-hidden="true"></span>
-                    <span class="auth-framed__corner auth-framed__corner--br" aria-hidden="true"></span>
-
-                    <div class="auth-framed__head">
-                        <span>ICC · LIVE / COHORTE 2026·I</span>
-                        <span>X·142</span>
-                    </div>
-
-                    <div class="auth-framed__body">
-                        <div class="calibration-ring" data-profile="calibrated" style="width:200px;height:200px;">
-                            <svg class="calibration-ring__svg" width="200" height="200" aria-hidden="true">
-                                <circle class="calibration-ring__track" cx="100" cy="100" r="93" stroke-width="14"></circle>
-                                <circle class="calibration-ring__fill" cx="100" cy="100" r="93" stroke-width="14"
-                                                stroke-dasharray="584.34" stroke-dashoffset="128.55"></circle>
-                            </svg>
-                            <div class="calibration-ring__center">
-                                <span class="calibration-ring__value" style="font-size:48px;">0.78</span>
-                                <span class="calibration-ring__label eyebrow">ICC</span>
-                                <span class="calibration-ring__sublabel">Cohorte 2026·I</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <dl class="auth-glossary">
-                    <div class="auth-glossary__item">
-                        <dt>BKT</dt>
-                        <dd>Bayesian Knowledge Tracing — estima qué sabe cada estudiante por nodo.</dd>
-                    </div>
-                    <div class="auth-glossary__item">
-                        <dt>ICC</dt>
-                        <dd>Índice de Calibración Cognitiva — qué tan alineada está su confianza con lo que sabe.</dd>
-                    </div>
-                    <div class="auth-glossary__item">
-                        <dt>IPC</dt>
-                        <dd>Índice de Punto Ciego — promedio grupal: detecta nodos donde la cohorte se sobreestima.</dd>
-                    </div>
-                </dl>
-            </section>
-
-            <footer class="auth-instrument__footer">
-                <span>CogniRoom Working Paper №01 / 2026</span>
-                <span>↳ Métodos: BKT · ICC · IPC</span>
-            </footer>
-        </aside>
+        {% include 'app/partials/_auth-instrument.html' %}
 
         <section class="auth-form-shell" aria-labelledby="login-heading">
             <div class="auth-form">
-                <div class="auth-form__section-head">
-                    <span>02 · ACCESO</span>
-                    <span>[ AUTH ]</span>
-                </div>
-
-                <h2 id="login-heading" class="auth-form__title">Identifícate.</h2>
+                <h2 id="login-heading" class="auth-form__title">Iniciar sesión</h2>
                 <p class="auth-form__lead">
-                    Acceso restringido a usuarios institucionales verificados.
+                    Accedé con tu cuenta institucional para continuar.
                 </p>
 
                 <div class="auth-form__group">
-                    <span class="auth-form__group-label">ROL · 001</span>
+                    <span class="auth-form__group-label">Rol</span>
                     <div class="auth-segmented" role="group" aria-label="Rol del usuario">
                         <button type="button" class="auth-segmented__option" data-role="teacher" aria-pressed="true">
-                            <span class="auth-segmented__num">01</span>
                             Docente
                         </button>
                         <button type="button" class="auth-segmented__option" data-role="student" aria-pressed="false">
-                            <span class="auth-segmented__num">02</span>
                             Estudiante
                         </button>
                     </div>
@@ -127,7 +46,7 @@
                         <legend class="visually-hidden">Credenciales</legend>
 
                         <div class="auth-field">
-                            <label class="auth-field__label" for="email">002 · EMAIL</label>
+                            <label class="auth-field__label" for="email">Email</label>
                             <div class="auth-field__input-wrap">
                                 <svg class="auth-field__icon icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
                                     <rect x="2" y="4" width="20" height="16" rx="2"></rect>
@@ -148,7 +67,7 @@
                         </div>
 
                         <div class="auth-field" style="margin-top:14px;">
-                            <label class="auth-field__label" for="password">003 · CONTRASEÑA</label>
+                            <label class="auth-field__label" for="password">Contraseña</label>
                             <div class="auth-field__input-wrap">
                                 <svg class="auth-field__icon icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
                                     <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
@@ -161,12 +80,23 @@
                                        minlength="6"
                                        autocomplete="current-password"
                                        placeholder="••••••••••">
+                                <button type="button" class="auth-field__toggle" data-password-toggle aria-pressed="false" aria-label="Mostrar contraseña">
+                                    <svg class="auth-field__toggle-eye icon-svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                    <svg class="auth-field__toggle-eye-off icon-svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path>
+                                        <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path>
+                                        <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path>
+                                        <line x1="2" x2="22" y1="2" y2="22"></line>
+                                    </svg>
+                                </button>
                             </div>
                         </div>
                     </fieldset>
 
                     <button type="submit" class="auth-submit" id="login-submit">
-                        <span class="auth-submit__route">→ /auth/submit</span>
                         <span class="auth-submit__label">
                             <span id="login-submit-text">Entrar</span>
                             <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
@@ -185,19 +115,17 @@
 
                 <div class="auth-demo">
                     <button type="button" class="auth-demo__btn" data-demo-role="student">
-                        <span class="auth-demo__btn-num">01</span>
                         <span class="auth-demo__btn-label">Estudiante</span>
                         <span class="auth-demo__btn-sub">Andrea Molina</span>
                     </button>
                     <button type="button" class="auth-demo__btn" data-demo-role="teacher">
-                        <span class="auth-demo__btn-num">02</span>
                         <span class="auth-demo__btn-label">Docente</span>
                         <span class="auth-demo__btn-sub">Carlos Ramírez</span>
                     </button>
                 </div>
 
                 <p class="auth-form__switch">
-                    ¿Sin instancia activa? <button type="button" class="auth-form__switch-link">Solicitá una →</button>
+                    ¿Sin cuenta? <a class="auth-form__switch-link" href="/app/register/">Crear una →</a>
                 </p>
             </div>
         </section>

@@ -57,12 +57,24 @@ export const auth = {
     login: (email, password) => request('/auth/login/', {
         method: 'POST', body: { email, password }, auth: false,
     }),
+    register: (payload) => request('/auth/register/', {
+        method: 'POST', body: payload, auth: false,
+    }),
     me: () => {
         const demo = localStorage.getItem(DEMO_USER_KEY);
         if (demo) return Promise.resolve(JSON.parse(demo));
         return request('/auth/me/');
     },
-    logout: () => {
+    logout: async () => {
+        // Revoca el refresh en el servidor (best-effort). El modo demo no tiene
+        // token real, así que se omite. Pase lo que pase, limpiamos local.
+        const refresh = tokens.refresh;
+        const isDemo = localStorage.getItem(DEMO_USER_KEY);
+        if (refresh && !isDemo) {
+            try {
+                await request('/auth/logout/', { method: 'POST', body: { refresh } });
+            } catch (_) { /* token ya expirado/revocado: ignorar */ }
+        }
         localStorage.removeItem(DEMO_USER_KEY);
         tokens.clear();
     },

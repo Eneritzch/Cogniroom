@@ -61,8 +61,8 @@ function replaceCta(user) {
         </div>
     `;
 
-    document.getElementById('nav-logout-btn').addEventListener('click', () => {
-        tokens.clear();
+    document.getElementById('nav-logout-btn').addEventListener('click', async () => {
+        await auth.logout();
         location.href = '/';
     });
 }
@@ -133,9 +133,8 @@ function setupSidebarToggle() {
     const $logout = document.getElementById('logout-btn');
     if ($logout && !$logout.dataset.bound) {
         $logout.dataset.bound = '1';
-        $logout.addEventListener('click', () => {
-            localStorage.removeItem('cogniroom.demo_user');
-            tokens.clear();
+        $logout.addEventListener('click', async () => {
+            await auth.logout();
             location.href = '/';
         });
     }
