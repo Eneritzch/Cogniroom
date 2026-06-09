@@ -61,10 +61,7 @@ function replaceCta(user) {
         </div>
     `;
 
-    document.getElementById('nav-logout-btn').addEventListener('click', async () => {
-        await auth.logout();
-        location.href = '/';
-    });
+    bindLogout(document.getElementById('nav-logout-btn'));
 }
 
 
@@ -130,14 +127,22 @@ function setupSidebarToggle() {
         });
     }
 
-    const $logout = document.getElementById('logout-btn');
-    if ($logout && !$logout.dataset.bound) {
-        $logout.dataset.bound = '1';
-        $logout.addEventListener('click', async () => {
+    bindLogout(document.getElementById('logout-btn'));
+}
+
+
+function bindLogout($btn) {
+    if (!$btn || $btn.dataset.bound) return;
+    $btn.dataset.bound = '1';
+    $btn.addEventListener('click', async () => {
+        $btn.disabled = true;
+        try {
             await auth.logout();
-            location.href = '/';
-        });
-    }
+        } finally {
+            // El redirect ocurre pase lo que pase: la sesión local ya se limpió.
+            location.href = '/app/';
+        }
+    });
 }
 
 

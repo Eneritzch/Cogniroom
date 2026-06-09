@@ -1,11 +1,23 @@
 const _v = new URL(import.meta.url).searchParams.get('v') || '';
-const { tokens } = await import(`../api.js?v=${_v}`);
+const { me, auth, tokens, ApiError } = await import(`../api.js?v=${_v}`);
 const { toast } = await import(`../toast.js?v=${_v}`);
-const { STUDENT_DATA, profileLabel, fmt } = await import(`./student-mock.js?v=${_v}`);
 
 
 if (!tokens.access) {
     location.replace('/app/');
+}
+
+
+function profileLabel(p) {
+    return ({
+        overconfident: 'Sobreconfiado',
+        underconfident: 'Subconfiado',
+        calibrated: 'Calibrado',
+    })[p] || '—';
+}
+
+function fmt(n) {
+    return typeof n === 'number' ? n.toFixed(2) : '—';
 }
 
 
@@ -33,12 +45,8 @@ function iccTone(icc) {
 }
 
 
-function deriveProfile(p) {
-    const conf = typeof p.avg_confidence === 'number' ? p.avg_confidence : p.avgMastery;
-    const gap = conf - (p.avgMastery || 0);
-    if (gap > 0.2)  return 'overconfident';
-    if (gap < -0.2) return 'underconfident';
-    return 'calibrated';
+function profileOf(p) {
+    return p.predominant_profile || 'calibrated';
 }
 
 
@@ -49,7 +57,7 @@ function paintHero(p) {
     document.getElementById('profile-institution').textContent = p.institution || '—';
     document.getElementById('profile-member').textContent = `Miembro desde ${fmtDateLong(p.date_joined)}`;
 
-    const profile = deriveProfile(p);
+    const profile = profileOf(p);
     const $pill = document.getElementById('profile-pill');
     $pill.textContent = profileLabel(profile);
     $pill.dataset.profile = profile;
@@ -57,16 +65,16 @@ function paintHero(p) {
 
 
 function paintStats(p) {
-    const profile = deriveProfile(p);
-    document.getElementById('stat-icc').textContent = fmt(p.avgIcc);
-    document.getElementById('stat-icc').dataset.tone = iccTone(p.avgIcc);
+    const profile = profileOf(p);
+    document.getElementById('stat-icc').textContent = fmt(p.icc_avg);
+    document.getElementById('stat-icc').dataset.tone = iccTone(p.icc_avg);
     document.getElementById('stat-icc-sub').textContent = profileLabel(profile).toLowerCase();
 
-    document.getElementById('stat-mastery').textContent = fmt(p.avgMastery);
-    document.getElementById('stat-sessions').textContent = p.totalSessions;
-    document.getElementById('stat-answers-sub').textContent = `${p.totalAnswers} respuestas`;
-    document.getElementById('stat-nodes').textContent = p.nodesTracked;
-    document.getElementById('stat-diagnoses-sub').textContent = `${p.aiDiagnoses} diagnósticos IA`;
+    document.getElementById('stat-mastery').textContent = fmt(p.avg_mastery);
+    document.getElementById('stat-sessions').textContent = p.total_sessions;
+    document.getElementById('stat-answers-sub').textContent = `${p.total_answers} respuestas`;
+    document.getElementById('stat-nodes').textContent = p.nodes_tracked;
+    document.getElementById('stat-diagnoses-sub').textContent = `${p.ai_diagnoses_count} diagnósticos IA`;
 }
 
 
@@ -157,21 +165,34 @@ function bindPasswordForm() {
 
 
 function bindLogout() {
-    document.getElementById('logout-btn-profile').addEventListener('click', () => {
-        tokens.clear();
-        location.href = '/';
+    const $btn = document.getElementById('logout-btn-profile');
+    if (!$btn) return;
+    $btn.addEventListener('click', () => {
+        auth.logout();
+        location.href = '/app/';
     });
 }
 
 
-function init() {
-    const p = STUDENT_DATA.profile;
+async function init() {
+    bindLogout();
+    let p;
+    try {
+        p = await me.profile();
+    } catch (err) {
+        if (err instanceof ApiError && err.status === 401) {
+            tokens.clear();
+            location.replace('/app/');
+            return;
+        }
+        toast('No se pudo cargar tu perfil.', { kind: 'error' });
+        return;
+    }
     paintHero(p);
     paintStats(p);
     paintPersonal(p);
     bindPersonalForm();
     bindPasswordForm();
-    bindLogout();
 }
 
 

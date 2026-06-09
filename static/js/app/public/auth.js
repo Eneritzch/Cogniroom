@@ -27,15 +27,6 @@ const $submitText = document.getElementById('login-submit-text');
 const FIELDS = [$email, $password];
 
 
-document.querySelectorAll('.auth-segmented__option').forEach((btn) => {
-    btn.addEventListener('click', () => {
-        document.querySelectorAll('.auth-segmented__option').forEach((b) => {
-            b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
-        });
-    });
-});
-
-
 const DEMO_USERS = {
     student: {
         id_user: 101,

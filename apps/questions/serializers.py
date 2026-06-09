@@ -23,9 +23,11 @@ class QuestionSerializer(serializers.ModelSerializer):
 
 
 class QuestionPublicSerializer(serializers.ModelSerializer):
+    node_name = serializers.CharField(source='node.name', read_only=True)
+
     class Meta:
         model = Question
-        fields = ['id', 'node', 'statement', 'difficulty', 'options']
+        fields = ['id', 'node', 'node_name', 'statement', 'difficulty', 'options']
 
 
 class GenerateQuestionsSerializer(serializers.Serializer):

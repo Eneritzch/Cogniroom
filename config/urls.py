@@ -17,11 +17,12 @@ def api_root(request):
             'refresh':  'POST /api/v1/auth/refresh/',
             'me':       'GET  /api/v1/auth/me/',
         },
-        'me': {
-            'profile':   'GET /api/v1/me/profile/',
-            'nodes':     'GET /api/v1/me/nodes/',
-            'diagnoses': 'GET /api/v1/me/diagnoses/',
+        'profile':   'GET /api/v1/profile/',
+        'nodes': {
+            'list':   'GET /api/v1/nodes/',
+            'detail': 'GET /api/v1/nodes/{node_id}/',
         },
+        'diagnoses': 'GET /api/v1/diagnoses/',
         'rooms': {
             'list':    'GET  /api/v1/rooms/',
             'create':  'POST /api/v1/rooms/',
@@ -47,9 +48,11 @@ def api_root(request):
             'at_risk':     'GET /api/v1/rooms/{room_id}/metrics/at-risk/',
         },
         'sessions': {
+            'list':          'GET  /api/v1/sessions/',
             'create':        'POST /api/v1/sessions/',
             'next_question': 'GET  /api/v1/sessions/{session_id}/next-question/',
             'answers':       'POST /api/v1/sessions/{session_id}/answers/',
+            'review':        'GET  /api/v1/sessions/{session_id}/review/',
             'complete':      'POST /api/v1/sessions/{session_id}/complete/',
         },
     })
@@ -82,9 +85,9 @@ html_routes = [
 api_routes = [
     path('api/v1/',          api_root,                              name='api-root'),
     path('api/v1/auth/',     include('apps.users.urls')),
-    path('api/v1/me/',       include('apps.cognitive.urls')),
     path('api/v1/rooms/',    include('apps.rooms.urls')),
     path('api/v1/sessions/', include('apps.sessions.urls')),
+    path('api/v1/',          include('apps.cognitive.urls')),
 ]
 
 

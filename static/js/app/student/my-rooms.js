@@ -1,10 +1,6 @@
 const _v = new URL(import.meta.url).searchParams.get('v') || '';
-const { tokens } = await import(`../api.js?v=${_v}`);
+const { rooms: roomsApi, sessions: sessionsApi, tokens, ApiError } = await import(`../api.js?v=${_v}`);
 const { toast } = await import(`../toast.js?v=${_v}`);
-const {
-    STUDENT_DATA,
-    escapeHTML,
-} = await import(`./student-mock.js?v=${_v}`);
 
 
 if (!tokens.access) {
@@ -12,8 +8,25 @@ if (!tokens.access) {
 }
 
 
+function escapeHTML(s) {
+    return String(s ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;');
+}
+
+function hideModal(id) {
+    const $modal = document.getElementById(id);
+    if ($modal && window.bootstrap) {
+        const instance = window.bootstrap.Modal.getInstance($modal) || new window.bootstrap.Modal($modal);
+        instance.hide();
+    }
+}
+
+
 let currentMode = 'all';
-let rooms = [...STUDENT_DATA.joinedRooms, ...STUDENT_DATA.studyRooms];
+let rooms = [];
 
 
 function teacherDisplayName(t) {
@@ -146,7 +159,7 @@ function renderCard(r) {
                     <a class="rcard__link" href="/app/questions/" title="Gestionar preguntas">Preguntas</a>
                     <a class="rcard__link" href="/app/pdfs/" title="Gestionar PDFs">PDFs</a>
                 ` : ''}
-                <a class="rcard__cta" href="/app/session/" data-room-id="${r.id_room}">
+                <a class="rcard__cta" href="#" data-action="start" data-room-id="${r.id_room}">
                     Empezar evaluación
                     <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -228,6 +241,32 @@ document.querySelectorAll('[data-mode-filter]').forEach((btn) => {
 });
 
 
+/* Iniciar evaluación: crea una sesión real en la sala y navega a ella. */
+document.getElementById('my-rooms-list').addEventListener('click', async (e) => {
+    const cta = e.target.closest('[data-action="start"]');
+    if (!cta) return;
+    e.preventDefault();
+    const roomId = Number(cta.dataset.roomId);
+    if (!roomId || cta.dataset.loading) return;
+
+    cta.dataset.loading = '1';
+    cta.style.pointerEvents = 'none';
+    try {
+        const session = await sessionsApi.create(roomId);
+        location.href = `/app/session/${session.id}/`;
+    } catch (err) {
+        if (err instanceof ApiError && err.status === 401) {
+            tokens.clear();
+            location.replace('/app/');
+            return;
+        }
+        toast(err?.body?.detail || err?.message || 'No se pudo iniciar la evaluación.', { kind: 'error' });
+        delete cta.dataset.loading;
+        cta.style.pointerEvents = '';
+    }
+});
+
+
 function bindJoinModal() {
     const $form = document.getElementById('join-room-form');
     if (!$form || $form.dataset.bound) return;
@@ -240,7 +279,7 @@ function bindJoinModal() {
         });
     }
 
-    $form.addEventListener('submit', (e) => {
+    $form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const code = ($code?.value || '').trim();
         if (code.length < 6) {
@@ -248,12 +287,14 @@ function bindJoinModal() {
             $code?.focus();
             return;
         }
-        toast(`Te uniste a la sala con el código ${code} (mock).`, { kind: 'success' });
-        $form.reset();
-        const $modal = document.getElementById('joinRoomModal');
-        if ($modal && window.bootstrap) {
-            const instance = window.bootstrap.Modal.getInstance($modal) || new window.bootstrap.Modal($modal);
-            instance.hide();
+        try {
+            await roomsApi.join(code);
+            toast('Te uniste a la sala.', { kind: 'success' });
+            $form.reset();
+            hideModal('joinRoomModal');
+            await loadRooms();
+        } catch (err) {
+            toast(err?.body?.detail || err?.message || 'No se pudo unir a la sala.', { kind: 'error' });
         }
     });
 }
@@ -264,7 +305,7 @@ function bindCreateStudyModal() {
     if (!$form || $form.dataset.bound) return;
     $form.dataset.bound = '1';
 
-    $form.addEventListener('submit', (e) => {
+    $form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const name = $form.elements.name.value.trim();
         if (!name) {
@@ -272,44 +313,36 @@ function bindCreateStudyModal() {
             return;
         }
         const subject = $form.elements.subject.value.trim();
-        const selfUser = STUDENT_DATA.user || {};
-        const nowIso = new Date().toISOString();
-        const newId = Date.now();
-        const newRoom = {
-            id_room: newId,
-            id_teacher: selfUser.id_user || null,
-            teacher: selfUser.id_user
-                ? {
-                    id_user: selfUser.id_user,
-                    first_name: selfUser.first_name || '',
-                    last_name: selfUser.last_name || '',
-                    role: selfUser.role || 'student',
-                }
-                : null,
-            mode: 'individual',
-            name,
-            subject: subject || 'General',
-            access_code: null,
-            is_active: true,
-            created_at: nowIso,
-            activeNodes: 0,
-            totalSessions: 0,
-            pdfs: 0,
-            questions: 0,
-        };
-        rooms = [newRoom, ...rooms];
-        render();
-        toast(`Sala "${name}" creada (mock).`, { kind: 'success' });
-        $form.reset();
-        const $modal = document.getElementById('createStudyRoomModal');
-        if ($modal && window.bootstrap) {
-            const instance = window.bootstrap.Modal.getInstance($modal) || new window.bootstrap.Modal($modal);
-            instance.hide();
+        try {
+            await roomsApi.create({ name, subject: subject || 'General', mode: 'individual' });
+            toast(`Sala "${name}" creada.`, { kind: 'success' });
+            $form.reset();
+            hideModal('createStudyRoomModal');
+            await loadRooms();
+        } catch (err) {
+            toast(err?.body?.detail || err?.message || 'No se pudo crear la sala.', { kind: 'error' });
         }
     });
+}
+
+
+async function loadRooms() {
+    try {
+        const data = await roomsApi.list();
+        rooms = (data || []).map((r) => ({ ...r, id_room: r.id }));
+        render();
+    } catch (err) {
+        if (err instanceof ApiError && err.status === 401) {
+            tokens.clear();
+            location.replace('/app/');
+            return;
+        }
+        toast('No se pudieron cargar tus salas.', { kind: 'error' });
+    }
 }
 
 
 bindJoinModal();
 bindCreateStudyModal();
 render();
+loadRooms();

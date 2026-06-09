@@ -1,7 +1,6 @@
 const _v = new URL(import.meta.url).searchParams.get('v') || '';
 const { auth, me, rooms, sessions, tokens, ApiError } = await import(`../api.js?v=${_v}`);
 const { toast } = await import(`../toast.js?v=${_v}`);
-const { STUDENT_DATA } = await import(`../student/student-mock.js?v=${_v}`);
 
 
 if (!tokens.access) {
@@ -10,14 +9,9 @@ if (!tokens.access) {
 
 const $userName = document.getElementById('user-name');
 const $userRole = document.getElementById('user-role');
-const $logout = document.getElementById('logout-btn');
 const $studentView = document.querySelector('[data-view="student"]');
 const $teacherView = document.querySelector('[data-view="teacher"]');
-
-$logout.addEventListener('click', () => {
-    auth.logout();
-    location.replace('/');
-});
+// El logout (#logout-btn) lo cablea nav-auth.js; no se duplica acá.
 
 
 function fmt(n, digits = 2) {
@@ -168,20 +162,28 @@ function renderStudentDiagnosis(diag) {
 }
 
 
-const DEMO_GRAPH_NODES = [
-    { id_node: 'ley1',  name: '1ª ley',           description: 'Termodinámica clásica', p_mastery: 0.47, avg_confidence: 0.84, attempts: 14, x: 10, y: 18 },
-    { id_node: 'ley2',  name: '2ª ley',           description: 'Termodinámica clásica', p_mastery: 0.55, avg_confidence: 0.78, attempts: 10, x: 28, y: 12 },
-    { id_node: 'entr',  name: 'Entropía',         description: 'Termodinámica clásica', p_mastery: 0.52, avg_confidence: 0.71, attempts: 9,  x: 46, y: 18 },
-    { id_node: 'gibbs', name: 'Gibbs',            description: 'Termodinámica clásica', p_mastery: 0.38, avg_confidence: 0.66, attempts: 7,  x: 66, y: 12 },
-    { id_node: 'sis',   name: 'Sist. abiertos',   description: 'Termodinámica clásica', p_mastery: 0.41, avg_confidence: 0.80, attempts: 8,  x: 86, y: 20 },
-    { id_node: 'eq',    name: 'Eq. químico',      description: 'Equilibrio',            p_mastery: 0.62, avg_confidence: 0.74, attempts: 9,  x: 20, y: 40 },
-    { id_node: 'lech',  name: 'Le Chatelier',     description: 'Equilibrio',            p_mastery: 0.61, avg_confidence: 0.80, attempts: 11, x: 50, y: 38 },
-    { id_node: 'kpkc',  name: 'Kp / Kc',          description: 'Equilibrio',            p_mastery: 0.70, avg_confidence: 0.66, attempts: 7,  x: 80, y: 40 },
-    { id_node: 'cin1',  name: 'Velocidad',        description: 'Cinética',              p_mastery: 0.66, avg_confidence: 0.55, attempts: 9,  x: 12, y: 60 },
-    { id_node: 'cin2',  name: 'Reacc. 2° orden',  description: 'Cinética',              p_mastery: 0.74, avg_confidence: 0.58, attempts: 12, x: 35, y: 62 },
-    { id_node: 'act',   name: 'E. activación',    description: 'Cinética',              p_mastery: 0.68, avg_confidence: 0.49, attempts: 8,  x: 58, y: 62 },
-    { id_node: 'cat',   name: 'Catálisis',        description: 'Cinética',              p_mastery: 0.81, avg_confidence: 0.72, attempts: 6,  x: 82, y: 60 },
-];
+// Construye los nodos del grafo desde los nodos reales del estudiante,
+// distribuyéndolos en una grilla (el backend no modela posiciones x/y).
+function buildGraphNodes(nodes) {
+    if (!nodes || !nodes.length) return [];
+    const cols = Math.min(4, Math.ceil(Math.sqrt(nodes.length)));
+    const totalRows = Math.ceil(nodes.length / cols);
+    return nodes.map((n, i) => {
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        const x = ((col + 0.5) / cols) * 88 + 6;
+        const y = totalRows > 1 ? ((row + 0.5) / totalRows) * 56 + 7 : 35;
+        return {
+            id_node: n.node_id,
+            name: n.name || n.node_name || 'Nodo',
+            description: n.description || '',
+            p_mastery: n.p_mastery ?? 0,
+            avg_confidence: n.avg_confidence ?? (n.p_mastery ?? 0),
+            attempts: n.attempts ?? 0,
+            x, y,
+        };
+    });
+}
 
 
 function renderKnowledgeGraph(graphNodes) {
@@ -469,58 +471,49 @@ function renderStudentRooms(items) {
 }
 
 
-function studentRoomsFromMock() {
-    return STUDENT_DATA.joinedRooms.map((r) => ({
-        id_room: r.id_room ?? r.id,
-        name: r.name,
-        mode: r.mode,
-        access_code: r.access_code ?? r.accessCode,
-        subject: r.subject,
-    }));
-}
-
-
-function studentNodesFromMock() {
-    const details = STUDENT_DATA.nodeDetails || {};
-    const activeIds = ['gibbs', 'entr', 'ley1', 'ley2', 'sis', 'cin2'];
-    return activeIds
-        .map((id) => details[id])
-        .filter(Boolean)
-        .map((n) => ({
-            id_node: n.id_node ?? n.id,
-            name: n.name,
-            description: n.description ?? 'Termodinámica clásica',
-            p_mastery: n.p_mastery ?? n.bktMastery,
-            avg_confidence: n.avg_confidence ?? ((n.iccValue != null && n.bktMastery != null) ? Math.max(0, Math.min(1, n.bktMastery + (n.metacognitive_gap ?? 0.15))) : 0.7),
-            profile: n.profile,
-            attempts: n.attempts,
-        }));
-}
+const DIAG_TITLES = {
+    overconfident: 'Brecha de sobreconfianza detectada',
+    underconfident: 'Subestimación del propio dominio',
+    calibrated: 'Calibración alineada',
+};
 
 
 async function bootstrapStudent(user) {
     $studentView.hidden = false;
+    document.getElementById('student-greeting').textContent = user.first_name || user.username;
 
-    const mockProfile = STUDENT_DATA.profile;
-    const greeting = mockProfile.first_name || user.first_name || user.username;
-    document.getElementById('student-greeting').textContent = greeting;
+    let profile, nodes, diagnoses, roomList;
+    try {
+        [profile, nodes, diagnoses, roomList] = await Promise.all([
+            me.profile(),
+            me.nodes(),
+            me.diagnoses(),
+            rooms.list(),
+        ]);
+    } catch (err) {
+        if (err instanceof ApiError && err.status === 401) {
+            tokens.clear();
+            location.replace('/app/');
+            return;
+        }
+        toast('No se pudo cargar tu panel.', { kind: 'error' });
+        return;
+    }
 
-    const mockRooms = studentRoomsFromMock();
-    renderStudentRooms(mockRooms);
+    renderStudentRooms(roomList || []);
 
-    const nodes = studentNodesFromMock();
-    const iccAvg = mockProfile.avg_icc ?? mockProfile.avgIcc ?? 0;
-    const masteryAvg = mockProfile.avg_mastery ?? mockProfile.avgMastery ?? 0;
-    const confAvg = mockProfile.avg_confidence ?? Math.max(0, Math.min(1, masteryAvg + 0.15));
-    const gapDecimal = confAvg - masteryAvg;
-    const gap = Math.round(gapDecimal * 100);
-    const profileKey = profileFromGap(gapDecimal);
+    const iccAvg = profile.icc_avg ?? 0;
+    const masteryAvg = profile.avg_mastery ?? 0;
+    const profileKey = profile.predominant_profile || 'calibrated';
+    // gap aproximado desde ICC (ICC = 1 − |gap|), con el signo del perfil.
+    const gapAbs = Math.round(Math.abs(1 - iccAvg) * 100);
+    const gap = profileKey === 'underconfident' ? -gapAbs : gapAbs;
 
     updateCalibrationRing(
         document.getElementById('student-ring'),
         iccAvg,
         profileKey,
-        `${mockProfile.total_answers ?? mockProfile.totalAnswers ?? 0} respuestas`,
+        `${profile.total_answers ?? 0} respuestas`,
     );
 
     const $pill = document.getElementById('student-pill');
@@ -533,22 +526,22 @@ async function bootstrapStudent(user) {
     document.getElementById('student-mini-gap').textContent = `${gap >= 0 ? '+' : ''}${gap}`;
     document.getElementById('student-mini-gap').dataset.tone = gapTone(gap);
 
-    renderStudentNodes(nodes);
+    renderStudentNodes(nodes || []);
 
-    const latestDiag = (STUDENT_DATA.diagnosesHistory || [])[0];
+    const latestDiag = (diagnoses || [])[0];
     if (latestDiag) {
         renderStudentDiagnosis({
-            title: latestDiag.title,
+            title: latestDiag.title || DIAG_TITLES[latestDiag.classification] || 'Diagnóstico disponible',
             reasoning: latestDiag.reasoning,
             recommendation: latestDiag.recommendation,
-            classification: latestDiag.classification,
-            failure_probability: latestDiag.failure_probability,
-            risk_level: latestDiag.risk_level,
         });
     }
 
-    renderKnowledgeGraph(DEMO_GRAPH_NODES);
-    renderHeroFocus(DEMO_GRAPH_NODES);
+    const graphNodes = buildGraphNodes(nodes || []);
+    if (graphNodes.length) {
+        renderKnowledgeGraph(graphNodes);
+        renderHeroFocus(graphNodes);
+    }
 }
 
 

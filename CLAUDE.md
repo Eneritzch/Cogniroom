@@ -29,7 +29,7 @@ apps/
   questions/      → KnowledgeNode, Question, PDFDocument          → montado bajo rooms
   sessions/       → EvaluationSession, Answer (label='evaluation_sessions') → /api/v1/sessions/
   cognitive/      → BKTState, CognitiveIndex, BlindSpotIndex,
-                    AIDiagnosis                                   → /api/v1/me/ + rooms/{id}/metrics/
+                    AIDiagnosis                                   → /api/v1/ (profile/nodes/diagnoses) + rooms/{id}/metrics/
 services/         → lógica de cálculo sin ORM (primitivos → primitivos)
   bkt_engine.py        → Fórmula Corbett & Anderson 1994
   icc_calculator.py
@@ -69,9 +69,10 @@ docs/             → database.md, architecture.md
   POST   /refresh
   GET    /me
 
-/api/v1/me/               ← datos del usuario actual (lectura propia)
-  GET    /profile         ← ICC promedio, BKT states, perfil predominante, último diagnóstico
+/api/v1/                  ← datos cognitivos del usuario actual (lectura propia, scope por JWT)
+  GET    /profile         ← ICC promedio, BKT states, perfil predominante, agregados, último diagnóstico
   GET    /nodes           ← BKT por nodo + ICC + tendencia
+  GET    /nodes/{id}      ← detalle de nodo (BKT params, ICC, diagnóstico, respuestas recientes)
   GET    /diagnoses       ← historial de AIDiagnosis ordenado por -generated_at
 
 /api/v1/rooms/            ← aulas y todo lo room-scoped
@@ -96,20 +97,22 @@ docs/             → database.md, architecture.md
   GET    /{id}/metrics/blind-spots      ← solo teacher dueño
   GET    /{id}/metrics/at-risk          ← solo teacher dueño
 
-/api/v1/sessions/         ← ciclo de vida de evaluación
+/api/v1/sessions/         ← ciclo de vida + historial de evaluación
+  GET    /                              ← historial de sesiones del usuario (aciertos + ICC del snapshot)
   POST   /                              ← crear, body {room_id}
   GET    /{id}/next-question            ← selección adaptativa por p_mastery
   POST   /{id}/answers                  ← submit answer (flujo BKT→ICC→Claude)
+  GET    /{id}/review                   ← sesión + respuestas con detalle (solo dueño)
   POST   /{id}/complete                 ← cerrar sesión
 ```
 
 Mountpoints en [config/urls.py](config/urls.py):
 - `apps.users.urls` → `/api/v1/auth/`
-- `apps.cognitive.urls` → `/api/v1/me/` (usa `urlpatterns` default)
 - `apps.rooms.urls` → `/api/v1/rooms/` (incluye internamente `apps.questions.urls` y `apps.cognitive.urls.room_urlpatterns`)
 - `apps.sessions.urls` → `/api/v1/sessions/`
+- `apps.cognitive.urls` → `/api/v1/` (rutas `profile/`, `nodes/`, `diagnoses/` a la raíz; sin prefijo `/me/`)
 
-> El app `apps.cognitive` expone **dos** grupos de rutas desde un único `urls.py`: `urlpatterns` (datos del usuario actual, montados en `/me/`) y `room_urlpatterns` (métricas grupales, montados como sub-rutas de `/rooms/<id>/` desde `apps.rooms.urls`).
+> El app `apps.cognitive` expone **dos** grupos de rutas desde un único `urls.py`: `urlpatterns` (datos cognitivos del usuario actual, montados a la raíz `/api/v1/` → `profile/`, `nodes/`, `diagnoses/`) y `room_urlpatterns` (métricas grupales, montados como sub-rutas de `/rooms/<id>/` desde `apps.rooms.urls`).
 
 ## Detalles críticos a recordar
 

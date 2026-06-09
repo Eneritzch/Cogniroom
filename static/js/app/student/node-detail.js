@@ -1,10 +1,31 @@
 const _v = new URL(import.meta.url).searchParams.get('v') || '';
-const { tokens } = await import(`../api.js?v=${_v}`);
-const { STUDENT_DATA, escapeHTML, profileLabel, fmt } = await import(`./student-mock.js?v=${_v}`);
+const { me, tokens, ApiError } = await import(`../api.js?v=${_v}`);
+const { toast } = await import(`../toast.js?v=${_v}`);
 
 
 if (!tokens.access) {
     location.replace('/app/');
+}
+
+
+function escapeHTML(s) {
+    return String(s ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;');
+}
+
+function profileLabel(p) {
+    return ({
+        overconfident: 'Sobreconfiado',
+        underconfident: 'Subconfiado',
+        calibrated: 'Calibrado',
+    })[p] || '—';
+}
+
+function fmt(n, decimals = 2) {
+    return typeof n === 'number' ? n.toFixed(decimals) : '—';
 }
 
 
@@ -185,18 +206,38 @@ function paintResponses(n) {
 }
 
 
-function init() {
-    const node = STUDENT_DATA.nodeDetails[NODE_ID];
-    if (!node) {
-        document.getElementById('node-topic').textContent = '—';
-        document.getElementById('node-name').textContent = 'Nodo no encontrado';
-        document.getElementById('node-room-name').textContent = '—';
-        document.getElementById('node-updated').textContent = 'Sin datos';
-        document.getElementById('node-responses').innerHTML = `<li class="node-response" style="cursor:default;">
-            <div class="node-response__body">
-                <p class="node-response__statement">No tenemos datos para este nodo todavía. Volvé al dashboard y elegí otro.</p>
-            </div>
-        </li>`;
+function paintNotFound() {
+    document.getElementById('node-topic').textContent = '—';
+    document.getElementById('node-name').textContent = 'Nodo no encontrado';
+    document.getElementById('node-room-name').textContent = '—';
+    document.getElementById('node-updated').textContent = 'Sin datos';
+    document.getElementById('node-responses').innerHTML = `<li class="node-response" style="cursor:default;">
+        <div class="node-response__body">
+            <p class="node-response__statement">No tenemos datos para este nodo todavía. Volvé al dashboard y elegí otro.</p>
+        </div>
+    </li>`;
+}
+
+
+async function init() {
+    if (!NODE_ID) {
+        paintNotFound();
+        return;
+    }
+    let node;
+    try {
+        node = await me.node(NODE_ID);
+    } catch (err) {
+        if (err instanceof ApiError && err.status === 401) {
+            tokens.clear();
+            location.replace('/app/');
+            return;
+        }
+        if (err instanceof ApiError && err.status === 404) {
+            paintNotFound();
+            return;
+        }
+        toast('No se pudo cargar el nodo.', { kind: 'error' });
         return;
     }
 

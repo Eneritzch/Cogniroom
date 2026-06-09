@@ -1,6 +1,6 @@
 import random
 
-from django.db.models import Avg, Count
+from django.db.models import Avg, Count, Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import status
@@ -137,8 +137,42 @@ def _write_progress_snapshot(session):
     )
 
 
-class CreateSessionView(APIView):
+class SessionListCreateView(APIView):
     permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """Historial de sesiones del estudiante con aciertos y métricas del snapshot."""
+        user = request.user
+        sessions = (
+            EvaluationSession.objects.filter(student=user)
+            .select_related('room')
+            .annotate(
+                answered=Count('answers'),
+                correct=Count('answers', filter=Q(answers__is_correct=True)),
+            )
+            .order_by('-started_at')
+        )
+        snap_by_session = {
+            s.session_id: s
+            for s in StudentProgressSnapshot.objects.filter(student=user)
+            if s.session_id is not None
+        }
+
+        result = []
+        for s in sessions:
+            snap = snap_by_session.get(s.id)
+            result.append({
+                'id': s.id,
+                'room': {'id': s.room_id, 'name': s.room.name, 'mode': s.room.mode},
+                'status': s.status,
+                'started_at': s.started_at,
+                'finished_at': s.finished_at,
+                'answered': s.answered,
+                'correct': s.correct,
+                'avg_icc': snap.avg_icc if snap else None,
+                'avg_gap': snap.avg_gap if snap else None,
+            })
+        return Response(result)
 
     def post(self, request):
         serializer = CreateSessionSerializer(data=request.data)
@@ -315,6 +349,47 @@ class SubmitAnswerView(APIView):
             'bkt_mastery': new_mastery,
             'ai_feedback': ai_feedback,
             'risk_level': risk_level,
+        })
+
+
+class SessionReviewView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, session_id):
+        session = get_object_or_404(
+            EvaluationSession.objects.select_related('room'), id=session_id
+        )
+        if session.student_id != request.user.id:
+            return Response({'detail': 'Forbidden.'}, status=status.HTTP_403_FORBIDDEN)
+
+        answers = (
+            Answer.objects.filter(session=session)
+            .select_related('question__node')
+            .order_by('answered_at')
+        )
+        answers_data = [{
+            'statement': a.question.statement,
+            'options': a.question.options,
+            'correct_index': a.question.correct_index,
+            'selected_index': a.selected_index,
+            'is_correct': a.is_correct,
+            'confidence_declared': a.confidence_declared,
+            'bkt_mastery': a.bkt_mastery_snapshot,
+            'response_time_sec': a.response_time_sec,
+            'ai_feedback': a.ai_feedback,
+            'node': {'name': a.question.node.name, 'description': ''},
+            'answered_at': a.answered_at,
+        } for a in answers]
+
+        return Response({
+            'session': {
+                'id_session': session.id,
+                'room': {'name': session.room.name, 'mode': session.room.mode},
+                'status': session.status,
+                'started_at': session.started_at,
+                'finished_at': session.finished_at,
+            },
+            'answers': answers_data,
         })
 
 

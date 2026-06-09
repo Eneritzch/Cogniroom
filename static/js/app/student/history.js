@@ -1,6 +1,6 @@
 const _v = new URL(import.meta.url).searchParams.get('v') || '';
-const { tokens } = await import(`../api.js?v=${_v}`);
-const { STUDENT_DATA, escapeHTML } = await import(`./student-mock.js?v=${_v}`);
+const { me, tokens, ApiError } = await import(`../api.js?v=${_v}`);
+const { toast } = await import(`../toast.js?v=${_v}`);
 
 
 if (!tokens.access) {
@@ -8,7 +8,17 @@ if (!tokens.access) {
 }
 
 
+function escapeHTML(s) {
+    return String(s ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;');
+}
+
+
 const PAGE_SIZE = 10;
+let SESSIONS = [];
 
 let currentStatus = 'all';
 let currentMode = 'all';
@@ -73,7 +83,7 @@ function statusLabel(status) {
 
 
 function filtered() {
-    const list = STUDENT_DATA.sessionHistory.filter((s) => {
+    const list = SESSIONS.filter((s) => {
         if (currentStatus !== 'all' && s.status !== currentStatus) return false;
         if (currentMode !== 'all' && s.room.mode !== currentMode) return false;
         if (currentSearch && !s.room.name.toLowerCase().includes(currentSearch)) return false;
@@ -90,14 +100,14 @@ function renderRow(s) {
     const modeDotClass = s.room.mode === 'individual' ? 'history-cell__mode--individual' : '';
 
     const actionBtn = s.status === 'completed'
-        ? `<a class="history-action" href="/app/session/${s.id_session}/review/" data-session-id="${s.id_session}">
+        ? `<a class="history-action" href="/app/session/${s.id}/review/" data-session-id="${s.id}">
                Revisar
                <svg class="icon-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                    <line x1="5" y1="12" x2="19" y2="12"></line>
                    <polyline points="12 5 19 12 12 19"></polyline>
                </svg>
            </a>`
-        : `<a class="history-action" href="/app/session/" data-session-id="${s.id_session}">
+        : `<a class="history-action" href="/app/session/${s.id}/" data-session-id="${s.id}">
                Continuar
                <svg class="icon-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
@@ -175,7 +185,7 @@ function renderPager(total) {
 
 
 function renderStats() {
-    const all = STUDENT_DATA.sessionHistory;
+    const all = SESSIONS;
     const completed = all.filter((s) => s.status === 'completed');
     const totalAns = completed.reduce((sum, s) => sum + s.answered, 0);
     const totalCor = completed.reduce((sum, s) => sum + s.correct, 0);
@@ -259,5 +269,22 @@ $search.addEventListener('input', () => {
 });
 
 
+async function loadHistory() {
+    try {
+        const data = await me.sessions();
+        SESSIONS = data || [];
+        renderStats();
+        render();
+    } catch (err) {
+        if (err instanceof ApiError && err.status === 401) {
+            tokens.clear();
+            location.replace('/app/');
+            return;
+        }
+        toast('No se pudo cargar el historial.', { kind: 'error' });
+    }
+}
+
 renderStats();
 render();
+loadHistory();

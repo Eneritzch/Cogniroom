@@ -65,26 +65,41 @@ export const auth = {
         if (demo) return Promise.resolve(JSON.parse(demo));
         return request('/auth/me/');
     },
-    logout: async () => {
-        // Revoca el refresh en el servidor (best-effort). El modo demo no tiene
-        // token real, así que se omite. Pase lo que pase, limpiamos local.
+    logout: () => {
+        // Cierre de sesión a prueba de fallos: primero se limpia el estado local
+        // (instantáneo, no depende de la red), luego se revoca el refresh en el
+        // servidor en segundo plano (keepalive sobrevive a la navegación).
         const refresh = tokens.refresh;
+        const access = tokens.access;
         const isDemo = localStorage.getItem(DEMO_USER_KEY);
-        if (refresh && !isDemo) {
-            try {
-                await request('/auth/logout/', { method: 'POST', body: { refresh } });
-            } catch (_) { /* token ya expirado/revocado: ignorar */ }
-        }
+
         localStorage.removeItem(DEMO_USER_KEY);
         tokens.clear();
+
+        const isRealToken = access && !String(access).startsWith('demo-');
+        if (refresh && !isDemo && isRealToken) {
+            try {
+                fetch(API_BASE + '/auth/logout/', {
+                    method: 'POST',
+                    keepalive: true,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${access}`,
+                    },
+                    body: JSON.stringify({ refresh }),
+                }).catch(() => {});
+            } catch (_) { /* red caída: la sesión local ya quedó cerrada */ }
+        }
     },
 };
 
-/* ---------- Me (datos del usuario actual) ---------- */
+/* ---------- Datos cognitivos del usuario actual ---------- */
 export const me = {
-    profile:   () => request('/me/profile/'),
-    nodes:     () => request('/me/nodes/'),
-    diagnoses: () => request('/me/diagnoses/'),
+    profile:   () => request('/profile/'),
+    nodes:     () => request('/nodes/'),
+    node:      (nodeId) => request(`/nodes/${nodeId}/`),
+    sessions:  () => request('/sessions/'),
+    diagnoses: () => request('/diagnoses/'),
 };
 
 /* ---------- Rooms ---------- */
@@ -136,5 +151,6 @@ export const sessions = {
     answer:       (sessionId, payload) => request(`/sessions/${sessionId}/answers/`, {
         method: 'POST', body: payload,
     }),
+    review:       (sessionId) => request(`/sessions/${sessionId}/review/`),
     complete:     (sessionId) => request(`/sessions/${sessionId}/complete/`, { method: 'POST' }),
 };

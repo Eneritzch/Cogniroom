@@ -1,10 +1,19 @@
 const _v = new URL(import.meta.url).searchParams.get('v') || '';
-const { tokens } = await import(`../api.js?v=${_v}`);
-const { STUDENT_DATA, escapeHTML, fmt, generateAnswersForSession } = await import(`./student-mock.js?v=${_v}`);
+const { sessions, tokens, ApiError } = await import(`../api.js?v=${_v}`);
+const { toast } = await import(`../toast.js?v=${_v}`);
 
 
 if (!tokens.access) {
     location.replace('/app/');
+}
+
+
+function escapeHTML(s) {
+    return String(s ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;');
 }
 
 
@@ -284,34 +293,56 @@ function updateToggleAllLabel() {
 }
 
 
-function init() {
-    const session = STUDENT_DATA.sessionHistory.find((s) => s.id_session === SESSION_ID);
-    const answers = STUDENT_DATA.sessionAnswers[SESSION_ID]
-        || (session ? generateAnswersForSession(session) : null);
+function renderUnavailable(session) {
+    document.querySelector('.review-stats').hidden = true;
+    document.querySelector('.review-strip').hidden = true;
+    document.querySelector('.review-toolbar').hidden = true;
+    document.getElementById('review-meta').hidden = true;
+    document.getElementById('review-questions').hidden = true;
 
-    if (!session || !answers || answers.length === 0) {
-        document.querySelector('.review-stats').hidden = true;
-        document.querySelector('.review-strip').hidden = true;
-        document.querySelector('.review-toolbar').hidden = true;
-        document.getElementById('review-meta').hidden = true;
-        document.getElementById('review-questions').hidden = true;
+    document.querySelector('.eyebrow').textContent = 'Revisión no disponible';
+    document.getElementById('review-room-name').textContent = session
+        ? (session.room?.name || '')
+        : 'Esta sesión aún no se puede revisar';
+    document.getElementById('review-date').textContent = session ? fmtDate(session.started_at) : '';
+    document.getElementById('review-duration').textContent = session ? fmtDuration(durationMinFromSession(session)) : '';
+    document.getElementById('review-id').textContent = session ? `Sesión #${session.id_session}` : '';
 
-        document.querySelector('.eyebrow').textContent = 'Revisión no disponible';
-        document.getElementById('review-room-name').textContent = session
-            ? (session.room?.name || '')
-            : 'Esta sesión aún no se puede revisar';
-        document.getElementById('review-date').textContent = session ? fmtDate(session.started_at) : '';
-        document.getElementById('review-duration').textContent = session ? fmtDuration(durationMinFromSession(session)) : '';
-        document.getElementById('review-id').textContent = session ? `Sesión #${session.id_session}` : '';
+    const $empty = document.getElementById('review-empty');
+    $empty.hidden = false;
+    $empty.querySelector('.review-empty__title').textContent = session
+        ? 'Sesión sin detalle disponible'
+        : 'Sesión no encontrada';
+    $empty.querySelector('.review-empty__body').textContent = session
+        ? 'Esta sesión existe en tu historial pero todavía no tiene respuestas registradas.'
+        : 'La sesión que buscás no existe o no es tuya. Volvé al historial y elegí otra.';
+}
 
-        const $empty = document.getElementById('review-empty');
-        $empty.hidden = false;
-        $empty.querySelector('.review-empty__title').textContent = session
-            ? 'Sesión sin detalle disponible'
-            : 'Sesión no encontrada';
-        $empty.querySelector('.review-empty__body').textContent = session
-            ? 'Esta sesión existe en tu historial pero todavía no tiene datos de revisión cargados.'
-            : 'La sesión que buscás no existe o fue eliminada. Volvé al historial y elegí otra.';
+
+async function init() {
+    if (!SESSION_ID) {
+        renderUnavailable(null);
+        return;
+    }
+
+    let data;
+    try {
+        data = await sessions.review(SESSION_ID);
+    } catch (err) {
+        if (err instanceof ApiError && err.status === 401) {
+            tokens.clear();
+            location.replace('/app/');
+            return;
+        }
+        renderUnavailable(null);
+        return;
+    }
+
+    const session = data.session;
+    const answers = data.answers || [];
+
+    if (!session || answers.length === 0) {
+        renderUnavailable(session);
         return;
     }
 

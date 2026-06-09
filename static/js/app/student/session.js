@@ -119,7 +119,9 @@ const $current = document.getElementById('session-current');
 const $total = document.getElementById('session-total');
 const $progress = document.getElementById('session-progress-fill');
 
-$total.textContent = String(SESSION_LENGTH);
+// El largo del demo es fijo; la sesión real termina cuando el backend indica
+// `completed` (no se conoce el total de antemano).
+$total.textContent = IS_DEMO ? String(SESSION_LENGTH) : '—';
 
 
 $confSlider.addEventListener('input', (e) => {
@@ -144,8 +146,11 @@ function renderQuestion(q) {
     $submit.disabled = true;
 
     $current.textContent = String(currentIndex + 1);
-    $progress.style.width = `${((currentIndex + 1) / SESSION_LENGTH) * 100}%`;
-    const nodeName = q.node?.name || 'Sin nodo';
+    const pct = IS_DEMO
+        ? ((currentIndex + 1) / SESSION_LENGTH) * 100
+        : (1 - 1 / (currentIndex + 2)) * 100;   // progreso asintótico (total desconocido)
+    $progress.style.width = `${pct}%`;
+    const nodeName = q.node_name || q.node?.name || 'Sin nodo';
     $questionEyebrow.textContent = `Pregunta ${currentIndex + 1} · ${nodeName}`;
     $questionText.textContent = q.statement || '—';
 
@@ -195,7 +200,8 @@ function renderFeedback(result) {
         ? 'Tu respuesta es correcta.'
         : 'Tu respuesta no es correcta.';
 
-    document.getElementById('feedback-explanation').textContent = result.explanation
+    const fbString = typeof result.ai_feedback === 'string' ? result.ai_feedback : '';
+    document.getElementById('feedback-explanation').textContent = result.explanation || fbString
         || `Tu mastery actual para este nodo es ${(mastery / 100).toFixed(2)}.`;
 
     const $declFill = document.getElementById('feedback-decl-fill');
@@ -228,7 +234,9 @@ function renderFeedback(result) {
     document.getElementById('tile-gap').dataset.tone = tone;
 
     const $diag = document.getElementById('feedback-diagnosis');
-    const aiFeedback = result.ai_feedback;
+    // El demo entrega un objeto estructurado; el backend real entrega ai_feedback
+    // como string (ya mostrado en la explicación), así que aquí solo aplica al demo.
+    const aiFeedback = (result.ai_feedback && typeof result.ai_feedback === 'object') ? result.ai_feedback : null;
     if (aiFeedback && (aiFeedback.title || aiFeedback.reasoning)) {
         document.getElementById('feedback-diag-title').textContent = aiFeedback.title || 'Descalibración detectada';
         document.getElementById('feedback-diag-body').textContent = aiFeedback.reasoning || '';
@@ -244,7 +252,9 @@ function renderFeedback(result) {
         $diag.hidden = true;
     }
 
-    const isLast = currentIndex >= SESSION_LENGTH - 1;
+    // En la sesión real no se conoce la última pregunta de antemano: siempre se
+    // ofrece "Siguiente" y el cierre ocurre cuando el backend responde `completed`.
+    const isLast = IS_DEMO && currentIndex >= SESSION_LENGTH - 1;
     const $nextBtn = document.getElementById('next-question');
     const $finishBtn = document.getElementById('complete-session');
     if ($nextBtn) $nextBtn.hidden = isLast;
@@ -266,7 +276,7 @@ $submit.addEventListener('click', async () => {
 
     try {
         const result = await sessions.answer(SESSION_ID, {
-            id_question: currentQuestion.id_question,
+            question_id: currentQuestion.id,
             selected_index: selectedIndex,
             confidence_declared: confidenceDeclared,
         });
@@ -286,8 +296,8 @@ $submit.addEventListener('click', async () => {
 
 document.getElementById('next-question').addEventListener('click', async () => {
     currentIndex += 1;
-    if (currentIndex >= SESSION_LENGTH) {
-        toast('Llegaste al final de la sesión.', { kind: 'success' });
+    if (IS_DEMO && currentIndex >= SESSION_LENGTH) {
+        toast('Demo finalizada.', { kind: 'success' });
         return;
     }
     await loadNextQuestion();
@@ -312,6 +322,17 @@ document.getElementById('complete-session').addEventListener('click', async () =
 });
 
 
+async function finishSession() {
+    try {
+        await sessions.complete(SESSION_ID);
+    } catch (_) {
+        /* ya completada o error de red: igual cerramos la vista */
+    }
+    toast('Sesión completada.', { kind: 'success', duration: 1500 });
+    setTimeout(() => { location.href = '/app/history/'; }, 800);
+}
+
+
 async function loadNextQuestion() {
     if (IS_DEMO) {
         renderQuestion(DEMO_QUESTION);
@@ -319,8 +340,8 @@ async function loadNextQuestion() {
     }
     try {
         const q = await sessions.nextQuestion(SESSION_ID);
-        if (!q) {
-            toast('Esta sesión no tiene más preguntas.', { kind: 'success' });
+        if (!q || q.completed) {
+            await finishSession();
             return;
         }
         renderQuestion(q);

@@ -4,15 +4,17 @@ from .views import (
     AtRiskView,
     BlindSpotsView,
     MyDiagnosesView,
+    MyNodeDetailView,
     MyNodesView,
     MyProfileView,
 )
 
 
 urlpatterns = [
-    path('profile/',    MyProfileView.as_view(),   name='me-profile'),
-    path('nodes/',      MyNodesView.as_view(),     name='me-nodes'),
-    path('diagnoses/',  MyDiagnosesView.as_view(), name='me-diagnoses'),
+    path('profile/',             MyProfileView.as_view(),    name='profile'),
+    path('nodes/',               MyNodesView.as_view(),      name='nodes'),
+    path('nodes/<int:node_id>/', MyNodeDetailView.as_view(), name='node-detail'),
+    path('diagnoses/',           MyDiagnosesView.as_view(),  name='diagnoses'),
 ]
 
 

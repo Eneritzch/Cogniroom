@@ -1,6 +1,6 @@
 const _v = new URL(import.meta.url).searchParams.get('v') || '';
-const { tokens } = await import(`../api.js?v=${_v}`);
-const { STUDENT_DATA, escapeHTML, profileLabel } = await import(`../student/student-mock.js?v=${_v}`);
+const { me, tokens, ApiError } = await import(`../api.js?v=${_v}`);
+const { toast } = await import(`../toast.js?v=${_v}`);
 
 
 if (!tokens.access) {
@@ -8,6 +8,30 @@ if (!tokens.access) {
 }
 
 
+function escapeHTML(s) {
+    return String(s ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;');
+}
+
+function profileLabel(p) {
+    return ({
+        overconfident: 'Sobreconfiado',
+        underconfident: 'Subconfiado',
+        calibrated: 'Calibrado',
+    })[p] || '—';
+}
+
+const DIAG_TITLES = {
+    overconfident: 'Brecha de sobreconfianza detectada',
+    underconfident: 'Subestimación del propio dominio',
+    calibrated: 'Calibración alineada',
+};
+
+
+let DIAGNOSES = [];
 let currentRisk = 'all';
 let currentProfile = 'all';
 
@@ -41,17 +65,18 @@ function predominantProfile(list) {
 
 
 function renderDiagnosis(diag) {
-    const title = diag.title || '';
+    const classification = diag.classification || 'calibrated';
+    const title = diag.title || DIAG_TITLES[classification] || 'Diagnóstico cognitivo';
     const reasoning = diag.reasoning || '';
     const recommendation = diag.recommendation || '';
     const date = formatDate(diag.generated_at);
     const risk = diag.risk_level || 'medium';
-    const classification = diag.classification || 'calibrated';
     const failureProb = diag.failure_probability != null
         ? Number(diag.failure_probability).toFixed(2)
         : '—';
     const roomName = (diag.room && diag.room.name) || '';
-    const mainNode = diag.node || null;
+    const mainNode = diag.node_name ? { name: diag.node_name } : null;
+    const sessionId = diag.session || diag.id_session || null;
     const riskNodes = Array.isArray(diag.risk_node) ? diag.risk_node : [];
 
     return `
@@ -84,7 +109,7 @@ function renderDiagnosis(diag) {
           <span class="pill" data-profile="${escapeHTML(classification)}">${profileLabel(classification)}</span>
           <span class="pill" data-risk="${escapeHTML(risk)}">${riskLabel(risk)}</span>
           <span class="diagnoses-item__failure">Predicción de fallo: <span class="num">${failureProb}</span></span>
-          ${diag.id_session ? `<a class="diagnoses-item__link" href="/app/session/${diag.id_session}/review/">Ver sesión →</a>` : ''}
+          ${sessionId ? `<a class="diagnoses-item__link" href="/app/session/${sessionId}/review/">Ver sesión →</a>` : ''}
           <span class="diagnoses-item__date">${escapeHTML(date)}</span>
         </footer>
       </article>
@@ -122,7 +147,7 @@ function paintStats(all) {
 
 
 function render() {
-    const all = STUDENT_DATA.diagnosesHistory || [];
+    const all = DIAGNOSES;
     const $list = document.getElementById('diag-list');
     const $empty = document.getElementById('diag-empty');
     const $meta = document.getElementById('diag-meta');
@@ -179,4 +204,20 @@ document.querySelectorAll('[data-profile-filter]').forEach((btn) => {
 });
 
 
+async function loadDiagnoses() {
+    try {
+        const data = await me.diagnoses();
+        DIAGNOSES = data || [];
+        render();
+    } catch (err) {
+        if (err instanceof ApiError && err.status === 401) {
+            tokens.clear();
+            location.replace('/app/');
+            return;
+        }
+        toast('No se pudieron cargar los diagnósticos.', { kind: 'error' });
+    }
+}
+
 render();
+loadDiagnoses();
