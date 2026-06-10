@@ -216,18 +216,29 @@ class AtRiskView(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        latest_per_student = {}
-        diagnoses = (
-            AIDiagnosis.objects.filter(session__room=room)
-            .select_related('student')
-            .order_by('-generated_at')
-        )
-        for diag in diagnoses:
-            if diag.student_id not in latest_per_student:
-                latest_per_student[diag.student_id] = diag
+        # En riesgo = descalibración significativa (|gap| > 0.2). Se calcula desde
+        # las métricas cognitivas reales (no depende de que Claude haya corrido).
+        result = []
+        memberships = RoomMembership.objects.filter(room=room).select_related('student')
+        for m in memberships:
+            gap = (
+                CognitiveIndex.objects.filter(node__room=room, student=m.student)
+                .aggregate(g=Avg('metacognitive_gap'))['g']
+            )
+            if gap is None or abs(gap) <= 0.2:
+                continue
+            profile = 'overconfident' if gap > 0 else 'underconfident'
+            risk = 'high' if abs(gap) > 0.35 else 'medium'
+            result.append({
+                'first_name': m.student.first_name,
+                'last_name': m.student.last_name,
+                'profile': profile,
+                'metacognitive_gap': round(float(gap), 4),
+                'risk_level': risk,
+            })
 
-        at_risk = [d for d in latest_per_student.values() if d.risk_level == 'high']
-        return Response(AIDiagnosisSerializer(at_risk, many=True).data)
+        result.sort(key=lambda s: abs(s['metacognitive_gap']), reverse=True)
+        return Response(result)
 
 
 class RoomHeatmapView(APIView):
