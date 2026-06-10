@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.rooms.models import Room
+from apps.rooms.models import Room, RoomMembership
 from apps.sessions.models import Answer, EvaluationSession
 
 from .models import (
@@ -228,3 +228,65 @@ class AtRiskView(APIView):
 
         at_risk = [d for d in latest_per_student.values() if d.risk_level == 'high']
         return Response(AIDiagnosisSerializer(at_risk, many=True).data)
+
+
+class RoomHeatmapView(APIView):
+    """Matriz de dominio (BKT) por estudiante × nodo, para el heatmap de métricas."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, room_id):
+        room = get_object_or_404(Room, id=room_id)
+        if room.teacher_id != request.user.id:
+            return Response(
+                {'detail': 'Only the room owner can view metrics.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        nodes = list(room.nodes.order_by('id'))
+        memberships = (
+            RoomMembership.objects.filter(room=room)
+            .select_related('student', 'section')
+            .order_by('student__first_name', 'student__last_name')
+        )
+
+        mastery = {
+            (b.student_id, b.node_id): b.p_mastery
+            for b in BKTState.objects.filter(node__room=room)
+        }
+
+        roster = []
+        for m in memberships:
+            cells = [round(float(mastery.get((m.student_id, n.id), 0.0)), 4) for n in nodes]
+            gap = (
+                CognitiveIndex.objects.filter(node__room=room, student=m.student)
+                .aggregate(g=Avg('metacognitive_gap'))['g']
+                or 0.0
+            )
+            if gap > 0.2:
+                profile = 'overconfident'
+            elif gap < -0.2:
+                profile = 'underconfident'
+            else:
+                profile = 'calibrated'
+            roster.append({
+                'first_name': m.student.first_name,
+                'last_name': m.student.last_name,
+                'profile': profile,
+                'id_section': m.section_id,
+                'cells': cells,
+            })
+
+        sections = [{
+            'id_section': s.id,
+            'code': s.code,
+            'name': s.name,
+            'students': RoomMembership.objects.filter(section=s).count(),
+        } for s in room.sections.all()]
+
+        return Response({
+            'name': room.name,
+            'students': memberships.count(),
+            'nodes': [{'id_node': n.id, 'name': n.name, 'description': ''} for n in nodes],
+            'roster': roster,
+            'sections': sections,
+        })

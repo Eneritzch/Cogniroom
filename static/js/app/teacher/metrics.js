@@ -1,7 +1,6 @@
 const _v = new URL(import.meta.url).searchParams.get('v') || '';
-const { tokens } = await import(`../api.js?v=${_v}`);
-const { ROOM_DATA, escapeHTML, profileLabel, bindRoomChange } = await import(`./room-mock.js?v=${_v}`);
-const { getActiveRoom } = await import(`../nav-auth.js?v=${_v}`);
+const { rooms: roomsApi, tokens, ApiError } = await import(`../api.js?v=${_v}`);
+const { toast } = await import(`../toast.js?v=${_v}`);
 
 
 if (!tokens.access) {
@@ -9,8 +8,31 @@ if (!tokens.access) {
 }
 
 
+function escapeHTML(s) {
+    return String(s ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;');
+}
+
+function profileLabel(p) {
+    return ({
+        overconfident: 'Sobreconfiado',
+        underconfident: 'Subconfiado',
+        calibrated: 'Calibrado',
+    })[p] || '—';
+}
+
+function activeRoomId() {
+    return Number(localStorage.getItem('cogniroom.activeRoomId')) || null;
+}
+
+
 const PAGE_SIZE = 12;
 
+let DATA = null;
+let ROOM_INFO = null;
 let currentProfile = 'all';
 let currentCurso = 'all';
 let currentSearch = '';
@@ -171,8 +193,7 @@ function renderCursoChips(sections) {
 
 
 function renderHeatmap() {
-    const room = getActiveRoom();
-    const data = ROOM_DATA[room.id];
+    const data = DATA;
     if (!data) return;
 
     const $header = document.getElementById('heatmap-header');
@@ -296,19 +317,58 @@ function pageRange(current, total) {
 
 
 function render() {
-    const room = getActiveRoom();
-    const data = ROOM_DATA[room.id];
-    if (!data) return;
+    if (!DATA) return;
 
-    document.getElementById('room-name').textContent = data.name;
-    document.getElementById('room-students').textContent = String(data.students);
+    const $name = document.getElementById('room-name');
+    const $students = document.getElementById('room-students');
+    if ($name) $name.textContent = DATA.name;
+    if ($students) $students.textContent = String(DATA.students);
 
     currentPage = 1;
     currentCurso = 'all';
 
-    renderInsights(data);
-    renderCursoChips(data.sections || data.cursos);
+    if (!DATA.roster || DATA.roster.length === 0 || !DATA.nodes || DATA.nodes.length === 0) {
+        const $rows = document.getElementById('heatmap-rows');
+        const $header = document.getElementById('heatmap-header');
+        const $footer = document.getElementById('heatmap-footer');
+        if ($header) $header.innerHTML = '';
+        if ($footer) $footer.innerHTML = '';
+        if ($rows) $rows.innerHTML = `<div class="heatmap__empty">Aún no hay datos de evaluación en esta sala.</div>`;
+        const $insights = document.getElementById('metrics-insights');
+        if ($insights) $insights.innerHTML = '';
+        return;
+    }
+
+    renderInsights(DATA);
+    renderCursoChips(DATA.sections);
     renderHeatmap();
+}
+
+
+async function load() {
+    let list;
+    try {
+        list = await roomsApi.list();
+    } catch (err) {
+        if (err instanceof ApiError && err.status === 401) { tokens.clear(); location.replace('/app/'); return; }
+        toast('No se pudieron cargar las salas.', { kind: 'error' });
+        return;
+    }
+    const stored = activeRoomId();
+    ROOM_INFO = (list || []).find((r) => r.id === stored) || (list || [])[0];
+    if (!ROOM_INFO) {
+        const $rows = document.getElementById('heatmap-rows');
+        if ($rows) $rows.innerHTML = `<div class="heatmap__empty">Creá una sala para ver sus métricas.</div>`;
+        return;
+    }
+    localStorage.setItem('cogniroom.activeRoomId', String(ROOM_INFO.id));
+    try {
+        DATA = await roomsApi.heatmap(ROOM_INFO.id);
+        render();
+    } catch (err) {
+        if (err instanceof ApiError && err.status === 401) { tokens.clear(); location.replace('/app/'); return; }
+        toast('No se pudieron cargar las métricas.', { kind: 'error' });
+    }
 }
 
 
@@ -338,4 +398,6 @@ if ($search) {
 }
 
 
-bindRoomChange(render);
+window.addEventListener('cogniroom:roomchange', load);
+
+load();

@@ -8,6 +8,7 @@ from .views import (
     PDFDetailView,
     PDFUploadListView,
     QuestionListView,
+    RejectQuestionsView,
 )
 
 urlpatterns = [
@@ -26,6 +27,11 @@ urlpatterns = [
         '<int:room_id>/questions/approve/',
         ApproveQuestionsView.as_view(),
         name='question-approve',
+    ),
+    path(
+        '<int:room_id>/questions/reject/',
+        RejectQuestionsView.as_view(),
+        name='question-reject',
     ),
     path(
         '<int:room_id>/questions/',

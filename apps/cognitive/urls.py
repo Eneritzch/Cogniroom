@@ -7,6 +7,7 @@ from .views import (
     MyNodeDetailView,
     MyNodesView,
     MyProfileView,
+    RoomHeatmapView,
 )
 
 
@@ -19,6 +20,7 @@ urlpatterns = [
 
 
 room_urlpatterns = [
-    path('<int:room_id>/metrics/blind-spots/', BlindSpotsView.as_view(), name='room-metrics-blind-spots'),
-    path('<int:room_id>/metrics/at-risk/',     AtRiskView.as_view(),     name='room-metrics-at-risk'),
+    path('<int:room_id>/metrics/blind-spots/', BlindSpotsView.as_view(),  name='room-metrics-blind-spots'),
+    path('<int:room_id>/metrics/at-risk/',     AtRiskView.as_view(),      name='room-metrics-at-risk'),
+    path('<int:room_id>/metrics/heatmap/',     RoomHeatmapView.as_view(), name='room-metrics-heatmap'),
 ]

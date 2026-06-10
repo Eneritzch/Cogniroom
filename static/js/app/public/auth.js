@@ -27,39 +27,6 @@ const $submitText = document.getElementById('login-submit-text');
 const FIELDS = [$email, $password];
 
 
-const DEMO_USERS = {
-    student: {
-        id_user: 101,
-        username: 'student1',
-        email: 'andrea.molina@cogniroom.com',
-        first_name: 'Andrea',
-        last_name: 'Molina',
-        role: 'student',
-        institution: 'UNEMI',
-    },
-    teacher: {
-        id_user: 202,
-        username: 'teacher1',
-        email: 'carlos.ramirez@cogniroom.com',
-        first_name: 'Carlos',
-        last_name: 'Ramírez',
-        role: 'teacher',
-        institution: 'UNEMI',
-    },
-};
-
-document.querySelectorAll('[data-demo-role]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-        const role = btn.dataset.demoRole;
-        const user = DEMO_USERS[role];
-        if (!user) return;
-        localStorage.setItem('cogniroom.demo_user', JSON.stringify(user));
-        tokens.access = `demo-${role}-${Date.now()}`;
-        tokens.refresh = `demo-refresh-${role}`;
-        location.href = '/app/dashboard/';
-    });
-});
-
 function messageFor(input) {
     const v = input.validity;
     if (v.valueMissing) return 'Este campo es obligatorio.';

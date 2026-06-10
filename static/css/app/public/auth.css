@@ -309,7 +309,6 @@ body.auth-page {
   .auth-form__lead { margin-top: var(--s-2); font-size: 12.5px; }
   .auth-form__group { margin-top: var(--s-4); }
   .auth-fields { margin-top: var(--s-3); }
-  .auth-divider { margin: var(--s-3) 0; }
   .auth-form__switch { margin-top: var(--s-2); font-size: 11.5px; }
 }
 
@@ -576,46 +575,6 @@ body.auth-page {
 }
 
 
-.auth-divider {
-  display: flex;
-  align-items: center;
-  gap: var(--s-3);
-  margin: var(--s-6) 0;
-}
-
-.auth-divider__rule {
-  flex: 1;
-  height: 1px;
-  background: var(--paper-border-strong);
-}
-
-.auth-divider__label {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  color: var(--ink-faint);
-}
-
-
-.auth-sso {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--s-2);
-  width: 100%;
-  padding: var(--s-3) var(--s-4);
-  background: var(--paper-surface);
-  border: 1px solid var(--paper-border);
-  border-radius: var(--r-md);
-  font-size: 13px;
-  font-weight: var(--fw-medium);
-  color: var(--ink);
-  cursor: pointer;
-  transition: background-color var(--dur-fast) var(--ease-out);
-}
-
-.auth-sso:hover { background: var(--paper-elevated); }
-
-
 .auth-form__switch {
   margin: var(--s-8) 0 0;
   font-size: 12px;
@@ -637,51 +596,3 @@ body.auth-page {
 }
 
 .auth-form__switch-link:hover { text-decoration-color: var(--ink); }
-
-
-.auth-demo {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-2);
-}
-
-@media (min-width: 768px) {
-  .auth-demo { flex-direction: row; }
-}
-
-.auth-demo__btn {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
-  padding: var(--s-3) var(--s-4);
-  background: color-mix(in srgb, var(--sage) 8%, transparent);
-  border: 1px solid color-mix(in srgb, var(--sage) 22%, transparent);
-  border-radius: var(--r-md);
-  color: var(--ink);
-  font-family: var(--font-sans);
-  cursor: pointer;
-  text-align: left;
-  transition: background-color var(--dur-fast) var(--ease-out),
-              border-color var(--dur-fast) var(--ease-out),
-              transform var(--dur-fast) var(--ease-out);
-}
-
-.auth-demo__btn:hover {
-  background: color-mix(in srgb, var(--sage) 16%, transparent);
-  border-color: var(--sage);
-  transform: translateY(-1px);
-}
-
-.auth-demo__btn-label {
-  font-size: 14px;
-  font-weight: var(--fw-semibold);
-  color: var(--ink);
-}
-
-.auth-demo__btn-sub {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  color: var(--ink-muted);
-}

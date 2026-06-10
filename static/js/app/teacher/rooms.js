@@ -1,7 +1,5 @@
 const _v = new URL(import.meta.url).searchParams.get('v') || '';
-const { tokens } = await import(`../api.js?v=${_v}`);
-const { ROOM_DATA, escapeHTML } = await import(`./room-mock.js?v=${_v}`);
-const { MOCK_ROOMS, getActiveRoom, setActiveRoom } = await import(`../nav-auth.js?v=${_v}`);
+const { rooms: roomsApi, tokens, ApiError } = await import(`../api.js?v=${_v}`);
 const { toast } = await import(`../toast.js?v=${_v}`);
 
 
@@ -10,8 +8,22 @@ if (!tokens.access) {
 }
 
 
+function escapeHTML(s) {
+    return String(s ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;');
+}
+
+function activeRoomId() {
+    return Number(localStorage.getItem('cogniroom.activeRoomId')) || null;
+}
+
+
 const PAGE_SIZE = 6;
 let currentPage = 1;
+let ROOMS = [];
 
 
 async function copyToClipboard(text) {
@@ -24,13 +36,6 @@ async function copyToClipboard(text) {
 }
 
 
-function deriveAlerts(data) {
-    const pendingAI = (data.questionBank || []).filter((q) => !q.is_approved).length;
-    const atRisk = (data.roster || []).filter((s) => Math.abs(s.metacognitive_gap) > 0.2).length;
-    return { pendingAI, atRisk };
-}
-
-
 function healthTone(icc) {
     if (icc >= 0.65) return 'moss';
     if (icc >= 0.5)  return 'amber';
@@ -39,10 +44,10 @@ function healthTone(icc) {
 
 
 function renderCard(r, isActive) {
-    const d = r.data;
-    const alerts = deriveAlerts(d);
-    const sectionCount = (d.sections || []).length;
-    const tone = healthTone(d.icc);
+    const d = r;
+    const alerts = { pendingAI: d.pending_ai_count || 0, atRisk: d.at_risk_count || 0 };
+    const sectionCount = d.section_count || 0;
+    const tone = healthTone(d.icc || 0);
 
     return `
     <li class="rcard ${isActive ? 'rcard--active' : ''}">
@@ -51,7 +56,7 @@ function renderCard(r, isActive) {
             <div class="rcard__id">
                 <h3 class="rcard__name">${escapeHTML(d.name)}</h3>
                 <div class="rcard__submeta">
-                    <span>Creada ${escapeHTML(d.created_at)}</span>
+                    <span>Creada ${escapeHTML((d.created_at || '').slice(0, 10))}</span>
                 </div>
             </div>
         </header>
@@ -84,7 +89,7 @@ function renderCard(r, isActive) {
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                     <circle cx="9" cy="7" r="4"></circle>
                 </svg>
-                <span class="num">${d.students}</span>
+                <span class="num">${d.member_count ?? 0}</span>
                 <span class="rcard__stat-label">estudiantes</span>
             </div>
             <div class="rcard__stat" title="Preguntas en el banco">
@@ -93,7 +98,7 @@ function renderCard(r, isActive) {
                     <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
                     <line x1="12" y1="17" x2="12.01" y2="17"></line>
                 </svg>
-                <span class="num">${d.questions}</span>
+                <span class="num">${d.question_count ?? 0}</span>
                 <span class="rcard__stat-label">preguntas</span>
             </div>
             <div class="rcard__stat" title="Documentos PDF subidos">
@@ -101,7 +106,7 @@ function renderCard(r, isActive) {
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                     <polyline points="14 2 14 8 20 8"></polyline>
                 </svg>
-                <span class="num">${d.pdfs}</span>
+                <span class="num">${d.pdf_count ?? 0}</span>
                 <span class="rcard__stat-label">PDFs</span>
             </div>
             ${sectionCount > 0 ? `
@@ -175,25 +180,24 @@ function render() {
     const $meta = document.getElementById('rooms-meta');
     if (!$list) return;
 
-    const active = getActiveRoom();
-    const rooms = MOCK_ROOMS.map((r) => ({ ...r, data: ROOM_DATA[r.id] })).filter((r) => r.data);
+    const activeId = activeRoomId();
 
-    if ($count) $count.textContent = String(rooms.length);
+    if ($count) $count.textContent = String(ROOMS.length);
 
-    const totalPages = Math.max(1, Math.ceil(rooms.length / PAGE_SIZE));
+    const totalPages = Math.max(1, Math.ceil(ROOMS.length / PAGE_SIZE));
     if (currentPage > totalPages) currentPage = totalPages;
     const startIdx = (currentPage - 1) * PAGE_SIZE;
-    const visible = rooms.slice(startIdx, startIdx + PAGE_SIZE);
+    const visible = ROOMS.slice(startIdx, startIdx + PAGE_SIZE);
 
     if ($meta) {
-        $meta.textContent = rooms.length <= PAGE_SIZE
+        $meta.textContent = ROOMS.length <= PAGE_SIZE
             ? ''
-            : `${startIdx + 1}–${startIdx + visible.length} de ${rooms.length}`;
+            : `${startIdx + 1}–${startIdx + visible.length} de ${ROOMS.length}`;
     }
 
-    $list.innerHTML = visible.map((r) => renderCard(r, r.id === active.id)).join('');
+    $list.innerHTML = visible.map((r) => renderCard(r, r.id === activeId)).join('');
 
-    renderPager(rooms.length, totalPages);
+    renderPager(ROOMS.length, totalPages);
     bindActions();
 }
 
@@ -263,7 +267,7 @@ function bindActions() {
 
     document.querySelectorAll('[data-activate]').forEach((el) => {
         el.addEventListener('click', () => {
-            setActiveRoom(Number(el.dataset.activate));
+            localStorage.setItem('cogniroom.activeRoomId', String(Number(el.dataset.activate)));
             if (el.tagName !== 'A') render();
         });
     });
@@ -272,4 +276,20 @@ function bindActions() {
 
 window.addEventListener('cogniroom:roomchange', render);
 
+
+async function loadRooms() {
+    try {
+        ROOMS = (await roomsApi.list()) || [];
+        render();
+    } catch (err) {
+        if (err instanceof ApiError && err.status === 401) {
+            tokens.clear();
+            location.replace('/app/');
+            return;
+        }
+        toast('No se pudieron cargar las salas.', { kind: 'error' });
+    }
+}
+
 render();
+loadRooms();

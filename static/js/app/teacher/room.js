@@ -11,7 +11,7 @@ const $logout = document.getElementById('logout-btn');
 if ($logout) {
     $logout.addEventListener('click', () => {
         auth.logout();
-        location.replace('/');
+        location.replace('/app/');
     });
 }
 
@@ -21,7 +21,9 @@ function getRoomId() {
 }
 
 const ROOM_ID = getRoomId();
-const IS_DEMO = ROOM_ID === null;
+if (!ROOM_ID) {
+    location.replace('/app/rooms/');
+}
 
 
 function escapeHTML(s) {
@@ -44,26 +46,6 @@ document.querySelectorAll('.room-tab').forEach((btn) => {
     });
 });
 
-
-const DEMO_HEATMAP = {
-    nodes: [
-        { id_node: 1, name: '1ª ley',       description: 'Termodinámica clásica' },
-        { id_node: 2, name: 'Entropía',     description: 'Termodinámica clásica' },
-        { id_node: 3, name: 'Cinética 2°',  description: 'Cinética' },
-        { id_node: 4, name: 'Eq. químico',  description: 'Equilibrio' },
-        { id_node: 5, name: 'Gibbs',        description: 'Termodinámica clásica' },
-        { id_node: 6, name: 'Le Chatelier', description: 'Equilibrio' },
-    ],
-    rows: [
-        { user: { id_user: 11, first_name: 'Andrea',   last_name: 'Molina'   }, profile: 'overconfident',  cells: [0.32, 0.41, 0.78, 0.65, 0.50, 0.72] },
-        { user: { id_user: 12, first_name: 'Bruno',    last_name: 'Cárdenas' }, profile: 'overconfident',  cells: [0.28, 0.39, 0.66, 0.58, 0.44, 0.61] },
-        { user: { id_user: 13, first_name: 'Camila',   last_name: 'Reyes'    }, profile: 'underconfident', cells: [0.71, 0.82, 0.78, 0.69, 0.74, 0.81] },
-        { user: { id_user: 14, first_name: 'Daniel',   last_name: 'Tovar'    }, profile: 'calibrated',     cells: [0.60, 0.62, 0.65, 0.58, 0.61, 0.66] },
-        { user: { id_user: 15, first_name: 'Elena',    last_name: 'Pinto'    }, profile: 'underconfident', cells: [0.55, 0.60, 0.72, 0.68, 0.70, 0.74] },
-        { user: { id_user: 16, first_name: 'Felipe',   last_name: 'Marín'    }, profile: 'calibrated',     cells: [0.70, 0.68, 0.75, 0.71, 0.69, 0.76] },
-        { user: { id_user: 17, first_name: 'Gabriela', last_name: 'Soto'     }, profile: 'overconfident',  cells: [0.35, 0.40, 0.55, 0.48, 0.41, 0.50] },
-    ],
-};
 
 function profileLabel(p) {
     return ({ calibrated: 'Cal.', overconfident: 'Sobre.', underconfident: 'Sub.' })[p] || '—';
@@ -107,25 +89,7 @@ function renderHeatmap(data) {
 }
 
 
-function renderDemo() {
-    document.getElementById('room-name').textContent = 'Termodinámica I · 2026·I';
-    document.getElementById('room-students').textContent = '84';
-    document.getElementById('room-questions').textContent = '312';
-    document.getElementById('room-pdfs').textContent = '5';
-    document.getElementById('stat-over').textContent = '38%';
-    document.getElementById('stat-cal').textContent = '41%';
-    document.getElementById('stat-over-detail').textContent = '32 de 84';
-    document.getElementById('stat-cal-detail').textContent = '34 de 84';
-    renderHeatmap(DEMO_HEATMAP);
-}
-
-
 async function bootstrap() {
-    if (IS_DEMO) {
-        renderDemo();
-        return;
-    }
-
     try {
         const [members, questionList, pdfList, blindSpots] = await Promise.all([
             rooms.members(ROOM_ID).catch(() => []),

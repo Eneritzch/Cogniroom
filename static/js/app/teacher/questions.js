@@ -1,7 +1,6 @@
 const _v = new URL(import.meta.url).searchParams.get('v') || '';
-const { tokens } = await import(`../api.js?v=${_v}`);
-const { ROOM_DATA, escapeHTML, bindRoomChange } = await import(`./room-mock.js?v=${_v}`);
-const { getActiveRoom } = await import(`../nav-auth.js?v=${_v}`);
+const { rooms: roomsApi, questions: questionsApi, tokens, ApiError } = await import(`../api.js?v=${_v}`);
+const { toast } = await import(`../toast.js?v=${_v}`);
 
 
 if (!tokens.access) {
@@ -9,8 +8,24 @@ if (!tokens.access) {
 }
 
 
+function escapeHTML(s) {
+    return String(s ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;');
+}
+
+function activeRoomId() {
+    return Number(localStorage.getItem('cogniroom.activeRoomId')) || null;
+}
+
+
 const PAGE_SIZE = 10;
 
+let ROOM_ID = null;
+let ROOM_INFO = null;
+let BANK = [];
 let currentStatus = 'all';
 let currentSource = 'all';
 let currentSearch = '';
@@ -46,8 +61,7 @@ function questionText(q) {
 function applyFilters(bank) {
     const q = currentSearch.trim().toLowerCase();
     return bank.filter((qst) => {
-        if (currentStatus === 'pending'  && qst.is_approved) return false;
-        if (currentStatus === 'approved' && !qst.is_approved) return false;
+        if (currentStatus !== 'all' && qst.status !== currentStatus) return false;
         if (currentSource !== 'all' && qst.source !== currentSource) return false;
         if (q) {
             const text = questionText(qst).toLowerCase();
@@ -67,15 +81,11 @@ function formatDate(iso) {
 
 
 function renderList() {
-    const room = getActiveRoom();
-    const data = ROOM_DATA[room.id];
-    if (!data) return;
-
     const $list = document.getElementById('questions-list');
     const $meta = document.getElementById('questions-meta');
     if (!$list) return;
 
-    const filtered = applyFilters(data.questionBank);
+    const filtered = applyFilters(BANK);
     const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
     if (currentPage > totalPages) currentPage = totalPages;
     const startIdx = (currentPage - 1) * PAGE_SIZE;
@@ -98,8 +108,8 @@ function renderList() {
 
     $list.innerHTML = visible.map((q) => {
         const diff = difficultyMeta(q.difficulty);
-        const status = q.is_approved ? 'approved' : 'pending';
-        const name = nodeName(q.node);
+        const status = q.status || (q.is_approved ? 'approved' : 'pending');
+        const name = q.node_name || nodeName(q.node);
         const topic = nodeTopic(q.node);
         const sourcePdf = q.source_pdf;
         const options = Array.isArray(q.options) ? q.options : [];
@@ -151,31 +161,32 @@ function renderList() {
                     <svg class="icon-svg" width="11" height="11" viewBox="0 0 24 24" aria-hidden="true">
                         ${status === 'approved'
                             ? '<polyline points="20 6 9 17 4 12"></polyline>'
-                            : '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="6" x2="12" y2="14"></line><line x1="12" y1="17" x2="12.01" y2="17"></line>'}
+                            : status === 'rejected'
+                                ? '<line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>'
+                                : '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="6" x2="12" y2="14"></line><line x1="12" y1="17" x2="12.01" y2="17"></line>'}
                     </svg>
-                    ${status === 'approved' ? 'Activa' : 'Por revisar'}
+                    ${status === 'approved' ? 'Activa' : status === 'rejected' ? 'Rechazada' : 'Por revisar'}
                 </span>
 
                 ${diff ? `<span class="qcard__diff" data-tone="${diff.tone}">${diff.label}</span>` : ''}
 
                 <div class="qcard__actions">
-                    ${status === 'pending' ? `
-                        <button type="button" class="qcard__btn qcard__btn--ghost">Revisar</button>
-                        <button type="button" class="qcard__btn qcard__btn--primary">
+                    ${status !== 'rejected' ? `
+                        <button type="button" class="qcard__btn qcard__btn--ghost" data-action="reject" data-q-id="${q.id}">
+                            <svg class="icon-svg" width="11" height="11" viewBox="0 0 24 24" aria-hidden="true">
+                                <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                            Rechazar
+                        </button>
+                    ` : ''}
+                    ${status !== 'approved' ? `
+                        <button type="button" class="qcard__btn qcard__btn--primary" data-action="approve" data-q-id="${q.id}">
                             <svg class="icon-svg" width="11" height="11" viewBox="0 0 24 24" aria-hidden="true">
                                 <polyline points="20 6 9 17 4 12"></polyline>
                             </svg>
                             Aprobar
                         </button>
-                    ` : `
-                        <button type="button" class="qcard__btn qcard__btn--ghost">
-                            <svg class="icon-svg" width="11" height="11" viewBox="0 0 24 24" aria-hidden="true">
-                                <path d="M12 20h9"></path>
-                                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z"></path>
-                            </svg>
-                            Editar
-                        </button>
-                    `}
+                    ` : ''}
                 </div>
             </footer>
         </li>
@@ -235,19 +246,75 @@ function pageRange(current, total) {
 
 
 function render() {
-    const room = getActiveRoom();
-    const data = ROOM_DATA[room.id];
-    if (!data) return;
+    if (!ROOM_INFO) return;
 
-    document.getElementById('room-name').textContent = data.name;
-    document.getElementById('room-questions').textContent = String(data.questions);
+    const $name = document.getElementById('room-name');
+    const $q = document.getElementById('room-questions');
+    const $pending = document.getElementById('room-pending');
+    if ($name) $name.textContent = ROOM_INFO.name;
+    if ($q) $q.textContent = String(BANK.filter((q) => q.status === 'approved').length);
 
-    const pendingTotal = data.questionBank.filter((q) => !q.is_approved).length;
-    document.getElementById('room-pending').textContent = `${pendingTotal} pendiente${pendingTotal === 1 ? '' : 's'} de aprobación`;
+    const pendingTotal = BANK.filter((q) => q.status === 'pending').length;
+    if ($pending) $pending.textContent = `${pendingTotal} pendiente${pendingTotal === 1 ? '' : 's'} de aprobación`;
 
     currentPage = 1;
-
     renderList();
+}
+
+
+/* Aprobar / rechazar preguntas del banco. */
+document.getElementById('questions-list').addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-action]');
+    if (!btn || !ROOM_ID) return;
+    const id = Number(btn.dataset.qId);
+    const action = btn.dataset.action;
+    if (!id) return;
+
+    btn.disabled = true;
+    try {
+        if (action === 'approve') await questionsApi.approve(ROOM_ID, [id]);
+        else if (action === 'reject') await questionsApi.reject(ROOM_ID, [id]);
+        toast(action === 'approve' ? 'Pregunta aprobada.' : 'Pregunta rechazada.', { kind: 'success' });
+        await reloadBank();
+    } catch (err) {
+        if (err instanceof ApiError && err.status === 401) { tokens.clear(); location.replace('/app/'); return; }
+        toast(err?.body?.detail || err?.message || 'No se pudo actualizar la pregunta.', { kind: 'error' });
+        btn.disabled = false;
+    }
+});
+
+
+async function reloadBank() {
+    BANK = (await questionsApi.list(ROOM_ID)) || [];
+    render();
+}
+
+
+async function load() {
+    let list;
+    try {
+        list = await roomsApi.list();
+    } catch (err) {
+        if (err instanceof ApiError && err.status === 401) { tokens.clear(); location.replace('/app/'); return; }
+        toast('No se pudieron cargar las salas.', { kind: 'error' });
+        return;
+    }
+    const stored = activeRoomId();
+    ROOM_INFO = (list || []).find((r) => r.id === stored) || (list || [])[0];
+    if (!ROOM_INFO) {
+        const $list = document.getElementById('questions-list');
+        if ($list) $list.innerHTML = `<li class="questions-empty">Creá una sala para gestionar su banco de preguntas.</li>`;
+        return;
+    }
+    ROOM_ID = ROOM_INFO.id;
+    localStorage.setItem('cogniroom.activeRoomId', String(ROOM_ID));
+    try {
+        BANK = (await questionsApi.list(ROOM_ID)) || [];
+        render();
+    } catch (err) {
+        if (err instanceof ApiError && err.status === 401) { tokens.clear(); location.replace('/app/'); return; }
+        toast('No se pudo cargar el banco de preguntas.', { kind: 'error' });
+    }
 }
 
 
@@ -288,4 +355,6 @@ if ($search) {
 }
 
 
-bindRoomChange(render);
+window.addEventListener('cogniroom:roomchange', load);
+
+load();

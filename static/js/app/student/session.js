@@ -9,10 +9,12 @@ function getSessionId() {
 }
 
 const SESSION_ID = getSessionId();
-const IS_DEMO = SESSION_ID === null;
 
-if (!IS_DEMO && !tokens.access) {
+if (!tokens.access) {
     location.replace('/app/');
+}
+if (!SESSION_ID) {
+    location.replace('/app/my-rooms/');
 }
 
 
@@ -31,61 +33,10 @@ if ($closeBtn) {
     });
 }
 
-const SESSION_LENGTH = 12;
 let currentIndex = 0;
 let currentQuestion = null;
 let selectedIndex = null;
 let confidenceDeclared = 0.75;
-
-
-const DEMO_QUESTION = {
-    id_question: 7,
-    id_node: 14,
-    node: {
-        id_node: 14,
-        name: 'Entropía y 2ª ley',
-        description: 'Termodinámica clásica',
-    },
-    statement: 'En un proceso espontáneo de expansión adiabática irreversible de un gas ideal, ¿qué ocurre con la entropía?',
-    options: [
-        'La entropía del sistema disminuye porque se libera calor al entorno.',
-        'La entropía del universo aumenta, incluso si la del sistema disminuye.',
-        'La entropía permanece constante por ser proceso reversible.',
-        'No es posible determinar el cambio de entropía sin conocer el volumen.',
-    ],
-    correct_index: 1,
-    difficulty: 'hard',
-    source: 'ai',
-    is_approved: true,
-};
-
-const DEMO_CORRECT_INDEX = 1;
-
-function fakeAnswerResult(selIndex, confDeclared) {
-    const isCorrect = selIndex === DEMO_CORRECT_INDEX;
-    const bktMastery = 0.48;
-    const gap = confDeclared - bktMastery;
-    const miscalibrated = Math.abs(gap) > 0.25;
-    return {
-        is_correct: isCorrect,
-        bkt_mastery: bktMastery,
-        explanation: 'En un proceso irreversible, ΔS_universo > 0 siempre. La 2ª ley no se aplica al sistema aislado de tu intuición, sino al universo termodinámico completo.',
-        ai_feedback: miscalibrated ? {
-            title: 'Tendencia a sobreestimar dominio en entropía',
-            classification: 'overconfident',
-            failure_probability: 0.62,
-            risk_level: 'medium',
-            risk_node: ['Entropía y 2ª ley', 'Procesos irreversibles'],
-            node: {
-                id_node: 14,
-                name: 'Entropía y 2ª ley',
-                description: 'Termodinámica clásica',
-            },
-            reasoning: `Declaraste ${Math.round(confDeclared * 100)} de confianza, pero tu probabilidad real de acertar este tipo de pregunta sobre entropía es ${Math.round(bktMastery * 100)}. La brecha es persistente en este nodo.`,
-            recommendation: 'Antes de la próxima sesión, intentá enunciar la 2ª ley en tus propias palabras y aplicarla a un caso que NO esté en el apunte.',
-        } : null,
-    };
-}
 
 
 function escapeHTML(s) {
@@ -119,9 +70,9 @@ const $current = document.getElementById('session-current');
 const $total = document.getElementById('session-total');
 const $progress = document.getElementById('session-progress-fill');
 
-// El largo del demo es fijo; la sesión real termina cuando el backend indica
-// `completed` (no se conoce el total de antemano).
-$total.textContent = IS_DEMO ? String(SESSION_LENGTH) : '—';
+// La sesión termina cuando el backend responde `completed` (no se conoce el
+// total de preguntas de antemano).
+$total.textContent = '—';
 
 
 $confSlider.addEventListener('input', (e) => {
@@ -146,9 +97,8 @@ function renderQuestion(q) {
     $submit.disabled = true;
 
     $current.textContent = String(currentIndex + 1);
-    const pct = IS_DEMO
-        ? ((currentIndex + 1) / SESSION_LENGTH) * 100
-        : (1 - 1 / (currentIndex + 2)) * 100;   // progreso asintótico (total desconocido)
+    // progreso asintótico (el total no se conoce de antemano)
+    const pct = (1 - 1 / (currentIndex + 2)) * 100;
     $progress.style.width = `${pct}%`;
     const nodeName = q.node_name || q.node?.name || 'Sin nodo';
     $questionEyebrow.textContent = `Pregunta ${currentIndex + 1} · ${nodeName}`;
@@ -233,32 +183,17 @@ function renderFeedback(result) {
     document.getElementById('tile-gap').textContent = `${gap >= 0 ? '+' : ''}${gap}`;
     document.getElementById('tile-gap').dataset.tone = tone;
 
+    // El backend entrega ai_feedback como texto (ya mostrado en la explicación);
+    // la tarjeta de diagnóstico estructurado vive en /app/diagnoses/.
     const $diag = document.getElementById('feedback-diagnosis');
-    // El demo entrega un objeto estructurado; el backend real entrega ai_feedback
-    // como string (ya mostrado en la explicación), así que aquí solo aplica al demo.
-    const aiFeedback = (result.ai_feedback && typeof result.ai_feedback === 'object') ? result.ai_feedback : null;
-    if (aiFeedback && (aiFeedback.title || aiFeedback.reasoning)) {
-        document.getElementById('feedback-diag-title').textContent = aiFeedback.title || 'Descalibración detectada';
-        document.getElementById('feedback-diag-body').textContent = aiFeedback.reasoning || '';
-        const $sug = document.getElementById('feedback-diag-sug');
-        if (aiFeedback.recommendation) {
-            document.getElementById('feedback-diag-sug-text').textContent = aiFeedback.recommendation;
-            $sug.hidden = false;
-        } else {
-            $sug.hidden = true;
-        }
-        $diag.hidden = false;
-    } else {
-        $diag.hidden = true;
-    }
+    if ($diag) $diag.hidden = true;
 
-    // En la sesión real no se conoce la última pregunta de antemano: siempre se
-    // ofrece "Siguiente" y el cierre ocurre cuando el backend responde `completed`.
-    const isLast = IS_DEMO && currentIndex >= SESSION_LENGTH - 1;
+    // No se conoce la última pregunta de antemano: siempre se ofrece "Siguiente"
+    // y el cierre ocurre cuando el backend responde `completed`.
     const $nextBtn = document.getElementById('next-question');
     const $finishBtn = document.getElementById('complete-session');
-    if ($nextBtn) $nextBtn.hidden = isLast;
-    if ($finishBtn) $finishBtn.hidden = !isLast;
+    if ($nextBtn) $nextBtn.hidden = false;
+    if ($finishBtn) $finishBtn.hidden = true;
 
     showStage('feedback');
 }
@@ -268,11 +203,6 @@ $submit.addEventListener('click', async () => {
     if (selectedIndex === null || !currentQuestion) return;
     $submit.disabled = true;
     $submit.textContent = 'Enviando…';
-
-    if (IS_DEMO) {
-        setTimeout(() => renderFeedback(fakeAnswerResult(selectedIndex, confidenceDeclared)), 300);
-        return;
-    }
 
     try {
         const result = await sessions.answer(SESSION_ID, {
@@ -296,10 +226,6 @@ $submit.addEventListener('click', async () => {
 
 document.getElementById('next-question').addEventListener('click', async () => {
     currentIndex += 1;
-    if (IS_DEMO && currentIndex >= SESSION_LENGTH) {
-        toast('Demo finalizada.', { kind: 'success' });
-        return;
-    }
     await loadNextQuestion();
     $submit.disabled = true;
     $submit.innerHTML = `Enviar respuesta <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>`;
@@ -307,11 +233,6 @@ document.getElementById('next-question').addEventListener('click', async () => {
 
 
 document.getElementById('complete-session').addEventListener('click', async () => {
-    if (IS_DEMO) {
-        toast('Demo finalizada.', { kind: 'success', duration: 1500 });
-        setTimeout(() => { location.href = '/'; }, 700);
-        return;
-    }
     try {
         await sessions.complete(SESSION_ID);
         toast('Sesión completada.', { kind: 'success', duration: 1500 });
@@ -334,10 +255,6 @@ async function finishSession() {
 
 
 async function loadNextQuestion() {
-    if (IS_DEMO) {
-        renderQuestion(DEMO_QUESTION);
-        return;
-    }
     try {
         const q = await sessions.nextQuestion(SESSION_ID);
         if (!q || q.completed) {

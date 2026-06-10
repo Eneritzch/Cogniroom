@@ -581,10 +581,6 @@ async function bootstrapTeacher(user) {
             : user.username;
     }
 
-    if (localStorage.getItem('cogniroom.demo_user')) {
-        return;
-    }
-
     try {
         const list = await rooms.list();
         renderRooms(list);
@@ -611,7 +607,7 @@ async function bootstrapTeacher(user) {
             location.replace('/app/');
             return;
         }
-        /* sin backend disponible — el template ya muestra los datos demo */
+        /* sin backend disponible — el template mantiene su contenido por defecto */
     }
 }
 

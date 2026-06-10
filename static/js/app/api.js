@@ -51,8 +51,6 @@ async function request(path, { method = 'GET', body, auth = true, isFormData = f
 }
 
 /* ---------- Auth ---------- */
-const DEMO_USER_KEY = 'cogniroom.demo_user';
-
 export const auth = {
     login: (email, password) => request('/auth/login/', {
         method: 'POST', body: { email, password }, auth: false,
@@ -60,24 +58,16 @@ export const auth = {
     register: (payload) => request('/auth/register/', {
         method: 'POST', body: payload, auth: false,
     }),
-    me: () => {
-        const demo = localStorage.getItem(DEMO_USER_KEY);
-        if (demo) return Promise.resolve(JSON.parse(demo));
-        return request('/auth/me/');
-    },
+    me: () => request('/auth/me/'),
     logout: () => {
         // Cierre de sesión a prueba de fallos: primero se limpia el estado local
         // (instantáneo, no depende de la red), luego se revoca el refresh en el
         // servidor en segundo plano (keepalive sobrevive a la navegación).
         const refresh = tokens.refresh;
         const access = tokens.access;
-        const isDemo = localStorage.getItem(DEMO_USER_KEY);
-
-        localStorage.removeItem(DEMO_USER_KEY);
         tokens.clear();
 
-        const isRealToken = access && !String(access).startsWith('demo-');
-        if (refresh && !isDemo && isRealToken) {
+        if (refresh && access) {
             try {
                 fetch(API_BASE + '/auth/logout/', {
                     method: 'POST',
@@ -110,6 +100,7 @@ export const rooms = {
     members:     (roomId) => request(`/rooms/${roomId}/members/`),
     blindSpots:  (roomId) => request(`/rooms/${roomId}/metrics/blind-spots/`),
     atRisk:      (roomId) => request(`/rooms/${roomId}/metrics/at-risk/`),
+    heatmap:     (roomId) => request(`/rooms/${roomId}/metrics/heatmap/`),
 };
 
 /* ---------- Questions ---------- */
@@ -126,6 +117,9 @@ export const questions = {
         method: 'POST', body: payload,
     }),
     approve:  (roomId, ids) => request(`/rooms/${roomId}/questions/approve/`, {
+        method: 'POST', body: { question_ids: ids },
+    }),
+    reject:   (roomId, ids) => request(`/rooms/${roomId}/questions/reject/`, {
         method: 'POST', body: { question_ids: ids },
     }),
 };

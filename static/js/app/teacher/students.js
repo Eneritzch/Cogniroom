@@ -1,7 +1,6 @@
 const _v = new URL(import.meta.url).searchParams.get('v') || '';
-const { tokens } = await import(`../api.js?v=${_v}`);
-const { ROOM_DATA, escapeHTML, profileLabel, bindRoomChange } = await import(`./room-mock.js?v=${_v}`);
-const { getActiveRoom } = await import(`../nav-auth.js?v=${_v}`);
+const { rooms: roomsApi, tokens, ApiError } = await import(`../api.js?v=${_v}`);
+const { toast } = await import(`../toast.js?v=${_v}`);
 
 
 if (!tokens.access) {
@@ -9,8 +8,26 @@ if (!tokens.access) {
 }
 
 
+function escapeHTML(s) {
+    return String(s ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;');
+}
+
+function profileLabel(p) {
+    return ({
+        overconfident: 'Sobreconfiado',
+        underconfident: 'Subconfiado',
+        calibrated: 'Calibrado',
+    })[p] || '—';
+}
+
+
 const PAGE_SIZE = 20;
 
+let DATA = null;           // { name, students, sections, roster }
 let currentProfile = 'all';
 let currentSection = 'all';
 let currentSearch = '';
@@ -100,8 +117,7 @@ function applyFilters(roster) {
 
 
 function renderList() {
-    const room = getActiveRoom();
-    const data = ROOM_DATA[room.id];
+    const data = DATA;
     if (!data) return;
 
     const $rows = document.getElementById('students-rows');
@@ -195,18 +211,61 @@ function renderList() {
 
 
 function render() {
-    const room = getActiveRoom();
-    const data = ROOM_DATA[room.id];
-    if (!data) return;
+    if (!DATA) return;
 
-    document.getElementById('room-name').textContent = data.name;
-    document.getElementById('room-students').textContent = String(data.students);
+    const $name = document.getElementById('room-name');
+    const $students = document.getElementById('room-students');
+    if ($name) $name.textContent = DATA.name;
+    if ($students) $students.textContent = String(DATA.students);
 
     visibleCount = PAGE_SIZE;
     currentSection = 'all';
 
-    renderSectionChips(data.sections);
+    renderSectionChips(DATA.sections);
     renderList();
+}
+
+
+function activeRoomId() {
+    return Number(localStorage.getItem('cogniroom.activeRoomId')) || null;
+}
+
+
+async function resolveRoomId() {
+    const stored = activeRoomId();
+    if (stored) return stored;
+    // sin sala activa: tomar la primera del docente y fijarla
+    const list = await roomsApi.list();
+    const first = (list || [])[0];
+    if (first) {
+        localStorage.setItem('cogniroom.activeRoomId', String(first.id));
+        return first.id;
+    }
+    return null;
+}
+
+
+async function load() {
+    let roomId;
+    try {
+        roomId = await resolveRoomId();
+    } catch (err) {
+        if (err instanceof ApiError && err.status === 401) { tokens.clear(); location.replace('/app/'); return; }
+        toast('No se pudieron cargar las salas.', { kind: 'error' });
+        return;
+    }
+    if (!roomId) {
+        const $rows = document.getElementById('students-rows');
+        if ($rows) $rows.innerHTML = `<li class="students-list__empty">Todavía no tenés salas. Creá una para ver tu cohorte.</li>`;
+        return;
+    }
+    try {
+        DATA = await roomsApi.members(roomId);
+        render();
+    } catch (err) {
+        if (err instanceof ApiError && err.status === 401) { tokens.clear(); location.replace('/app/'); return; }
+        toast('No se pudo cargar el roster.', { kind: 'error' });
+    }
 }
 
 
@@ -245,4 +304,6 @@ if ($more) {
 }
 
 
-bindRoomChange(render);
+window.addEventListener('cogniroom:roomchange', load);
+
+load();

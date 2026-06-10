@@ -12,11 +12,12 @@ class KnowledgeNodeSerializer(serializers.ModelSerializer):
 
 class QuestionSerializer(serializers.ModelSerializer):
     is_approved = serializers.BooleanField(read_only=True)
+    node_name = serializers.CharField(source='node.name', read_only=True)
 
     class Meta:
         model = Question
         fields = [
-            'id', 'node', 'statement', 'difficulty', 'options',
+            'id', 'node', 'node_name', 'statement', 'difficulty', 'options',
             'correct_index', 'source', 'status', 'is_approved', 'created_at',
         ]
         read_only_fields = ['id', 'source', 'status', 'is_approved', 'created_at']
@@ -63,11 +64,26 @@ class PDFDocumentSerializer(serializers.ModelSerializer):
     """List/detail serializer (without extracted text — keeps payload light)."""
 
     processed = serializers.BooleanField(read_only=True)
+    original_name = serializers.SerializerMethodField()
+    size_bytes = serializers.SerializerMethodField()
 
     class Meta:
         model = PDFDocument
-        fields = ['id', 'room', 'uploaded_by', 'file_path', 'status', 'processed', 'created_at']
+        fields = [
+            'id', 'room', 'uploaded_by', 'file_path',
+            'original_name', 'size_bytes', 'status', 'processed', 'created_at',
+        ]
         read_only_fields = fields
+
+    def get_original_name(self, obj):
+        import os
+        return os.path.basename(obj.file_path.name) if obj.file_path else ''
+
+    def get_size_bytes(self, obj):
+        try:
+            return obj.file_path.size
+        except Exception:
+            return None
 
 
 class PDFDocumentDetailSerializer(serializers.ModelSerializer):

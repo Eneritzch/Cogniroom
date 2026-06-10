@@ -29,7 +29,7 @@
         <section class="room-panel" role="region" aria-labelledby="pdfs-title">
             <header class="pdfs-toolbar">
                 <h2 id="pdfs-title" class="pdfs-toolbar__title">Material de origen</h2>
-                <button type="button" class="ds-btn ds-btn--ink">
+                <button type="button" class="ds-btn ds-btn--ink" id="pdf-upload-btn">
                     <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                         <polyline points="17 8 12 3 7 8"></polyline>
@@ -37,6 +37,8 @@
                     </svg>
                     Subir PDF
                 </button>
+                <input type="file" id="pdf-file-input" accept="application/pdf,.pdf" hidden>
+
             </header>
 
             <ul class="pdfs-list" id="pdfs-list" aria-label="PDFs procesados"></ul>

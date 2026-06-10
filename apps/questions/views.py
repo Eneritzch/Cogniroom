@@ -185,6 +185,28 @@ class ApproveQuestionsView(APIView):
         return Response({'approved_count': updated})
 
 
+class RejectQuestionsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, room_id):
+        room = get_object_or_404(Room, id=room_id)
+        if room.teacher_id != request.user.id:
+            return Response(
+                {'detail': 'Only the room owner can reject questions.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        serializer = ApproveQuestionsSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        ids = serializer.validated_data['question_ids']
+
+        updated = Question.objects.filter(
+            id__in=ids, node__room=room
+        ).update(status=Question.STATUS_REJECTED)
+
+        return Response({'rejected_count': updated})
+
+
 class QuestionListView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -195,12 +217,16 @@ class QuestionListView(APIView):
                 {'detail': 'Not a member of this room.'},
                 status=status.HTTP_403_FORBIDDEN,
             )
+
+        # El docente dueño ve todo el banco (incluye pendientes/rechazadas);
+        # los estudiantes solo ven las aprobadas.
+        if request.user.id == room.teacher_id:
+            qs = Question.objects.filter(node__room=room).order_by('-created_at')
+            return Response(QuestionSerializer(qs, many=True).data)
+
         qs = Question.objects.filter(
             node__room=room, status=Question.STATUS_APPROVED
         ).order_by('id')
-
-        if request.user.id == room.teacher_id:
-            return Response(QuestionSerializer(qs, many=True).data)
         return Response(QuestionPublicSerializer(qs, many=True).data)
 
 

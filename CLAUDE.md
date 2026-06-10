@@ -52,9 +52,7 @@ docs/             → database.md, architecture.md
 | `/app/` | login | público (auth en cliente) |
 | `/app/dashboard/` | dashboard (detecta rol vía JWT) | teacher / student |
 | `/app/diagnoses/` | historial de diagnósticos IA | teacher / student |
-| `/app/room/` | sala demo (mock data) | cualquiera autenticado |
 | `/app/room/<id>/` | sala real (fetch backend) | teacher (dueño) |
-| `/app/session/` | sesión demo (mock, sin backend) | cualquiera autenticado |
 | `/app/session/<id>/` | sesión real (BKT/ICC/Claude) | student inscripto |
 | `/app/design-system/` | showcase de componentes | público |
 

@@ -97,13 +97,17 @@ class Command(BaseCommand):
         else:
             self.stdout.write('Teacher already exists.')
 
+        STUDENT_NAMES = [('Andrea', 'Molina'), ('Bruno', 'Cárdenas'), ('Camila', 'Reyes')]
         students = []
         for i in range(1, 4):
             email = f'student{i}@cogniroom.com'
+            first, last = STUDENT_NAMES[i - 1]
             student, s_created = User.objects.get_or_create(
                 email=email,
                 defaults={
                     'username': f'student{i}',
+                    'first_name': first,
+                    'last_name': last,
                     'role': User.ROLE_STUDENT,
                     'institution': 'CogniRoom Demo',
                 },
@@ -112,6 +116,9 @@ class Command(BaseCommand):
                 student.set_password('password123')
                 student.save()
                 self.stdout.write(self.style.SUCCESS(f'Created student: {email}'))
+            elif not student.first_name:
+                student.first_name, student.last_name = first, last
+                student.save(update_fields=['first_name', 'last_name'])
             students.append(student)
 
         room, r_created = Room.objects.get_or_create(

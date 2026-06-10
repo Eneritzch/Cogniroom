@@ -11,8 +11,8 @@
         </a>
 
         <nav class="app-nav" aria-label="Principal">
-            <a class="app-nav__link" href="/app/room/"          data-show-for="teacher"         {% if active == 'room' %}aria-current="page"{% endif %}><span class="app-nav__link-num">01</span> Sala</a>
-            <a class="app-nav__link" href="/app/session/"       data-show-for="student"         {% if active == 'session' %}aria-current="page"{% endif %}><span class="app-nav__link-num">01</span> Sesión</a>
+            <a class="app-nav__link" href="/app/rooms/"          data-show-for="teacher"         {% if active == 'rooms' %}aria-current="page"{% endif %}><span class="app-nav__link-num">01</span> Salas</a>
+            <a class="app-nav__link" href="/app/my-rooms/"       data-show-for="student"         {% if active == 'my-rooms' %}aria-current="page"{% endif %}><span class="app-nav__link-num">01</span> Salas</a>
             <a class="app-nav__link" href="/app/diagnoses/"     data-show-for="teacher,student" {% if active == 'diagnoses' %}aria-current="page"{% endif %}><span class="app-nav__link-num">02</span> Diagnósticos</a>
             <a class="app-nav__link" href="/app/dashboard/"     data-show-for="teacher,student" {% if active == 'dashboard' %}aria-current="page"{% endif %}><span class="app-nav__link-num">03</span> Dashboard</a>
             <a class="app-nav__link" href="/app/design-system/" data-show-for="public"          {% if active == 'design-system' %}aria-current="page"{% endif %}><span class="app-nav__link-num">04</span> Sistema</a>
