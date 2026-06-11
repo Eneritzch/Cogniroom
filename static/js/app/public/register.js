@@ -18,8 +18,8 @@ initPasswordToggles();
 
 const $form = document.getElementById('register-form');
 const $firstName = document.getElementById('first_name');
-const $lastName = document.getElementById('last_name');
-const $username = document.getElementById('username');
+const $firstSurname = document.getElementById('first_surname');
+const $secondSurname = document.getElementById('second_surname');
 const $email = document.getElementById('email');
 const $institution = document.getElementById('institution');
 const $password = document.getElementById('password');
@@ -27,8 +27,9 @@ const $submit = document.getElementById('register-submit');
 const $submitText = document.getElementById('register-submit-text');
 const $teacherCodeGroup = document.getElementById('teacher-code-group');
 const $teacherCode = document.getElementById('teacher_code');
+const $institutionCol = document.getElementById('institution-col');
 
-const FIELDS = [$firstName, $lastName, $username, $email, $password];
+const FIELDS = [$firstName, $firstSurname, $secondSurname, $email, $password];
 
 let selectedRole = 'teacher';
 
@@ -36,6 +37,9 @@ function syncTeacherCode() {
     const isTeacher = selectedRole === 'teacher';
     $teacherCodeGroup.hidden = !isTeacher;
     if (!isTeacher) setInvalid($teacherCode, false);
+    // Sin código visible (estudiante), institución toma la fila completa para no dejar hueco.
+    $institutionCol.classList.toggle('col-md-6', isTeacher);
+    $institutionCol.classList.toggle('col-md-12', !isTeacher);
 }
 
 /* ---- Segmented de rol ---- */
@@ -110,8 +114,8 @@ $form.addEventListener('submit', async (event) => {
 
     const payload = {
         first_name: $firstName.value.trim(),
-        last_name: $lastName.value.trim(),
-        username: $username.value.trim(),
+        first_surname: $firstSurname.value.trim(),
+        second_surname: $secondSurname.value.trim(),
         email: $email.value.trim(),
         institution: $institution.value.trim(),
         password: $password.value,
@@ -154,8 +158,8 @@ function handleServerError(err) {
     const body = err.body || {};
     const fieldMap = {
         first_name: $firstName,
-        last_name: $lastName,
-        username: $username,
+        first_surname: $firstSurname,
+        second_surname: $secondSurname,
         email: $email,
         password: $password,
         teacher_code: $teacherCode,
