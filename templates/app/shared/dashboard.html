@@ -19,7 +19,7 @@
         <section class="dashboard-view" data-view="student" hidden aria-labelledby="student-heading">
             <span class="dashboard-eyebrow eyebrow">Mi perfil cognitivo</span>
             <h1 id="student-heading" class="dashboard-title display">
-                <span id="student-greeting">Andrea</span>, así te ves esta semana.
+                <span id="student-greeting"></span>, así te ves esta semana.
             </h1>
 
             <div class="student-hero">
@@ -31,27 +31,27 @@
                                     stroke-dasharray="642.78" stroke-dashoffset="347.1"></circle>
                         </svg>
                         <div class="calibration-ring__center">
-                            <span class="calibration-ring__value" id="student-ring-value" style="font-size:57.2px;">0.46</span>
+                            <span class="calibration-ring__value" id="student-ring-value" style="font-size:57.2px;">—</span>
                             <span class="calibration-ring__label eyebrow">ICC actual</span>
-                            <span class="calibration-ring__sublabel" id="student-ring-sub">29 respuestas</span>
+                            <span class="calibration-ring__sublabel" id="student-ring-sub">—</span>
                         </div>
                     </div>
-                    <span class="pill" data-profile="overconfident" id="student-pill">Sobreconfiado</span>
+                    <span class="pill" data-profile="overconfident" id="student-pill">—</span>
                     <p class="student-hero__note" id="student-note">
                         Tu confianza supera tu mastery en la mayoría de los nodos.
                         No es un problema de estudio — es un problema de autoconocimiento.
                     </p>
                     <div class="student-hero__mini">
                         <div class="student-hero__mini-cell">
-                            <div class="student-hero__mini-k" data-tone="amber" id="student-mini-icc">0.46</div>
+                            <div class="student-hero__mini-k" data-tone="amber" id="student-mini-icc">—</div>
                             <div class="student-hero__mini-v">ICC</div>
                         </div>
                         <div class="student-hero__mini-cell">
-                            <div class="student-hero__mini-k" id="student-mini-mastery">0.61</div>
+                            <div class="student-hero__mini-k" id="student-mini-mastery">—</div>
                             <div class="student-hero__mini-v">Mastery</div>
                         </div>
                         <div class="student-hero__mini-cell">
-                            <div class="student-hero__mini-k" data-tone="amber" id="student-mini-gap">+24</div>
+                            <div class="student-hero__mini-k" data-tone="amber" id="student-mini-gap">—</div>
                             <div class="student-hero__mini-v">Gap pts</div>
                         </div>
                     </div>
@@ -226,7 +226,7 @@
                     <header class="d-kpi__head">
                         <span id="kpi-rooms-label" class="d-kpi__k">Salas activas</span>
                     </header>
-                    <div class="d-kpi__v num" id="rooms-value">4</div>
+                    <div class="d-kpi__v num" id="rooms-value">—</div>
                     <p class="d-kpi__hint" id="rooms-hint">Salas con is_active = true.</p>
                 </article>
 
@@ -234,7 +234,7 @@
                     <header class="d-kpi__head">
                         <span id="kpi-students-label" class="d-kpi__k">Estudiantes inscritos</span>
                     </header>
-                    <div class="d-kpi__v num" id="students-value">187</div>
+                    <div class="d-kpi__v num" id="students-value">—</div>
                     <p class="d-kpi__hint" id="students-hint">Sumatoria de room_membership.</p>
                 </article>
 
@@ -242,7 +242,7 @@
                     <header class="d-kpi__head">
                         <span id="kpi-answers-label" class="d-kpi__k">Respuestas registradas</span>
                     </header>
-                    <div class="d-kpi__v num" id="answers-value">2 471</div>
+                    <div class="d-kpi__v num" id="answers-value">—</div>
                     <p class="d-kpi__hint" id="answers-hint">Total acumulado de student_response.</p>
                 </article>
 
@@ -250,7 +250,7 @@
                     <header class="d-kpi__head">
                         <span id="kpi-diags-label" class="d-kpi__k">Notas del tutor IA</span>
                     </header>
-                    <div class="d-kpi__v num" id="diags-value">47</div>
+                    <div class="d-kpi__v num" id="diags-value">—</div>
                     <p class="d-kpi__hint" id="diags-hint">Diagnósticos generados al detectar descalibración.</p>
                 </article>
             </section>
@@ -281,7 +281,7 @@
                             <h3 id="students-title" class="d-card__title">Estudiantes a intervenir</h3>
                             <p class="d-card__sub">Riesgo alto detectado por el tutor IA</p>
                         </div>
-                        <span class="d-card__hint num" data-bind="ar-count">5 en riesgo</span>
+                        <span class="d-card__hint num" data-bind="ar-count">—</span>
                     </header>
                     <ul class="d-students" id="teacher-at-risk" data-bind="at-risk"></ul>
                 </article>
@@ -301,7 +301,7 @@
                             <circle class="d-donut__seg d-donut__seg--und"  cx="60" cy="60" r="48"></circle>
                         </svg>
                         <div class="d-donut__center">
-                            <div class="d-donut__pct num" id="donut-pct">41%</div>
+                            <div class="d-donut__pct num" id="donut-pct">—</div>
                             <div class="d-donut__label">Calibrados</div>
                         </div>
                     </div>
@@ -309,17 +309,17 @@
                         <li>
                             <span class="d-donut__dot" data-tone="moss" aria-hidden="true"></span>
                             <span class="d-donut__legend-label">Calibrados</span>
-                            <span class="d-donut__legend-val num" id="donut-cal">34</span>
+                            <span class="d-donut__legend-val num" id="donut-cal">0</span>
                         </li>
                         <li>
                             <span class="d-donut__dot" data-tone="amber" aria-hidden="true"></span>
                             <span class="d-donut__legend-label">Sobreconfiados</span>
-                            <span class="d-donut__legend-val num" id="donut-over">32</span>
+                            <span class="d-donut__legend-val num" id="donut-over">0</span>
                         </li>
                         <li>
                             <span class="d-donut__dot" data-tone="stone" aria-hidden="true"></span>
                             <span class="d-donut__legend-label">Subconfiados</span>
-                            <span class="d-donut__legend-val num" id="donut-und">18</span>
+                            <span class="d-donut__legend-val num" id="donut-und">0</span>
                         </li>
                     </ul>
                 </article>
