@@ -1,8 +1,7 @@
 // widget teacher-cohort-health removido (avgClassIcc, avgClassMastery, cohort-risk eran promedios docente-wide prohibidos por schema v2026-06)
 const _v = new URL(import.meta.url).searchParams.get('v') || '';
-const { tokens } = await import(`../api.js?v=${_v}`);
+const { auth, rooms: roomsApi, tokens, ApiError } = await import(`../api.js?v=${_v}`);
 const { toast } = await import(`../toast.js?v=${_v}`);
-const { TEACHER_DATA } = await import(`./teacher-mock.js?v=${_v}`);
 
 
 if (!tokens.access) {
@@ -138,21 +137,48 @@ function bindPasswordForm() {
 
 
 function bindLogout() {
-    document.getElementById('logout-btn-profile').addEventListener('click', () => {
-        tokens.clear();
-        location.href = '/';
+    const $btn = document.getElementById('logout-btn-profile');
+    if (!$btn) return;
+    $btn.addEventListener('click', () => {
+        auth.logout();
+        location.href = '/app/';
     });
 }
 
 
-function init() {
-    const p = TEACHER_DATA.profile;
-    paintHero(p);
-    paintStats(p);
-    paintPersonal(p);
+async function init() {
+    bindLogout();
+
+    let user, roomsList;
+    try {
+        [user, roomsList] = await Promise.all([auth.me(), roomsApi.list()]);
+    } catch (err) {
+        if (err instanceof ApiError && err.status === 401) {
+            tokens.clear();
+            location.replace('/app/');
+            return;
+        }
+        toast('No se pudo cargar tu perfil.', { kind: 'error' });
+        return;
+    }
+
+    roomsList = roomsList || [];
+    const sum = (key) => roomsList.reduce((a, r) => a + (r[key] || 0), 0);
+    const stats = {
+        activeRooms: roomsList.filter((r) => r.is_active !== false).length,
+        totalRooms: roomsList.length,
+        totalStudents: sum('member_count'),
+        questionsApproved: sum('question_count'),
+        questionsPending: sum('pending_ai_count'),
+        pdfsUploaded: sum('pdf_count'),
+        aiDiagnosesGenerated: sum('diagnosis_count'),
+    };
+
+    paintHero(user);
+    paintStats(stats);
+    paintPersonal(user);
     bindPersonalForm();
     bindPasswordForm();
-    bindLogout();
 }
 
 

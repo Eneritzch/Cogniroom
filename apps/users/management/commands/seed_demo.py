@@ -86,6 +86,8 @@ class Command(BaseCommand):
             email='teacher@cogniroom.com',
             defaults={
                 'username': 'teacher',
+                'first_name': 'Carlos',
+                'last_name': 'Ramírez',
                 'role': User.ROLE_TEACHER,
                 'institution': 'CogniRoom Demo',
             },
@@ -95,6 +97,9 @@ class Command(BaseCommand):
             teacher.save()
             self.stdout.write(self.style.SUCCESS('Created teacher: teacher@cogniroom.com'))
         else:
+            if not teacher.first_name:
+                teacher.first_name, teacher.last_name = 'Carlos', 'Ramírez'
+                teacher.save(update_fields=['first_name', 'last_name'])
             self.stdout.write('Teacher already exists.')
 
         STUDENT_NAMES = [('Andrea', 'Molina'), ('Bruno', 'Cárdenas'), ('Camila', 'Reyes')]
