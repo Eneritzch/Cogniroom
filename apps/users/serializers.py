@@ -26,29 +26,25 @@ class RegisterSerializer(serializers.ModelSerializer):
     role = serializers.ChoiceField(choices=PUBLIC_ROLE_CHOICES, default=User.ROLE_STUDENT)
     # Solo se exige cuando role == teacher. write_only: nunca se devuelve.
     teacher_code = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    # El username no se pide al usuario: se deriva de nombre + apellidos en create().
+    first_surname = serializers.CharField(write_only=True, max_length=150)
+    second_surname = serializers.CharField(write_only=True, max_length=150)
 
     class Meta:
         model = User
         fields = [
-            'username', 'email', 'password', 'role', 'teacher_code',
-            'institution', 'first_name', 'last_name',
+            'email', 'password', 'role', 'teacher_code', 'institution',
+            'first_name', 'first_surname', 'second_surname',
         ]
         extra_kwargs = {
             'institution': {'required': False, 'allow_blank': True},
             'first_name': {'required': True, 'allow_blank': False},
-            'last_name': {'required': True, 'allow_blank': False},
         }
 
     def validate_email(self, value):
         value = value.strip().lower()
         if User.objects.filter(email__iexact=value).exists():
             raise serializers.ValidationError('Ya existe una cuenta con este correo.')
-        return value
-
-    def validate_username(self, value):
-        value = value.strip()
-        if User.objects.filter(username__iexact=value).exists():
-            raise serializers.ValidationError('Este nombre de usuario ya está en uso.')
         return value
 
     def validate(self, attrs):
@@ -70,6 +66,16 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         password = validated_data.pop('password')
+        first_surname = validated_data.pop('first_surname').strip()
+        second_surname = validated_data.pop('second_surname').strip()
+        first_name = validated_data.get('first_name', '').strip()
+
+        validated_data['first_name'] = first_name
+        validated_data['last_name'] = f'{first_surname} {second_surname}'.strip()
+        validated_data['username'] = User.generate_username(
+            first_name, first_surname, second_surname,
+        )
+
         user = User(**validated_data)
         user.set_password(password)
         user.save()
