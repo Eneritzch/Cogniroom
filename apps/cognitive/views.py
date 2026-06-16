@@ -23,6 +23,27 @@ from .serializers import (
 )
 
 
+def _parse_section(request, room):
+    """Lee ?section_id= y valida que pertenezca a la sala.
+
+    Devuelve (section_id|None, error_response|None). Sin parámetro (o 'all')
+    → (None, None): comportamiento de sala completa, intacto.
+    """
+    raw = request.query_params.get('section_id')
+    if raw in (None, '', 'all'):
+        return None, None
+    try:
+        sid = int(raw)
+    except (TypeError, ValueError):
+        return None, Response({'detail': 'Invalid section_id.'}, status=status.HTTP_400_BAD_REQUEST)
+    if not room.sections.filter(id=sid).exists():
+        return None, Response(
+            {'detail': 'Section not found in this room.'},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+    return sid, None
+
+
 class MyProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -201,8 +222,39 @@ class BlindSpotsView(APIView):
                 {'detail': 'Only the room owner can view blind spots.'},
                 status=status.HTTP_403_FORBIDDEN,
             )
-        spots = BlindSpotIndex.objects.filter(room=room).order_by('ipc_value')
-        return Response(BlindSpotIndexSerializer(spots, many=True).data)
+        section_id, error = _parse_section(request, room)
+        if error:
+            return error
+
+        if section_id is None:
+            spots = BlindSpotIndex.objects.filter(room=room).order_by('ipc_value')
+            return Response(BlindSpotIndexSerializer(spots, many=True).data)
+
+        # Por sección: el IPC almacenado es de sala completa, así que se recalcula
+        # (promedio de ICC de los alumnos de la sección) por nodo, en vivo.
+        result = []
+        for node in room.nodes.order_by('id'):
+            ci = CognitiveIndex.objects.filter(
+                node=node,
+                student__room_memberships__room=room,
+                student__room_memberships__section_id=section_id,
+            )
+            total = ci.values('student').distinct().count()
+            if total == 0:
+                continue
+            ipc = round(float(ci.aggregate(v=Avg('icc_value'))['v'] or 0.0), 4)
+            result.append({
+                'id': None,
+                'node': node.id,
+                'node_name': node.name,
+                'room': room.id,
+                'ipc_value': ipc,
+                'total_student': total,
+                'calculated_at': None,
+                'alert': ipc < 0.5,
+            })
+        result.sort(key=lambda s: s['ipc_value'])
+        return Response(result)
 
 
 class AtRiskView(APIView):
@@ -216,10 +268,16 @@ class AtRiskView(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
+        section_id, error = _parse_section(request, room)
+        if error:
+            return error
+
         # En riesgo = descalibración significativa (|gap| > 0.2). Se calcula desde
         # las métricas cognitivas reales (no depende de que Claude haya corrido).
         result = []
         memberships = RoomMembership.objects.filter(room=room).select_related('student')
+        if section_id is not None:
+            memberships = memberships.filter(section_id=section_id)
         for m in memberships:
             gap = (
                 CognitiveIndex.objects.filter(node__room=room, student=m.student)
@@ -253,12 +311,18 @@ class RoomHeatmapView(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
+        section_id, error = _parse_section(request, room)
+        if error:
+            return error
+
         nodes = list(room.nodes.order_by('id'))
         memberships = (
             RoomMembership.objects.filter(room=room)
             .select_related('student', 'section')
             .order_by('student__first_name', 'student__last_name')
         )
+        if section_id is not None:
+            memberships = memberships.filter(section_id=section_id)
 
         mastery = {
             (b.student_id, b.node_id): b.p_mastery
