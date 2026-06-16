@@ -96,11 +96,24 @@ export const me = {
 export const rooms = {
     list:        () => request('/rooms/'),
     create:      (data) => request('/rooms/', { method: 'POST', body: data }),
-    join:        (access_code) => request('/rooms/join/', { method: 'POST', body: { access_code } }),
+    join:        (access_code, section_id) => request('/rooms/join/', {
+        method: 'POST',
+        body: section_id != null ? { access_code, section_id } : { access_code },
+    }),
     members:     (roomId) => request(`/rooms/${roomId}/members/`),
     blindSpots:  (roomId) => request(`/rooms/${roomId}/metrics/blind-spots/`),
     atRisk:      (roomId) => request(`/rooms/${roomId}/metrics/at-risk/`),
     heatmap:     (roomId) => request(`/rooms/${roomId}/metrics/heatmap/`),
+};
+
+/* ---------- Sections (room-scoped) ---------- */
+export const sections = {
+    list:   (roomId) => request(`/rooms/${roomId}/sections/`),
+    create: (roomId, data) => request(`/rooms/${roomId}/sections/`, { method: 'POST', body: data }),
+    update: (roomId, sectionId, data) => request(`/rooms/${roomId}/sections/${sectionId}/`, {
+        method: 'PATCH', body: data,
+    }),
+    delete: (roomId, sectionId) => request(`/rooms/${roomId}/sections/${sectionId}/`, { method: 'DELETE' }),
 };
 
 /* ---------- Questions ---------- */

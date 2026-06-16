@@ -5,11 +5,13 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Room, RoomMembership
+from .models import Room, RoomMembership, Section
 from .serializers import (
     JoinRoomSerializer,
     RoomCreateSerializer,
     RoomSerializer,
+    SectionCreateSerializer,
+    SectionSerializer,
 )
 
 
@@ -100,8 +102,90 @@ class JoinRoomView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        RoomMembership.objects.create(room=room, student=request.user)
+        section = None
+        section_id = serializer.validated_data.get('section_id')
+        if section_id is not None:
+            try:
+                section = Section.objects.get(id=section_id, room=room)
+            except Section.DoesNotExist:
+                return Response(
+                    {'detail': 'Section not found in this room.'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        RoomMembership.objects.create(room=room, student=request.user, section=section)
         return Response(RoomSerializer(room).data, status=status.HTTP_201_CREATED)
+
+
+class SectionListCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, room_id):
+        room = get_object_or_404(Room, id=room_id)
+        if room.teacher_id != request.user.id:
+            return Response(
+                {'detail': 'Only the owner can list sections.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        return Response(SectionSerializer(room.sections.all(), many=True).data)
+
+    def post(self, request, room_id):
+        room = get_object_or_404(Room, id=room_id)
+        if room.teacher_id != request.user.id:
+            return Response(
+                {'detail': 'Only the owner can create sections.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        serializer = SectionCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        code = serializer.validated_data['code']
+        if room.sections.filter(code=code).exists():
+            return Response(
+                {'detail': 'A section with this code already exists in this room.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        section = Section.objects.create(room=room, **serializer.validated_data)
+        return Response(SectionSerializer(section).data, status=status.HTTP_201_CREATED)
+
+
+class SectionDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def _resolve(self, request, room_id, section_id):
+        room = get_object_or_404(Room, id=room_id)
+        if room.teacher_id != request.user.id:
+            return None, Response(
+                {'detail': 'Only the owner can modify sections.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        return get_object_or_404(Section, id=section_id, room=room), None
+
+    def patch(self, request, room_id, section_id):
+        section, error = self._resolve(request, room_id, section_id)
+        if error:
+            return error
+
+        serializer = SectionCreateSerializer(section, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        new_code = serializer.validated_data.get('code', section.code)
+        if new_code != section.code and section.room.sections.filter(code=new_code).exists():
+            return Response(
+                {'detail': 'A section with this code already exists in this room.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        serializer.save()
+        return Response(SectionSerializer(section).data)
+
+    def delete(self, request, room_id, section_id):
+        section, error = self._resolve(request, room_id, section_id)
+        if error:
+            return error
+        # on_delete=SET_NULL: las membresías quedan sin sección, el alumno no es expulsado.
+        section.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class RoomMembersView(APIView):
