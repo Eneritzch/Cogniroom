@@ -92,3 +92,6 @@ yarn-error.log*
 
 # Jupyter
 .ipynb_checkpoints
+
+# Artefacto de tesis (Word) - no versionar
+3.M.docx
