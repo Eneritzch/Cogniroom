@@ -269,3 +269,100 @@
   color: var(--ink-muted);
   box-shadow: var(--shadow-sm);
 }
+
+.room-placeholder .room-list__link {
+  display: inline-block;
+  margin-top: var(--s-2);
+}
+
+
+/* Listas compactas de los tabs (estudiantes / preguntas / pdfs) */
+.room-list__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: var(--s-3);
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+
+.room-list__link {
+  color: var(--sage-strong);
+  text-decoration: none;
+  font-weight: var(--fw-medium);
+}
+
+.room-list__link:hover { text-decoration: underline; }
+
+.room-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.room-list__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-4);
+  background: var(--paper-elevated);
+  border: 1px solid var(--paper-border);
+  border-radius: var(--r-md);
+}
+
+.room-list__main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.room-list__title {
+  font-weight: var(--fw-medium);
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.room-list__sub {
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+
+.room-list__aside {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  flex-wrap: wrap;
+}
+
+.room-list__tag {
+  padding: 2px var(--s-2);
+  font-size: 11px;
+  font-weight: var(--fw-semibold);
+  color: var(--ink-muted);
+  background: var(--paper-surface);
+  border: 1px solid var(--paper-border);
+  border-radius: var(--r-sm);
+}
+
+.room-list__metric {
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+
+@media (min-width: 768px) {
+  .room-list__head { flex-direction: row; align-items: center; }
+
+  .room-list__item {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
