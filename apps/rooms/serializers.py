@@ -24,17 +24,18 @@ class RoomCreateSerializer(serializers.ModelSerializer):
 
 
 class SectionSerializer(serializers.ModelSerializer):
-    member_count = serializers.SerializerMethodField()
+    # Convención del resto de la API (members/heatmap): id_section + total_student.
+    id_section = serializers.IntegerField(source='id', read_only=True)
+    total_student = serializers.SerializerMethodField()
 
     class Meta:
         model = Section
         fields = [
-            'id', 'code', 'name', 'schedule', 'capacity',
-            'is_active', 'member_count', 'created_at',
+            'id_section', 'code', 'name', 'schedule',
+            'capacity', 'is_active', 'total_student', 'created_at',
         ]
-        read_only_fields = ['id', 'created_at']
 
-    def get_member_count(self, obj):
+    def get_total_student(self, obj):
         return obj.memberships.count()
 
 
