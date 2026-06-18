@@ -12,6 +12,30 @@ def _ascii_slug(value):
     return re.sub(r'[^a-z0-9]', '', ascii_only.lower())
 
 
+class Institution(models.Model):
+    """Universidad/institución del catálogo. El estudiante la elige de una lista;
+    el docente queda vinculado resolviendo su `teacher_code` (uno por institución).
+    Gestionable desde el admin de Django."""
+
+    name = models.CharField(max_length=200, unique=True)
+    # Código de invitación de docentes propio de la institución. Único en todo el
+    # sistema para que un código resuelva a una sola institución. Se normaliza a
+    # mayúsculas en save() para que la comparación sea estable.
+    teacher_code = models.CharField(max_length=100, unique=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        self.teacher_code = (self.teacher_code or '').strip().upper()
+        super().save(*args, **kwargs)
+
+
 class User(AbstractUser):
     ROLE_STUDENT = 'student'
     ROLE_TEACHER = 'teacher'
@@ -24,7 +48,13 @@ class User(AbstractUser):
 
     email = models.EmailField(unique=True)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default=ROLE_STUDENT)
-    institution = models.CharField(max_length=200, blank=True)
+    institution = models.ForeignKey(
+        Institution,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='members',
+    )
 
     def __str__(self):
         return f'{self.username} ({self.role})'

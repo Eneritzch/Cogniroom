@@ -58,6 +58,10 @@ export const auth = {
     register: (payload) => request('/auth/register/', {
         method: 'POST', body: payload, auth: false,
     }),
+    institutions: () => request('/auth/institutions/', { auth: false }),
+    resolveTeacherCode: (code) => request('/auth/teacher-code/resolve/', {
+        method: 'POST', body: { code }, auth: false,
+    }),
     me: () => request('/auth/me/'),
     logout: () => {
         // Cierre de sesión a prueba de fallos: primero se limpia el estado local

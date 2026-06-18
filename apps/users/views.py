@@ -7,12 +7,51 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView  # noqa: F401
 
+from .models import Institution
 from .serializers import (
+    InstitutionSerializer,
     LoginSerializer,
     RegisterSerializer,
     UserSerializer,
     tokens_for_user,
 )
+
+
+class InstitutionListView(APIView):
+    """Catálogo de instituciones activas para el select del estudiante."""
+
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        institutions = Institution.objects.filter(is_active=True)
+        return Response(InstitutionSerializer(institutions, many=True).data)
+
+
+class ResolveTeacherCodeView(APIView):
+    """Resuelve un código de docente a su institución. Alimenta el autocompletado
+    del campo bloqueado en el registro. No revela qué códigos existen: cualquier
+    código no válido devuelve 404."""
+
+    permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'auth'
+
+    def post(self, request):
+        code = (request.data.get('code') or '').strip().upper()
+        if not code:
+            return Response(
+                {'detail': 'Ingresá un código.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        institution = Institution.objects.filter(
+            teacher_code=code, is_active=True,
+        ).first()
+        if not institution:
+            return Response(
+                {'detail': 'Código de docente inválido.'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        return Response(InstitutionSerializer(institution).data)
 
 
 class RegisterView(APIView):

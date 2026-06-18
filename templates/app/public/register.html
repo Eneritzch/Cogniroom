@@ -56,19 +56,51 @@
                                                id="teacher_code"
                                                name="teacher_code"
                                                autocomplete="off"
-                                               autocapitalize="off"
+                                               autocapitalize="characters"
                                                spellcheck="false"
                                                maxlength="100"
-                                               aria-describedby="teacher-code-hint">
+                                               aria-describedby="teacher-code-hint teacher-code-status">
                                     </div>
-                                    <p class="auth-field__hint" id="teacher-code-hint">Necesario solo para cuentas docentes.</p>
+                                    <p class="auth-field__hint" id="teacher-code-hint">Necesario solo para cuentas docentes. Tu institución se asigna por el código.</p>
+                                    <p class="auth-field__hint auth-field__hint--status" id="teacher-code-status" role="status" aria-live="polite" hidden></p>
                                 </div>
                             </div>
 
                             <div class="col-12 col-md-6" id="institution-col">
                                 <div class="auth-field">
-                                    <label class="auth-field__label" for="institution">Institución <span class="auth-field__optional">opcional</span></label>
-                                    <div class="auth-field__input-wrap">
+                                    <label class="auth-field__label" id="institution-label">Institución</label>
+
+                                    <!-- Estudiante: dropdown custom (listbox) alineado al tema -->
+                                    <div class="auth-select" id="institution-select-wrap">
+                                        <button type="button"
+                                                class="auth-select__trigger"
+                                                id="institution-trigger"
+                                                role="combobox"
+                                                aria-haspopup="listbox"
+                                                aria-expanded="false"
+                                                aria-controls="institution-menu"
+                                                aria-labelledby="institution-label institution-value">
+                                            <svg class="auth-field__icon icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path d="M3 21h18"></path>
+                                                <path d="M5 21V7l8-4v18"></path>
+                                                <path d="M19 21V11l-6-4"></path>
+                                            </svg>
+                                            <span class="auth-select__value auth-select__value--placeholder" id="institution-value">Seleccioná tu universidad</span>
+                                            <svg class="auth-select__caret icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                                                <polyline points="6 9 12 15 18 9"></polyline>
+                                            </svg>
+                                        </button>
+                                        <ul class="auth-select__menu"
+                                            id="institution-menu"
+                                            role="listbox"
+                                            aria-label="Institución"
+                                            tabindex="-1"
+                                            hidden></ul>
+                                    </div>
+                                    <input type="hidden" id="institution" name="institution" value="">
+
+                                    <!-- Docente: se autocompleta desde el código, no editable -->
+                                    <div class="auth-field__input-wrap auth-field__input-wrap--readonly" id="institution-display-wrap" hidden>
                                         <svg class="auth-field__icon icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
                                             <path d="M3 21h18"></path>
                                             <path d="M5 21V7l8-4v18"></path>
@@ -76,11 +108,14 @@
                                         </svg>
                                         <input class="auth-field__input"
                                                type="text"
-                                               id="institution"
-                                               name="institution"
-                                               autocomplete="organization"
-                                               maxlength="200">
+                                               id="institution-display"
+                                               readonly
+                                               aria-readonly="true"
+                                               tabindex="-1"
+                                               placeholder="Se completa con tu código"
+                                               aria-describedby="institution-display-hint">
                                     </div>
+                                    <p class="auth-field__hint" id="institution-display-hint" hidden>Vinculada automáticamente a tu código de docente.</p>
                                 </div>
                             </div>
                         </div>

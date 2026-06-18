@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib import admin
 from django.http import JsonResponse
 from django.urls import include, path
 from django.views.generic import TemplateView
@@ -11,11 +12,13 @@ def api_root(request):
         'version': 'v1',
         'base': '/api/v1/',
         'auth': {
-            'register': 'POST /api/v1/auth/register/',
-            'login':    'POST /api/v1/auth/login/',
-            'logout':   'POST /api/v1/auth/logout/',
-            'refresh':  'POST /api/v1/auth/refresh/',
-            'me':       'GET  /api/v1/auth/me/',
+            'register':            'POST /api/v1/auth/register/',
+            'login':               'POST /api/v1/auth/login/',
+            'logout':              'POST /api/v1/auth/logout/',
+            'refresh':             'POST /api/v1/auth/refresh/',
+            'me':                  'GET  /api/v1/auth/me/',
+            'institutions':        'GET  /api/v1/auth/institutions/',
+            'teacher_code_resolve': 'POST /api/v1/auth/teacher-code/resolve/',
         },
         'profile':   'GET /api/v1/profile/',
         'nodes': {
@@ -81,6 +84,7 @@ html_routes = [
 
 
 api_routes = [
+    path('admin/',           admin.site.urls),
     path('api/v1/',          api_root,                              name='api-root'),
     path('api/v1/auth/',     include('apps.users.urls')),
     path('api/v1/rooms/',    include('apps.rooms.urls')),

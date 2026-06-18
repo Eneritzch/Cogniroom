@@ -9,7 +9,7 @@ from apps.cognitive.models import BKTState, CognitiveIndex, StudentProgressSnaps
 from apps.questions.models import KnowledgeNode, Question
 from apps.rooms.models import Room, RoomMembership
 from apps.sessions.models import Answer, EvaluationSession
-from apps.users.models import User
+from apps.users.models import Institution, User
 from services.bkt_engine import BKTEngine
 from services.icc_calculator import ICCCalculator
 
@@ -80,8 +80,33 @@ SEED_QUESTIONS = [
 class Command(BaseCommand):
     help = 'Seed demo data: 1 teacher, 3 students, 1 group room with nodes and questions.'
 
+    DEMO_INSTITUTIONS = [
+        ('CogniRoom Demo', 'DEMO2026'),
+        ('Universidad Central del Ecuador', 'UCE2026'),
+        ('Escuela Politécnica Nacional', 'EPN2026'),
+        ('Universidad San Francisco de Quito', 'USFQ2026'),
+    ]
+
     @transaction.atomic
     def handle(self, *args, **options):
+        institutions = {}
+        for name, code in self.DEMO_INSTITUTIONS:
+            inst, i_created = Institution.objects.get_or_create(
+                name=name, defaults={'teacher_code': code},
+            )
+            institutions[name] = inst
+            if i_created:
+                self.stdout.write(self.style.SUCCESS(f'Created institution: {name} ({code})'))
+        demo_inst = institutions['CogniRoom Demo']
+
+        if not User.objects.filter(email='admin@cogniroom.com').exists():
+            User.objects.create_superuser(
+                username='admin',
+                email='admin@cogniroom.com',
+                password='password123',
+            )
+            self.stdout.write(self.style.SUCCESS('Created superuser: admin@cogniroom.com / password123'))
+
         teacher, created = User.objects.get_or_create(
             email='teacher@cogniroom.com',
             defaults={
@@ -89,7 +114,7 @@ class Command(BaseCommand):
                 'first_name': 'Carlos',
                 'last_name': 'Ramírez',
                 'role': User.ROLE_TEACHER,
-                'institution': 'CogniRoom Demo',
+                'institution': demo_inst,
             },
         )
         if created:
@@ -114,7 +139,7 @@ class Command(BaseCommand):
                     'first_name': first,
                     'last_name': last,
                     'role': User.ROLE_STUDENT,
-                    'institution': 'CogniRoom Demo',
+                    'institution': demo_inst,
                 },
             )
             if s_created:

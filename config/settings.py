@@ -10,12 +10,11 @@ ALLOWED_HOSTS = [h.strip() for h in config('ALLOWED_HOSTS', default='*').split('
 
 ANTHROPIC_API_KEY = config('ANTHROPIC_API_KEY', default='')
 
-# Código de invitación para el alta de docentes. El registro como teacher exige
-# este secreto (lo reparte la institución). Vacío = registro de docentes
-# deshabilitado. Multi-institución futura: reemplazar por códigos por Institution.
-TEACHER_SIGNUP_CODE = config('TEACHER_SIGNUP_CODE', default='')
+# El alta de docentes se valida contra el código por institución
+# (Institution.teacher_code), no contra un secreto global. Ver apps.users.
 
 INSTALLED_APPS = [
+    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',

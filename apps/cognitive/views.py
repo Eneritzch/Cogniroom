@@ -76,7 +76,7 @@ class MyProfileView(APIView):
             'first_name': user.first_name,
             'last_name': user.last_name,
             'email': user.email,
-            'institution': user.institution,
+            'institution': user.institution.name if user.institution_id else '',
             'role': user.role,
             'date_joined': user.date_joined,
             'icc_avg': round(float(icc_avg), 4),

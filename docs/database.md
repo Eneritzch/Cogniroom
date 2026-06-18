@@ -65,7 +65,8 @@ Usuario del sistema. Extiende `AbstractUser` de Django.
 **Reglas de negocio:**
 - `email` es **único** (no se permiten cuentas duplicadas; el login es por email).
 - El **`username` se deriva** en el registro vía `User.generate_username(first_name, first_surname, second_surname)`: inicial del nombre + primer apellido + inicial del segundo apellido, normalizado a ASCII (`Ana García López` → `agarcial`). Si la base ya existe, agrega un sufijo numérico incremental (`agarcial`, `agarcial1`, …).
-- El registro público solo permite `student` y `teacher`; `coordinator` se crea por admin/seed. El alta como `teacher` exige un **código de invitación** (`settings.TEACHER_SIGNUP_CODE`), validado en el backend.
+- `institution` es **FK a `Institution`** (catálogo gestionado desde el admin). El estudiante la elige de una lista; el docente queda vinculado al resolver su código.
+- El registro público solo permite `student` y `teacher`; `coordinator` se crea por admin/seed. El alta como `teacher` exige el **código de su institución** (`Institution.teacher_code`, único por institución): el backend lo resuelve a la institución correspondiente y la asigna. El estudiante elige su institución del catálogo.
 
 ---
 
