@@ -1,5 +1,5 @@
 const _v = new URL(import.meta.url).searchParams.get('v') || '';
-const { auth, rooms, tokens } = await import(`./api.js?v=${_v}`);
+const { auth, rooms, notifications, tokens } = await import(`./api.js?v=${_v}`);
 
 function _esc(s) {
     return String(s ?? '')
@@ -240,6 +240,72 @@ async function setupCreateRoomForm() {
 }
 
 
+/* ---- Notificaciones (campana del topbar) ---- */
+
+let _notifs = [];
+
+function timeAgo(iso) {
+    const diff = Math.max(0, Date.now() - new Date(iso).getTime());
+    const m = Math.floor(diff / 60000);
+    if (m < 1) return 'ahora';
+    if (m < 60) return `hace ${m} min`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `hace ${h} h`;
+    return `hace ${Math.floor(h / 24)} d`;
+}
+
+function renderNotifications(unread) {
+    const $dot = document.getElementById('notif-dot');
+    const $list = document.getElementById('notif-list');
+    const $readall = document.getElementById('notif-readall');
+    if (!$list) return;
+
+    if ($dot) $dot.hidden = !(unread > 0);
+    if ($readall) $readall.hidden = !(unread > 0);
+
+    if (!_notifs.length) {
+        $list.innerHTML = '<li class="notif-panel__empty">Sin notificaciones.</li>';
+        return;
+    }
+    $list.innerHTML = _notifs.map((n) => `
+        <li>
+            <a class="notif-item${n.is_read ? '' : ' notif-item--unread'}" href="${_esc(n.link || '#')}">
+                <span class="notif-item__title">${_esc(n.title)}</span>
+                ${n.body ? `<span class="notif-item__body">${_esc(n.body)}</span>` : ''}
+                <span class="notif-item__time">${timeAgo(n.created_at)}</span>
+            </a>
+        </li>
+    `).join('');
+}
+
+async function setupNotifications() {
+    const $trigger = document.getElementById('notif-trigger');
+    const $readall = document.getElementById('notif-readall');
+    if (!$trigger) return;
+
+    try {
+        const data = await notifications.list();
+        _notifs = data.results || [];
+        renderNotifications(data.unread_count || 0);
+    } catch (_) {
+        return;
+    }
+
+    async function markAllRead() {
+        const $dot = document.getElementById('notif-dot');
+        if ($dot && $dot.hidden) return; // ya no hay sin leer
+        try { await notifications.markRead(); } catch (_) { /* best-effort */ }
+        if ($dot) $dot.hidden = true;
+        if ($readall) $readall.hidden = true;
+    }
+
+    // Abrir el panel marca todo como leído (limpia el badge), sin quitar el
+    // resaltado de las que se están viendo ahora.
+    $trigger.addEventListener('shown.bs.dropdown', markAllRead);
+    if ($readall) $readall.addEventListener('click', markAllRead);
+}
+
+
 async function updateNav() {
     setupSidebarToggle();
 
@@ -253,6 +319,7 @@ async function updateNav() {
         filterNav(user.role);
         replaceCta(user);
         await populateTopbar(user);
+        setupNotifications();
         if (user.role === 'teacher') {
             setupRoomSelector();
             setupCreateRoomForm();

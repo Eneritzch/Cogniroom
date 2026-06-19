@@ -13,14 +13,22 @@ class KnowledgeNodeSerializer(serializers.ModelSerializer):
 class QuestionSerializer(serializers.ModelSerializer):
     is_approved = serializers.BooleanField(read_only=True)
     node_name = serializers.CharField(source='node.name', read_only=True)
+    source_pdf = serializers.SerializerMethodField()
 
     class Meta:
         model = Question
         fields = [
             'id', 'node', 'node_name', 'statement', 'difficulty', 'options',
-            'correct_index', 'source', 'status', 'is_approved', 'created_at',
+            'correct_index', 'source', 'source_pdf', 'status', 'is_approved', 'created_at',
         ]
         read_only_fields = ['id', 'source', 'status', 'is_approved', 'created_at']
+
+    def get_source_pdf(self, obj):
+        if not obj.source_pdf_id:
+            return None
+        import os
+        name = obj.source_pdf.file_path.name if obj.source_pdf.file_path else ''
+        return {'id': obj.source_pdf_id, 'original_name': os.path.basename(name)}
 
 
 class QuestionPublicSerializer(serializers.ModelSerializer):

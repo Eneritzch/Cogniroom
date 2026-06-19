@@ -3128,3 +3128,98 @@
 .dashboard-shell > .app-footer,
 .dashboard-shell .app-footer { display: none; }
 
+
+/* ---- Panel de notificaciones (campana del topbar) ---- */
+.notif-panel {
+  width: 340px;
+  max-width: calc(100vw - var(--s-8));
+  padding: 0;
+  background: var(--paper-elevated);
+  border: 1px solid var(--paper-border);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-lg);
+}
+
+.notif-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--s-3) var(--s-4);
+  border-bottom: 1px solid var(--paper-border);
+}
+
+.notif-panel__title {
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--ink);
+}
+
+.notif-panel__readall {
+  padding: 0;
+  background: transparent;
+  border: 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  color: var(--sage);
+  cursor: pointer;
+}
+
+.notif-panel__list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 360px;
+  margin: 0;
+  padding: var(--s-2);
+  overflow-y: auto;
+  list-style: none;
+}
+
+.notif-panel__empty {
+  padding: var(--s-5) var(--s-4);
+  text-align: center;
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  color: var(--ink-faint);
+}
+
+.notif-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--s-3);
+  border-radius: var(--r-sm);
+  text-decoration: none;
+  color: var(--ink);
+}
+
+.notif-item:hover {
+  background: var(--paper-surface);
+}
+
+.notif-item--unread {
+  background: color-mix(in srgb, var(--sage) 10%, transparent);
+}
+
+.notif-item__title {
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  line-height: var(--lh-snug);
+}
+
+.notif-item__body {
+  font-family: var(--font-sans);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-snug);
+  color: var(--ink-muted);
+}
+
+.notif-item__time {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-faint);
+}
+

@@ -5,6 +5,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.notifications.models import Notification
+from apps.notifications.services import notify
+
 from .models import Room, RoomMembership, Section
 from .serializers import (
     JoinRoomSerializer,
@@ -52,7 +55,7 @@ class RoomListCreateView(APIView):
         qs = Room.objects.filter(
             Q(id__in=membership_room_ids) | Q(teacher=user, mode='individual')
         ).order_by('-created_at').distinct()
-        return Response(RoomSerializer(qs, many=True).data)
+        return Response(RoomSerializer(qs, many=True, context={'request': request}).data)
 
     def post(self, request):
         serializer = RoomCreateSerializer(data=request.data)
@@ -114,7 +117,19 @@ class JoinRoomView(APIView):
                 )
 
         RoomMembership.objects.create(room=room, student=request.user, section=section)
-        return Response(RoomSerializer(room).data, status=status.HTTP_201_CREATED)
+
+        notify(
+            request.user,
+            kind=Notification.KIND_ROOM_JOINED,
+            title=f'Te uniste a {room.name}',
+            body=f'Ya formás parte de "{room.name}". Cuando el docente active una '
+                 'evaluación, vas a poder rendirla desde tus salas.',
+            link='/app/my-rooms/',
+        )
+        return Response(
+            RoomSerializer(room, context={'request': request}).data,
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class SectionListCreateView(APIView):

@@ -47,6 +47,16 @@ FIELDS.forEach((input) => {
     });
 });
 
+/* ---- Aviso + correo precargado tras registrarse ---- */
+(() => {
+    const justRegistered = sessionStorage.getItem('cogniroom.justRegistered');
+    if (!justRegistered) return;
+    sessionStorage.removeItem('cogniroom.justRegistered');
+    $email.value = justRegistered;
+    toast('Cuenta creada. Iniciá sesión para continuar.', { kind: 'success', duration: 2500 });
+    $password.focus();
+})();
+
 /* ---- Auto-redirect si ya hay sesión válida ---- */
 (async () => {
     if (!tokens.access) return;

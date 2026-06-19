@@ -1,9 +1,20 @@
 .students-hero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
   margin-top: var(--s-5);
   padding: var(--s-5);
   background: var(--paper-elevated);
   border: 1px solid var(--paper-border);
   border-radius: var(--r-lg);
+}
+
+@media (min-width: 768px) {
+  .students-hero {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
 }
 
 .students-hero__title {
@@ -391,4 +402,116 @@
 .students-pager__btn:hover {
   color: var(--ink);
   background: var(--paper-elevated);
+}
+
+
+/* ---- Gestión de secciones (modal) ---- */
+.sections-admin__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  margin: 0 0 var(--s-5);
+  padding: 0;
+  list-style: none;
+}
+
+.sections-admin__empty {
+  padding: var(--s-4);
+  text-align: center;
+  font-size: var(--fs-sm);
+  color: var(--ink-faint);
+}
+
+.sections-admin__item {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  background: var(--paper-surface);
+  border: 1px solid var(--paper-border);
+  border-radius: var(--r-md);
+}
+
+.sections-admin__info {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-2);
+  flex: 1;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.sections-admin__code {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--sage-strong);
+}
+
+.sections-admin__name {
+  font-size: var(--fs-sm);
+  color: var(--ink);
+}
+
+.sections-admin__sched {
+  font-size: var(--fs-xs);
+  color: var(--ink-muted);
+}
+
+.sections-admin__count {
+  flex: 0 0 auto;
+  font-size: var(--fs-xs);
+  color: var(--ink-muted);
+}
+
+.sections-admin__row-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.sections-admin__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: 1px solid var(--paper-border);
+  border-radius: var(--r-sm);
+  color: var(--ink-muted);
+  cursor: pointer;
+}
+
+.sections-admin__btn:hover {
+  color: var(--ink);
+  background: var(--paper-elevated);
+}
+
+.sections-admin__btn--danger:hover {
+  color: var(--rust);
+  border-color: var(--rust);
+}
+
+.sections-admin__form {
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--paper-border);
+}
+
+.sections-admin__form-title {
+  margin: 0 0 var(--s-3);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--ink);
+}
+
+.sections-admin__opt {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-regular);
+  color: var(--ink-faint);
+}
+
+.sections-admin__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--s-2);
+  margin-top: var(--s-4);
 }

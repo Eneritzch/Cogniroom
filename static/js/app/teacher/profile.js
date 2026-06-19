@@ -79,11 +79,28 @@ function bindPersonalForm() {
         document.getElementById(id).addEventListener('input', check);
     });
 
-    $form.addEventListener('submit', (e) => {
+    $form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        fields.forEach((id) => { initial[id] = document.getElementById(id).value; });
-        toast('Datos guardados (mock).', { kind: 'success' });
-        check();
+        const payload = {
+            first_name: document.getElementById('p-first').value.trim(),
+            last_name: document.getElementById('p-last').value.trim(),
+        };
+        $save.disabled = true;
+        try {
+            const updated = await auth.updateMe(payload);
+            fields.forEach((id) => { initial[id] = document.getElementById(id).value; });
+            document.getElementById('profile-avatar').textContent =
+                initials(updated.first_name, updated.last_name, updated.username);
+            document.getElementById('profile-name').textContent =
+                `${updated.first_name || ''} ${updated.last_name || ''}`.trim() || updated.username;
+            toast('Datos guardados.', { kind: 'success' });
+            check();
+        } catch (err) {
+            if (err instanceof ApiError && err.status === 401) { tokens.clear(); location.replace('/app/'); return; }
+            const b = err?.body || {};
+            toast(b.first_name?.[0] || b.last_name?.[0] || b.detail || 'No se pudieron guardar los datos.', { kind: 'error' });
+            $save.disabled = false;
+        }
     });
 }
 
@@ -125,13 +142,21 @@ function bindPasswordForm() {
         $el.addEventListener('input', evaluate);
     });
 
-    $form.addEventListener('submit', (e) => {
+    $form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        toast('Contraseña actualizada (mock).', { kind: 'success' });
-        $form.reset();
-        document.querySelectorAll('[data-rule]').forEach(($r) => $r.dataset.ok = 'false');
         $save.disabled = true;
-        $hint.textContent = 'Tu sesión se mantendrá abierta tras el cambio.';
+        try {
+            await auth.changePassword($current.value, $new.value);
+            toast('Contraseña actualizada.', { kind: 'success' });
+            $form.reset();
+            document.querySelectorAll('[data-rule]').forEach(($r) => $r.dataset.ok = 'false');
+            $hint.textContent = 'Tu sesión se mantendrá abierta tras el cambio.';
+        } catch (err) {
+            if (err instanceof ApiError && err.status === 401) { tokens.clear(); location.replace('/app/'); return; }
+            const b = err?.body || {};
+            toast(b.current_password?.[0] || b.new_password?.[0] || b.detail || 'No se pudo actualizar la contraseña.', { kind: 'error' });
+            $save.disabled = false;
+        }
     });
 }
 

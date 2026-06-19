@@ -150,8 +150,14 @@ function renderFeedback(result) {
         ? 'Tu respuesta es correcta.'
         : 'Tu respuesta no es correcta.';
 
+    // La IA corre en segundo plano: el feedback inline ya no viene en la respuesta.
+    // Si está pendiente, se avisa; el texto definitivo aparece en el repaso/Diagnósticos.
     const fbString = typeof result.ai_feedback === 'string' ? result.ai_feedback : '';
+    const pendingMsg = result.ai_pending
+        ? 'Estamos generando tu análisis con IA — lo verás en el repaso de la sesión y en Diagnósticos en unos segundos.'
+        : '';
     document.getElementById('feedback-explanation').textContent = result.explanation || fbString
+        || pendingMsg
         || `Tu mastery actual para este nodo es ${(mastery / 100).toFixed(2)}.`;
 
     const $declFill = document.getElementById('feedback-decl-fill');

@@ -318,13 +318,15 @@ $form.addEventListener('submit', async (event) => {
     }
 
     try {
-        const data = await auth.register(payload);
-        tokens.access = data.tokens.access;
-        tokens.refresh = data.tokens.refresh;
-        toast(`Cuenta creada. Hola, ${data.user.first_name || data.user.username}`, {
-            kind: 'success', duration: 1500,
+        await auth.register(payload);
+        // Sin auto-login: el usuario inicia sesión manualmente con sus credenciales.
+        // Se descartan los tokens del registro y se precarga el correo en el login.
+        tokens.clear();
+        sessionStorage.setItem('cogniroom.justRegistered', $email.value.trim());
+        toast('Cuenta creada. Iniciá sesión con tu correo y contraseña.', {
+            kind: 'success', duration: 1800,
         });
-        setTimeout(() => { location.href = '/app/dashboard/'; }, 600);
+        setTimeout(() => { location.href = '/app/'; }, 800);
     } catch (err) {
         handleServerError(err);
         $submit.disabled = false;

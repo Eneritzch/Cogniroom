@@ -16,8 +16,6 @@ class InstitutionSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    # institution es FK: se devuelve su nombre como string para que los clientes
-    # (perfil, dashboard) sigan leyendo un texto plano.
     institution = serializers.SerializerMethodField()
 
     class Meta:
@@ -30,8 +28,6 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class RegisterSerializer(serializers.ModelSerializer):
-    # El auto-registro público solo permite student/teacher; coordinator se crea
-    # por admin/seed para no exponer un rol con permisos transversales.
     PUBLIC_ROLE_CHOICES = [
         (User.ROLE_STUDENT, 'Student'),
         (User.ROLE_TEACHER, 'Teacher'),
@@ -39,16 +35,12 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     password = serializers.CharField(write_only=True, validators=[validate_password])
     role = serializers.ChoiceField(choices=PUBLIC_ROLE_CHOICES, default=User.ROLE_STUDENT)
-    # Solo se exige cuando role == teacher. write_only: nunca se devuelve.
     teacher_code = serializers.CharField(write_only=True, required=False, allow_blank=True)
-    # Estudiante: id de Institution del catálogo. Docente: se deriva del código,
-    # no lo elige el cliente (se sobreescribe en validate()).
     institution = serializers.PrimaryKeyRelatedField(
         queryset=Institution.objects.filter(is_active=True),
         required=False,
         allow_null=True,
     )
-    # El username no se pide al usuario: se deriva de nombre + apellidos en create().
     first_surname = serializers.CharField(write_only=True, max_length=150)
     second_surname = serializers.CharField(write_only=True, max_length=150)
 
@@ -69,8 +61,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, attrs):
-        # El rol docente nunca se confía del cliente: el código resuelve a su
-        # institución (uno por institución). El estudiante elige del catálogo.
         code = (attrs.pop('teacher_code', '') or '').strip().upper()
         if attrs.get('role') == User.ROLE_TEACHER:
             if not code:
@@ -84,7 +74,6 @@ class RegisterSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     {'teacher_code': 'Código de docente inválido.'}
                 )
-            # El docente no elige institución: se deriva del código.
             attrs['institution'] = institution
         elif not attrs.get('institution'):
             raise serializers.ValidationError(
@@ -107,6 +96,40 @@ class RegisterSerializer(serializers.ModelSerializer):
         user = User(**validated_data)
         user.set_password(password)
         user.save()
+        return user
+
+
+class UpdateMeSerializer(serializers.ModelSerializer):
+    """Edición del propio perfil. Solo nombre y apellidos; email/rol/institución
+    no se cambian acá (institución se fija en el registro)."""
+
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name']
+        extra_kwargs = {
+            'first_name': {'required': False, 'allow_blank': False},
+            'last_name': {'required': False, 'allow_blank': True},
+        }
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    current_password = serializers.CharField(write_only=True)
+    new_password = serializers.CharField(write_only=True)
+
+    def validate_current_password(self, value):
+        user = self.context['request'].user
+        if not user.check_password(value):
+            raise serializers.ValidationError('La contraseña actual no es correcta.')
+        return value
+
+    def validate_new_password(self, value):
+        validate_password(value, self.context['request'].user)
+        return value
+
+    def save(self, **kwargs):
+        user = self.context['request'].user
+        user.set_password(self.validated_data['new_password'])
+        user.save(update_fields=['password'])
         return user
 
 

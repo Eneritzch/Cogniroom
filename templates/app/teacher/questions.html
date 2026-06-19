@@ -33,14 +33,22 @@
                     <p class="questions-hero__sub">Aprueba, edita o crea las preguntas que usará esta sala.</p>
                 </div>
                 <div class="questions-hero__actions">
-                    <button type="button" class="ds-btn ds-btn--secondary">
+                    <button type="button" class="ds-btn ds-btn--ghost" data-bs-toggle="modal" data-bs-target="#nodeModal">
+                        <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="12" cy="12" r="9"></circle>
+                            <line x1="12" y1="9" x2="12" y2="15"></line>
+                            <line x1="9" y1="12" x2="15" y2="12"></line>
+                        </svg>
+                        Nuevo nodo
+                    </button>
+                    <button type="button" class="ds-btn ds-btn--secondary" data-bs-toggle="modal" data-bs-target="#manualQuestionModal">
                         <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
                             <line x1="12" y1="5" x2="12" y2="19"></line>
                             <line x1="5" y1="12" x2="19" y2="12"></line>
                         </svg>
                         Crear manual
                     </button>
-                    <button type="button" class="ds-btn ds-btn--sage">
+                    <button type="button" class="ds-btn ds-btn--sage" data-bs-toggle="modal" data-bs-target="#generateQuestionModal">
                         <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
                             <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path>
                         </svg>
@@ -90,6 +98,140 @@
             <nav class="questions-pager" id="questions-pager" aria-label="Paginación del banco"></nav>
         </section>
     </main>
+
+    <!-- Modal: nuevo nodo de conocimiento -->
+    <div class="modal fade" id="nodeModal" tabindex="-1" aria-labelledby="nodeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form id="node-form">
+                    <div class="modal-header">
+                        <h2 class="modal-title h5" id="nodeModalLabel">Nuevo nodo</h2>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <label class="form-label" for="node-name">Nombre del nodo</label>
+                        <input class="form-control" type="text" id="node-name" maxlength="200" required
+                               placeholder="Ej. Recursividad" autocomplete="off">
+                        <p class="qmodal__hint">Un nodo agrupa preguntas de un mismo tema dentro de la sala.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="ds-btn ds-btn--ghost" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="ds-btn ds-btn--ink">Crear nodo</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: crear pregunta manual -->
+    <div class="modal fade" id="manualQuestionModal" tabindex="-1" aria-labelledby="manualQuestionLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <form id="manual-form">
+                    <div class="modal-header">
+                        <h2 class="modal-title h5" id="manualQuestionLabel">Crear pregunta manual</h2>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="qmodal__row">
+                            <div class="qmodal__field">
+                                <label class="form-label" for="manual-node">Nodo</label>
+                                <select class="form-select" id="manual-node" required></select>
+                            </div>
+                            <div class="qmodal__field">
+                                <label class="form-label" for="manual-difficulty">Dificultad</label>
+                                <select class="form-select" id="manual-difficulty">
+                                    <option value="easy">Fácil</option>
+                                    <option value="medium" selected>Media</option>
+                                    <option value="hard">Difícil</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <label class="form-label" for="manual-statement">Enunciado</label>
+                        <textarea class="form-control" id="manual-statement" rows="3" required
+                                  placeholder="Escribí la pregunta…"></textarea>
+
+                        <fieldset class="qmodal__options">
+                            <legend class="form-label">Opciones <span class="qmodal__hint-inline">marcá la correcta</span></legend>
+                            <div class="qmodal__option">
+                                <input type="radio" name="manual-correct" value="0" aria-label="Opción A correcta" checked>
+                                <span class="qmodal__option-letter num">A</span>
+                                <input class="form-control" type="text" id="manual-opt-0" required placeholder="Opción A">
+                            </div>
+                            <div class="qmodal__option">
+                                <input type="radio" name="manual-correct" value="1" aria-label="Opción B correcta">
+                                <span class="qmodal__option-letter num">B</span>
+                                <input class="form-control" type="text" id="manual-opt-1" required placeholder="Opción B">
+                            </div>
+                            <div class="qmodal__option">
+                                <input type="radio" name="manual-correct" value="2" aria-label="Opción C correcta">
+                                <span class="qmodal__option-letter num">C</span>
+                                <input class="form-control" type="text" id="manual-opt-2" required placeholder="Opción C">
+                            </div>
+                            <div class="qmodal__option">
+                                <input type="radio" name="manual-correct" value="3" aria-label="Opción D correcta">
+                                <span class="qmodal__option-letter num">D</span>
+                                <input class="form-control" type="text" id="manual-opt-3" required placeholder="Opción D">
+                            </div>
+                        </fieldset>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="ds-btn ds-btn--ghost" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="ds-btn ds-btn--ink" id="manual-submit">Guardar pregunta</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: generar preguntas con IA -->
+    <div class="modal fade" id="generateQuestionModal" tabindex="-1" aria-labelledby="generateQuestionLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <form id="generate-form">
+                    <div class="modal-header">
+                        <h2 class="modal-title h5" id="generateQuestionLabel">Generar preguntas con IA</h2>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="qmodal__row">
+                            <div class="qmodal__field">
+                                <label class="form-label" for="gen-node">Nodo</label>
+                                <select class="form-select" id="gen-node" required></select>
+                            </div>
+                            <div class="qmodal__field">
+                                <label class="form-label" for="gen-difficulty">Dificultad</label>
+                                <select class="form-select" id="gen-difficulty">
+                                    <option value="easy">Fácil</option>
+                                    <option value="medium" selected>Media</option>
+                                    <option value="hard">Difícil</option>
+                                </select>
+                            </div>
+                            <div class="qmodal__field qmodal__field--narrow">
+                                <label class="form-label" for="gen-count">Cantidad</label>
+                                <input class="form-control" type="number" id="gen-count" min="1" max="20" value="5">
+                            </div>
+                        </div>
+
+                        <label class="form-label" for="gen-pdf">Fuente desde PDF <span class="qmodal__hint-inline">opcional</span></label>
+                        <select class="form-select" id="gen-pdf">
+                            <option value="">Sin PDF — usar el texto de abajo</option>
+                        </select>
+
+                        <label class="form-label" for="gen-content">Contenido base</label>
+                        <textarea class="form-control" id="gen-content" rows="5"
+                                  placeholder="Pegá el material sobre el que generar las preguntas (o elegí un PDF arriba)…"></textarea>
+                        <p class="qmodal__hint">En salas grupales, las preguntas generadas quedan <strong>por revisar</strong> hasta que las apruebes.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="ds-btn ds-btn--ghost" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="ds-btn ds-btn--sage" id="generate-submit">Generar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <div class="toast-host" id="toast-host" aria-live="polite" aria-atomic="true"></div>
 

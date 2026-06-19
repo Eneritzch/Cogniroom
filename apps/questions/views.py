@@ -5,6 +5,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.notifications.models import Notification
+from apps.notifications.services import notify
 from apps.rooms.models import Room, RoomMembership
 from services.claude_service import CognitiveAnalysisService
 
@@ -78,9 +80,10 @@ class GenerateQuestionsView(APIView):
         node = get_object_or_404(KnowledgeNode, id=data['node_id'], room=room)
 
         content = data.get('content') or ''
+        source_pdf = None
         if not content and data.get('pdf_id'):
-            pdf = get_object_or_404(PDFDocument, id=data['pdf_id'], room=room)
-            content = pdf.extracted_text
+            source_pdf = get_object_or_404(PDFDocument, id=data['pdf_id'], room=room)
+            content = source_pdf.extracted_text
             if not content:
                 return Response(
                     {'detail': 'PDF has no extracted text yet.'},
@@ -111,10 +114,23 @@ class GenerateQuestionsView(APIView):
                     options=options,
                     correct_index=correct_index,
                     source=Question.SOURCE_AI,
+                    source_pdf=source_pdf,
                 )
                 created.append(q)
             except (ValueError, TypeError):
                 continue
+
+        # En salas grupales las preguntas IA quedan pendientes: avisamos al docente
+        # que hay banco por revisar.
+        if created and room.mode == Room.MODE_GROUP:
+            notify(
+                room.teacher,
+                kind=Notification.KIND_QUESTION_PENDING,
+                title=f'{len(created)} preguntas IA por revisar',
+                body=f'Se generaron {len(created)} preguntas en "{node.name}" ({room.name}). '
+                     'Revisalas y aprobá las que correspondan.',
+                link='/app/questions/',
+            )
 
         return Response(
             {

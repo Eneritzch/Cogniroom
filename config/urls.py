@@ -16,7 +16,8 @@ def api_root(request):
             'login':               'POST /api/v1/auth/login/',
             'logout':              'POST /api/v1/auth/logout/',
             'refresh':             'POST /api/v1/auth/refresh/',
-            'me':                  'GET  /api/v1/auth/me/',
+            'me':                  'GET/PATCH /api/v1/auth/me/',
+            'change_password':     'POST /api/v1/auth/change-password/',
             'institutions':        'GET  /api/v1/auth/institutions/',
             'teacher_code_resolve': 'POST /api/v1/auth/teacher-code/resolve/',
         },
@@ -26,6 +27,10 @@ def api_root(request):
             'detail': 'GET /api/v1/nodes/{node_id}/',
         },
         'diagnoses': 'GET /api/v1/diagnoses/',
+        'notifications': {
+            'list':      'GET  /api/v1/notifications/',
+            'mark_read': 'POST /api/v1/notifications/mark-read/',
+        },
         'rooms': {
             'list':    'GET  /api/v1/rooms/',
             'create':  'POST /api/v1/rooms/',
@@ -89,6 +94,7 @@ api_routes = [
     path('api/v1/auth/',     include('apps.users.urls')),
     path('api/v1/rooms/',    include('apps.rooms.urls')),
     path('api/v1/sessions/', include('apps.sessions.urls')),
+    path('api/v1/notifications/', include('apps.notifications.urls')),
     path('api/v1/',          include('apps.cognitive.urls')),
 ]
 

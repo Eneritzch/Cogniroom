@@ -1,5 +1,7 @@
 import random
+import threading
 
+from django.db import connection, transaction
 from django.db.models import Avg, Count, Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -15,6 +17,8 @@ from apps.cognitive.models import (
     CognitiveIndex,
     StudentProgressSnapshot,
 )
+from apps.notifications.models import Notification
+from apps.notifications.services import notify
 from apps.questions.models import Question
 from apps.questions.serializers import QuestionPublicSerializer
 from apps.rooms.models import Room, RoomMembership
@@ -84,21 +88,16 @@ def _gather_student_data(user, room):
 
 
 def _recalc_blind_spot(node, room):
-    avg_icc = (
-        CognitiveIndex.objects.filter(node=node)
-        .aggregate(avg=Avg('icc_value'))['avg']
-        or 0.0
-    )
-    total_student = (
-        CognitiveIndex.objects.filter(node=node)
-        .values('student').distinct().count()
+    agg = CognitiveIndex.objects.filter(node=node).aggregate(
+        avg=Avg('icc_value'),
+        n=Count('student', distinct=True),
     )
     bsi, _ = BlindSpotIndex.objects.get_or_create(
         node=node, room=room,
         defaults={'ipc_value': 0.0, 'total_student': 0},
     )
-    bsi.ipc_value = round(float(avg_icc), 4)
-    bsi.total_student = total_student
+    bsi.ipc_value = round(float(agg['avg'] or 0.0), 4)
+    bsi.total_student = agg['n'] or 0
     bsi.save()
     return bsi
 
@@ -120,7 +119,7 @@ def _write_progress_snapshot(session):
     profile_counts = (
         cog.values('profile')
         .annotate(n=Count('profile'))
-        .order_by('-n')
+        .order_by('-n', 'profile')  # 'profile' como desempate determinista
     )
     dominant_profile = profile_counts[0]['profile'] if profile_counts else 'calibrated'
 
@@ -135,6 +134,93 @@ def _write_progress_snapshot(session):
         questions_answered=questions_answered,
         correct_count=answers.filter(is_correct=True).count(),
     )
+
+
+def _run_ai_analysis(answer_id, new_mastery):
+    """Trabajo de IA fuera del request: explica el error (lo guarda en el Answer)
+    y genera el AIDiagnosis. Corre en un thread daemon; nunca afecta la respuesta
+    al estudiante. Cierra su propia conexión a la BD al terminar."""
+    try:
+        answer = (
+            Answer.objects.select_related(
+                'question__node', 'session__room', 'session__student'
+            ).get(id=answer_id)
+        )
+        question = answer.question
+        session = answer.session
+        user = session.student
+        claude = CognitiveAnalysisService()
+
+        try:
+            correct_answer = question.options[question.correct_index]
+            selected_answer = question.options[answer.selected_index]
+        except (IndexError, TypeError):
+            correct_answer = selected_answer = ''
+
+        feedback = claude.explain_error(
+            question.statement,
+            selected_answer,
+            correct_answer,
+            {'p_mastery': new_mastery, 'node': question.node.name},
+        )
+        if feedback:
+            answer.ai_feedback = feedback
+            answer.save(update_fields=['ai_feedback'])
+
+        student_data = _gather_student_data(user, session.room)
+        diagnosis = claude.analyze_student(student_data)
+        try:
+            failure_probability = float(diagnosis.get('prediction', 0.5) or 0.5)
+        except (TypeError, ValueError):
+            failure_probability = 0.5
+
+        risk_level = diagnosis.get('risk_level', 'low')
+        AIDiagnosis.objects.create(
+            student=user,
+            session=session,
+            node=question.node,
+            classification=diagnosis.get('profile', 'calibrated'),
+            risk_level=risk_level,
+            risk_node=diagnosis.get('risk_nodes', []) or [],
+            failure_probability=failure_probability,
+            reasoning=diagnosis.get('reasoning', '') or '',
+            recommendation=diagnosis.get('recommendation', '') or '',
+        )
+
+        # Estudiante: su diagnóstico/feedback ya está disponible.
+        notify(
+            user,
+            kind=Notification.KIND_DIAGNOSIS_READY,
+            title='Tu diagnóstico está listo',
+            body=f'Generamos tu análisis en "{question.node.name}". '
+                 'Revisá tu feedback y recomendaciones.',
+            link='/app/diagnoses/',
+        )
+
+        # Docente dueño: aviso si el diagnóstico marca riesgo alto.
+        if risk_level == 'high':
+            student_name = user.get_full_name() or user.username
+            notify(
+                session.room.teacher,
+                kind=Notification.KIND_STUDENT_AT_RISK,
+                title=f'Estudiante en riesgo: {student_name}',
+                body=f'{student_name} muestra riesgo alto en "{question.node.name}" '
+                     f'({session.room.name}).',
+                link='/app/students/',
+            )
+    except Exception:
+        # La IA es best-effort: ningún fallo aquí debe propagarse.
+        pass
+    finally:
+        connection.close()
+
+
+def _schedule_ai_analysis(answer_id, new_mastery):
+    threading.Thread(
+        target=_run_ai_analysis,
+        args=(answer_id, new_mastery),
+        daemon=True,
+    ).start()
 
 
 class SessionListCreateView(APIView):
@@ -200,6 +286,8 @@ class NextQuestionView(APIView):
             return Response(
                 {'detail': 'Forbidden.'}, status=status.HTTP_403_FORBIDDEN
             )
+        if session.status != EvaluationSession.STATUS_ACTIVE:
+            return Response({'completed': True})
 
         answered_ids = Answer.objects.filter(session=session).values_list(
             'question_id', flat=True
@@ -258,88 +346,69 @@ class SubmitAnswerView(APIView):
                 {'detail': 'Question does not belong to this room.'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        if Answer.objects.filter(session=session, question=question).exists():
+            return Response(
+                {'detail': 'Question already answered in this session.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         is_correct = data['selected_index'] == question.correct_index
 
-        bkt_state, _ = BKTState.objects.get_or_create(
-            student=request.user, node=question.node
-        )
-        engine = BKTEngine()
-        new_mastery = engine.update(
-            bkt_state.p_mastery,
-            bkt_state.p_transit,
-            bkt_state.p_slip,
-            bkt_state.p_guess,
-            is_correct,
-        )
-        bkt_state.p_mastery = new_mastery
-        bkt_state.attempts += 1
-        bkt_state.save()
-
-        calc = ICCCalculator()
-        icc_result = calc.calculate(data['confidence_declared'], new_mastery)
-
-        CognitiveIndex.objects.create(
-            student=request.user,
-            node=question.node,
-            session=session,
-            avg_confidence=data['confidence_declared'],
-            bkt_mastery=new_mastery,
-            icc_value=icc_result['icc'],
-            metacognitive_gap=icc_result['gap'],
-            profile=icc_result['profile'],
-        )
-
-        answer = Answer.objects.create(
-            session=session,
-            question=question,
-            selected_index=data['selected_index'],
-            is_correct=is_correct,
-            confidence_declared=data['confidence_declared'],
-            bkt_mastery_snapshot=new_mastery,
-            response_time_sec=data.get('response_time_sec', 0),
-            ai_feedback='',
-        )
-
-        ai_feedback = ''
-        risk_level = None
-
-        if icc_result['icc'] < 0.5:
-            claude = CognitiveAnalysisService()
-            try:
-                correct_answer = question.options[question.correct_index]
-                selected_answer = question.options[data['selected_index']]
-            except (IndexError, TypeError):
-                correct_answer = ''
-                selected_answer = ''
-
-            ai_feedback = claude.explain_error(
-                question.statement,
-                selected_answer,
-                correct_answer,
-                {'p_mastery': new_mastery, 'node': question.node.name},
+        # El avance de BKT, el snapshot de CognitiveIndex y el Answer son una
+        # unidad atómica: o se escriben los tres o ninguno (evita mastery
+        # avanzado sin respuesta registrada, que re-serviría la pregunta).
+        with transaction.atomic():
+            bkt_state, _ = BKTState.objects.select_for_update().get_or_create(
+                student=request.user, node=question.node
             )
-            answer.ai_feedback = ai_feedback
-            answer.save(update_fields=['ai_feedback'])
+            engine = BKTEngine()
+            new_mastery = engine.update(
+                bkt_state.p_mastery,
+                bkt_state.p_transit,
+                bkt_state.p_slip,
+                bkt_state.p_guess,
+                is_correct,
+            )
+            bkt_state.p_mastery = new_mastery
+            bkt_state.attempts += 1
+            bkt_state.save()
 
-            student_data = _gather_student_data(request.user, session.room)
-            diagnosis = claude.analyze_student(student_data)
+            calc = ICCCalculator()
+            icc_result = calc.calculate(data['confidence_declared'], new_mastery)
 
-            ai_diag = AIDiagnosis.objects.create(
+            CognitiveIndex.objects.create(
                 student=request.user,
-                session=session,
                 node=question.node,
-                classification=diagnosis.get('profile', 'calibrated'),
-                risk_level=diagnosis.get('risk_level', 'low'),
-                risk_node=diagnosis.get('risk_nodes', []) or [],
-                failure_probability=float(diagnosis.get('prediction', 0.5) or 0.5),
-                reasoning=diagnosis.get('reasoning', '') or '',
-                recommendation=diagnosis.get('recommendation', '') or '',
+                session=session,
+                avg_confidence=data['confidence_declared'],
+                bkt_mastery=new_mastery,
+                icc_value=icc_result['icc'],
+                metacognitive_gap=icc_result['gap'],
+                profile=icc_result['profile'],
             )
-            risk_level = ai_diag.risk_level
 
+            answer = Answer.objects.create(
+                session=session,
+                question=question,
+                selected_index=data['selected_index'],
+                is_correct=is_correct,
+                confidence_declared=data['confidence_declared'],
+                bkt_mastery_snapshot=new_mastery,
+                response_time_sec=data.get('response_time_sec', 0),
+                ai_feedback='',
+            )
+
+        # El recálculo del punto ciego grupal va fuera de la transacción.
         if session.room.mode == 'group':
             _recalc_blind_spot(question.node, session.room)
+
+        # Diagnóstico con IA fuera del request: no bloquea al estudiante. Se
+        # dispara solo en desalineación grave (icc < 0.5); el feedback y el
+        # AIDiagnosis se persisten en background y aparecen en el repaso e
+        # historial de diagnósticos.
+        ai_pending = icc_result['icc'] < 0.5
+        if ai_pending:
+            _schedule_ai_analysis(answer.id, new_mastery)
 
         return Response({
             'is_correct': is_correct,
@@ -347,8 +416,9 @@ class SubmitAnswerView(APIView):
             'metacognitive_gap': icc_result['gap'],
             'profile': icc_result['profile'],
             'bkt_mastery': new_mastery,
-            'ai_feedback': ai_feedback,
-            'risk_level': risk_level,
+            'ai_feedback': '',
+            'ai_pending': ai_pending,
+            'risk_level': None,
         })
 
 
@@ -402,6 +472,10 @@ class CompleteSessionView(APIView):
             return Response(
                 {'detail': 'Forbidden.'}, status=status.HTTP_403_FORBIDDEN
             )
+        # Idempotente: una sesión ya cerrada no se re-escribe ni duplica snapshot.
+        if session.status != EvaluationSession.STATUS_ACTIVE:
+            return Response(EvaluationSessionSerializer(session).data)
+
         session.status = EvaluationSession.STATUS_COMPLETED
         session.finished_at = timezone.now()
         session.save(update_fields=['status', 'finished_at'])

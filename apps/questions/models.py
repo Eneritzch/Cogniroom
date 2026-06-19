@@ -77,6 +77,10 @@ class Question(models.Model):
     options = models.JSONField()
     correct_index = models.IntegerField()
     source = models.CharField(max_length=10, choices=SOURCE_CHOICES, default=SOURCE_AI)
+    source_pdf = models.ForeignKey(
+        PDFDocument, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='questions',
+    )
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING)
     created_at = models.DateTimeField(auto_now_add=True)
 

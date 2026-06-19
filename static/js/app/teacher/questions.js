@@ -1,6 +1,15 @@
 const _v = new URL(import.meta.url).searchParams.get('v') || '';
-const { rooms: roomsApi, questions: questionsApi, tokens, ApiError } = await import(`../api.js?v=${_v}`);
+const { rooms: roomsApi, questions: questionsApi, pdfs: pdfsApi, tokens, ApiError } = await import(`../api.js?v=${_v}`);
 const { toast } = await import(`../toast.js?v=${_v}`);
+
+
+function hideModal(id) {
+    const $modal = document.getElementById(id);
+    if ($modal && window.bootstrap) {
+        const instance = window.bootstrap.Modal.getInstance($modal) || new window.bootstrap.Modal($modal);
+        instance.hide();
+    }
+}
 
 
 if (!tokens.access) {
@@ -26,6 +35,7 @@ const PAGE_SIZE = 10;
 let ROOM_ID = null;
 let ROOM_INFO = null;
 let BANK = [];
+let NODES = [];
 let currentStatus = 'all';
 let currentSource = 'all';
 let currentSearch = '';
@@ -290,6 +300,152 @@ async function reloadBank() {
 }
 
 
+/* ---- Creación de nodos / preguntas (modales) ---- */
+
+function fillNodeSelects() {
+    const selects = [document.getElementById('manual-node'), document.getElementById('gen-node')];
+    const opts = NODES.length
+        ? NODES.map((n) => `<option value="${n.id}">${escapeHTML(n.name)}</option>`).join('')
+        : '<option value="" disabled selected>Creá un nodo primero</option>';
+    selects.forEach(($s) => { if ($s) $s.innerHTML = opts; });
+}
+
+async function refreshNodes() {
+    if (!ROOM_ID) return;
+    try {
+        NODES = (await questionsApi.listNodes(ROOM_ID)) || [];
+        fillNodeSelects();
+    } catch (_) { /* sin nodos: los selects muestran el placeholder */ }
+}
+
+async function refreshPdfOptions() {
+    const $sel = document.getElementById('gen-pdf');
+    if (!$sel || !ROOM_ID) return;
+    try {
+        const pdfList = (await pdfsApi.list(ROOM_ID)) || [];
+        const processed = pdfList.filter((p) => p.processed);
+        $sel.innerHTML = '<option value="">Sin PDF — usar el texto de abajo</option>'
+            + processed.map((p) => `<option value="${p.id}">${escapeHTML(p.original_name)}</option>`).join('');
+    } catch (_) { /* sin PDFs: solo queda la opción de texto */ }
+}
+
+function refreshCreators() {
+    refreshNodes();
+    refreshPdfOptions();
+}
+
+function apiErrorMessage(err, fallback) {
+    if (err instanceof ApiError && err.status === 401) { tokens.clear(); location.replace('/app/'); return null; }
+    const body = err?.body || {};
+    // DRF devuelve {campo: [msg]} o {detail: msg}
+    const firstField = Object.values(body).find((v) => Array.isArray(v) && v.length);
+    return (firstField && firstField[0]) || body.detail || err?.message || fallback;
+}
+
+/* Nuevo nodo */
+document.getElementById('node-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!ROOM_ID) return;
+    const $name = document.getElementById('node-name');
+    const name = $name.value.trim();
+    if (!name) return;
+    try {
+        await questionsApi.createNode(ROOM_ID, name);
+        toast('Nodo creado.', { kind: 'success' });
+        $name.value = '';
+        hideModal('nodeModal');
+        await refreshNodes();
+    } catch (err) {
+        const msg = apiErrorMessage(err, 'No se pudo crear el nodo.');
+        if (msg) toast(msg, { kind: 'error' });
+    }
+});
+
+/* Crear pregunta manual */
+document.getElementById('manual-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!ROOM_ID) return;
+    const nodeId = Number(document.getElementById('manual-node').value);
+    if (!nodeId) { toast('Elegí un nodo (creá uno si no hay).', { kind: 'error' }); return; }
+    const options = [0, 1, 2, 3].map((i) => document.getElementById(`manual-opt-${i}`).value.trim());
+    if (options.some((o) => !o)) { toast('Completá las 4 opciones.', { kind: 'error' }); return; }
+    const correct = document.querySelector('input[name="manual-correct"]:checked');
+
+    const payload = {
+        node_id: nodeId,
+        statement: document.getElementById('manual-statement').value.trim(),
+        options,
+        correct_index: Number(correct ? correct.value : 0),
+        difficulty: document.getElementById('manual-difficulty').value,
+    };
+
+    const $submit = document.getElementById('manual-submit');
+    $submit.disabled = true;
+    try {
+        await questionsApi.manual(ROOM_ID, payload);
+        toast('Pregunta creada.', { kind: 'success' });
+        e.target.reset();
+        document.querySelector('input[name="manual-correct"][value="0"]').checked = true;
+        hideModal('manualQuestionModal');
+        await reloadBank();
+    } catch (err) {
+        const msg = apiErrorMessage(err, 'No se pudo crear la pregunta.');
+        if (msg) toast(msg, { kind: 'error' });
+    } finally {
+        $submit.disabled = false;
+    }
+});
+
+/* Generar con IA */
+document.getElementById('generate-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!ROOM_ID) return;
+    const nodeId = Number(document.getElementById('gen-node').value);
+    if (!nodeId) { toast('Elegí un nodo (creá uno si no hay).', { kind: 'error' }); return; }
+    const pdfId = document.getElementById('gen-pdf').value;
+    const content = document.getElementById('gen-content').value.trim();
+    if (!pdfId && !content) {
+        toast('Pegá contenido o elegí un PDF como fuente.', { kind: 'error' });
+        return;
+    }
+
+    const payload = {
+        node_id: nodeId,
+        difficulty: document.getElementById('gen-difficulty').value,
+        count: Number(document.getElementById('gen-count').value) || 5,
+    };
+    if (pdfId) payload.pdf_id = Number(pdfId);
+    else payload.content = content;
+
+    const $submit = document.getElementById('generate-submit');
+    const original = $submit.textContent;
+    $submit.disabled = true;
+    $submit.textContent = 'Generando…';
+    try {
+        const res = await questionsApi.generate(ROOM_ID, payload);
+        const n = res?.created_count ?? 0;
+        toast(n ? `${n} pregunta${n === 1 ? '' : 's'} generada${n === 1 ? '' : 's'}.` : 'La IA no devolvió preguntas. Probá con más contenido.', {
+            kind: n ? 'success' : 'error',
+        });
+        if (n) {
+            e.target.reset();
+            hideModal('generateQuestionModal');
+            currentStatus = 'pending';
+            document.querySelectorAll('[data-status-filter]').forEach((b) => {
+                b.setAttribute('aria-pressed', b.dataset.statusFilter === 'pending' ? 'true' : 'false');
+            });
+            await reloadBank();
+        }
+    } catch (err) {
+        const msg = apiErrorMessage(err, 'No se pudieron generar las preguntas.');
+        if (msg) toast(msg, { kind: 'error' });
+    } finally {
+        $submit.disabled = false;
+        $submit.textContent = original;
+    }
+});
+
+
 async function load() {
     let list;
     try {
@@ -311,6 +467,7 @@ async function load() {
     try {
         BANK = (await questionsApi.list(ROOM_ID)) || [];
         render();
+        refreshCreators();
     } catch (err) {
         if (err instanceof ApiError && err.status === 401) { tokens.clear(); location.replace('/app/'); return; }
         toast('No se pudo cargar el banco de preguntas.', { kind: 'error' });

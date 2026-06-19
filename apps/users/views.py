@@ -9,9 +9,11 @@ from rest_framework_simplejwt.views import TokenRefreshView  # noqa: F401
 
 from .models import Institution
 from .serializers import (
+    ChangePasswordSerializer,
     InstitutionSerializer,
     LoginSerializer,
     RegisterSerializer,
+    UpdateMeSerializer,
     UserSerializer,
     tokens_for_user,
 )
@@ -108,3 +110,22 @@ class MeView(APIView):
 
     def get(self, request):
         return Response(UserSerializer(request.user).data)
+
+    def patch(self, request):
+        serializer = UpdateMeSerializer(request.user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(UserSerializer(request.user).data)
+
+
+class ChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = ChangePasswordSerializer(
+            data=request.data, context={'request': request}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        # JWT es stateless: la sesión sigue válida tras el cambio.
+        return Response(status=status.HTTP_204_NO_CONTENT)

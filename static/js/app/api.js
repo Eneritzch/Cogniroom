@@ -63,6 +63,10 @@ export const auth = {
         method: 'POST', body: { code }, auth: false,
     }),
     me: () => request('/auth/me/'),
+    updateMe: (payload) => request('/auth/me/', { method: 'PATCH', body: payload }),
+    changePassword: (current_password, new_password) => request('/auth/change-password/', {
+        method: 'POST', body: { current_password, new_password },
+    }),
     logout: () => {
         // Cierre de sesión a prueba de fallos: primero se limpia el estado local
         // (instantáneo, no depende de la red), luego se revoca el refresh en el
@@ -85,6 +89,14 @@ export const auth = {
             } catch (_) { /* red caída: la sesión local ya quedó cerrada */ }
         }
     },
+};
+
+/* ---------- Notificaciones ---------- */
+export const notifications = {
+    list:     () => request('/notifications/'),
+    markRead: (ids) => request('/notifications/mark-read/', {
+        method: 'POST', body: ids ? { ids } : {},
+    }),
 };
 
 /* ---------- Datos cognitivos del usuario actual ---------- */
