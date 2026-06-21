@@ -66,8 +66,9 @@ function render() {
         const processed = typeof p.processed === 'boolean'
             ? p.processed
             : (p.status === 'processed');
+        const fileUrl = p.file_path ?? '';
         return `
-        <li class="pdf-item">
+        <li class="pdf-item" data-file="${escapeHTML(fileUrl)}" data-name="${escapeHTML(originalName)}">
             <span class="pdf-item__icon" aria-hidden="true">
                 <svg class="icon-svg" width="20" height="20" viewBox="0 0 24 24">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -113,6 +114,56 @@ document.getElementById('pdfs-list').addEventListener('click', async (e) => {
         toast(err?.body?.detail || 'No se pudo eliminar el PDF.', { kind: 'error' });
         btn.disabled = false;
     }
+});
+
+
+/* ---------- Visor flotante de PDF ---------- */
+const $pdfView = document.getElementById('pdfview-overlay');
+const $pdfFrame = document.getElementById('pdfview-frame');
+const $pdfTitle = document.getElementById('pdfview-title');
+const $pdfOpen = document.getElementById('pdfview-open');
+let pdfBlobUrl = null;
+
+async function openPdfViewer(url, name) {
+    if (!$pdfView || !url) return;
+    if ($pdfTitle) $pdfTitle.textContent = name || 'Documento';
+    if ($pdfOpen) $pdfOpen.href = url;  // "abrir en pestaña" usa la URL directa
+    $pdfView.hidden = false;
+    if (!$pdfFrame) return;
+    // El PDF se sirve con X-Frame-Options: DENY, que impide incrustarlo en un
+    // iframe por URL. Lo descargamos y lo mostramos como blob (sin esa cabecera).
+    $pdfFrame.removeAttribute('src');
+    try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const blob = await res.blob();
+        if (pdfBlobUrl) URL.revokeObjectURL(pdfBlobUrl);
+        pdfBlobUrl = URL.createObjectURL(blob);
+        $pdfFrame.src = pdfBlobUrl;
+    } catch (_) {
+        toast('No se pudo cargar el PDF aquí. Probá "Abrir en pestaña nueva".', { kind: 'error' });
+    }
+}
+
+function closePdfViewer() {
+    if (!$pdfView) return;
+    $pdfView.hidden = true;
+    if ($pdfFrame) $pdfFrame.removeAttribute('src');
+    if (pdfBlobUrl) { URL.revokeObjectURL(pdfBlobUrl); pdfBlobUrl = null; }
+}
+
+/* Abrir el visor al hacer clic en un PDF (sin interferir con el boton de borrar). */
+document.getElementById('pdfs-list').addEventListener('click', (e) => {
+    if (e.target.closest('.pdf-item__del')) return;
+    const item = e.target.closest('.pdf-item');
+    if (!item || !item.dataset.file) return;
+    openPdfViewer(item.dataset.file, item.dataset.name);
+});
+
+document.getElementById('pdfview-close')?.addEventListener('click', closePdfViewer);
+$pdfView?.addEventListener('click', (e) => { if (e.target === $pdfView) closePdfViewer(); });
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && $pdfView && !$pdfView.hidden) closePdfViewer();
 });
 
 
