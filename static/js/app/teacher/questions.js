@@ -543,11 +543,15 @@ async function load() {
         toast('No se pudieron cargar las salas.', { kind: 'error' });
         return;
     }
+    // Esta página gestiona el banco de una sala que el usuario administra: el
+    // docente sus salas, el estudiante sus salas de estudio. Las salas grupales
+    // a las que un estudiante se unió (membership != null) no se gestionan acá.
+    const owned = (list || []).filter((r) => !r.membership);
     const stored = activeRoomId();
-    ROOM_INFO = (list || []).find((r) => r.id === stored) || (list || [])[0];
+    ROOM_INFO = owned.find((r) => r.id === stored) || owned[0];
     if (!ROOM_INFO) {
         const $list = document.getElementById('questions-list');
-        if ($list) $list.innerHTML = `<li class="questions-empty">Creá una sala para gestionar su banco de preguntas.</li>`;
+        if ($list) $list.innerHTML = `<li class="questions-empty">Creá una sala de estudio para gestionar su banco de preguntas.</li>`;
         return;
     }
     ROOM_ID = ROOM_INFO.id;

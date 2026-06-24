@@ -214,11 +214,15 @@ async function load() {
         toast('No se pudieron cargar las salas.', { kind: 'error' });
         return;
     }
+    // Solo salas que el usuario administra: el docente las suyas, el estudiante
+    // sus salas de estudio. Las grupales a las que se unió (membership != null)
+    // no suben material acá.
+    const owned = (list || []).filter((r) => !r.membership);
     const stored = activeRoomId();
-    ROOM_INFO = (list || []).find((r) => r.id === stored) || (list || [])[0];
+    ROOM_INFO = owned.find((r) => r.id === stored) || owned[0];
     if (!ROOM_INFO) {
         const $list = document.getElementById('pdfs-list');
-        if ($list) $list.innerHTML = `<li class="pdf-item" style="opacity:0.6;"><div class="pdf-item__main"><div class="pdf-item__name">Creá una sala para subir material.</div></div></li>`;
+        if ($list) $list.innerHTML = `<li class="pdf-item" style="opacity:0.6;"><div class="pdf-item__main"><div class="pdf-item__name">Creá una sala de estudio para subir material.</div></div></li>`;
         return;
     }
     ROOM_ID = ROOM_INFO.id;
