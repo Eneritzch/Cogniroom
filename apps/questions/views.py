@@ -81,21 +81,26 @@ class GenerateQuestionsView(APIView):
 
         content = data.get('content') or ''
         source_pdf = None
+        file_id = ''
         if not content and data.get('pdf_id'):
             source_pdf = get_object_or_404(PDFDocument, id=data['pdf_id'], room=room)
-            content = source_pdf.extracted_text
-            if not content:
-                return Response(
-                    {'detail': 'PDF has no extracted text yet.'},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+            # PDF nativo si está subido a la Files API; si no, texto plano.
+            file_id = source_pdf.file_id or ''
+            if not file_id:
+                content = source_pdf.extracted_text
+                if not content:
+                    return Response(
+                        {'detail': 'PDF has no extracted text yet.'},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
 
         claude = CognitiveAnalysisService()
         generated = claude.generate_questions(
-            content=content,
             node_name=node.name,
             difficulty=data['difficulty'],
             count=data['count'],
+            content=content,
+            file_id=file_id,
         )
 
         created = []
@@ -113,6 +118,7 @@ class GenerateQuestionsView(APIView):
                     difficulty=item.get('difficulty', data['difficulty']),
                     options=options,
                     correct_index=correct_index,
+                    rationale=item.get('rationale', ''),
                     source=Question.SOURCE_AI,
                     source_pdf=source_pdf,
                 )
@@ -301,6 +307,17 @@ class PDFUploadListView(APIView):
             pdf.extracted_text = _extract_pdf_text(pdf.file_path)
             pdf.status = PDFDocument.STATUS_PROCESSED
             pdf.save(update_fields=['extracted_text', 'status'])
+
+            # Subida a la Files API para generación con PDF nativo (tablas,
+            # fórmulas, figuras). Best-effort: si falla, queda el texto plano.
+            try:
+                pdf.file_path.open('rb')
+                file_id = CognitiveAnalysisService().upload_pdf(pdf.file_path, uploaded.name)
+                if file_id:
+                    pdf.file_id = file_id
+                    pdf.save(update_fields=['file_id'])
+            except Exception:
+                pass
         except Exception as e:
             pdf.status = PDFDocument.STATUS_FAILED
             pdf.save(update_fields=['status'])

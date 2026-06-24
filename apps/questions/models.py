@@ -34,6 +34,10 @@ class PDFDocument(models.Model):
     )
     file_path = models.FileField(upload_to=_pdf_upload_path, max_length=500)
     extracted_text = models.TextField(blank=True)
+    # ID del archivo en la Files API de Anthropic. Si está presente, la
+    # generación usa el PDF nativo (tablas/fórmulas/figuras); si no, cae al
+    # texto plano de extracted_text (pdfplumber).
+    file_id = models.CharField(max_length=128, blank=True)
     status = models.CharField(max_length=12, choices=STATUS_CHOICES, default=STATUS_UPLOADED)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -76,6 +80,7 @@ class Question(models.Model):
     difficulty = models.CharField(max_length=10, choices=DIFFICULTY_CHOICES)
     options = models.JSONField()
     correct_index = models.IntegerField()
+    rationale = models.TextField(blank=True)
     source = models.CharField(max_length=10, choices=SOURCE_CHOICES, default=SOURCE_AI)
     source_pdf = models.ForeignKey(
         PDFDocument, null=True, blank=True,
