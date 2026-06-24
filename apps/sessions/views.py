@@ -352,7 +352,17 @@ class SubmitAnswerView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        is_correct = data['selected_index'] == question.correct_index
+        selected_indices = data['selected_indices']
+        if any(i >= len(question.options) for i in selected_indices):
+            return Response(
+                {'detail': 'selected_indices fuera del rango de opciones.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # score en [0,1]: crédito parcial para opción múltiple. is_correct queda
+        # como "acierto total" (compat con agregados/aciertos del histórico).
+        score = question.score_answer(selected_indices)
+        is_correct = score >= 1.0
 
         # El avance de BKT, el snapshot de CognitiveIndex y el Answer son una
         # unidad atómica: o se escriben los tres o ninguno (evita mastery
@@ -367,7 +377,7 @@ class SubmitAnswerView(APIView):
                 bkt_state.p_transit,
                 bkt_state.p_slip,
                 bkt_state.p_guess,
-                is_correct,
+                score,
             )
             bkt_state.p_mastery = new_mastery
             bkt_state.attempts += 1
@@ -390,8 +400,10 @@ class SubmitAnswerView(APIView):
             answer = Answer.objects.create(
                 session=session,
                 question=question,
-                selected_index=data['selected_index'],
+                selected_index=selected_indices[0] if selected_indices else 0,
+                selected_indices=selected_indices,
                 is_correct=is_correct,
+                score=score,
                 confidence_declared=data['confidence_declared'],
                 bkt_mastery_snapshot=new_mastery,
                 response_time_sec=data.get('response_time_sec', 0),
@@ -412,6 +424,7 @@ class SubmitAnswerView(APIView):
 
         return Response({
             'is_correct': is_correct,
+            'score': score,
             'icc_value': icc_result['icc'],
             'metacognitive_gap': icc_result['gap'],
             'profile': icc_result['profile'],
@@ -440,9 +453,13 @@ class SessionReviewView(APIView):
         answers_data = [{
             'statement': a.question.statement,
             'options': a.question.options,
+            'question_type': a.question.question_type,
             'correct_index': a.question.correct_index,
+            'correct_indices': a.question.correct_indices,
             'selected_index': a.selected_index,
+            'selected_indices': a.selected_indices,
             'is_correct': a.is_correct,
+            'score': a.score,
             'confidence_declared': a.confidence_declared,
             'bkt_mastery': a.bkt_mastery_snapshot,
             'response_time_sec': a.response_time_sec,

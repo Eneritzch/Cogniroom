@@ -86,9 +86,11 @@ class Command(BaseCommand):
 
     def _print_questions(self, questions, evaluations):
         for i, q in enumerate(questions):
-            self.stdout.write(self.style.HTTP_INFO(f'\n[{i + 1}] {q.get("text", "")}'))
+            qtype = q.get('question_type', 'single')
+            self.stdout.write(self.style.HTTP_INFO(f'\n[{i + 1}] ({qtype}) {q.get("text", "")}'))
+            correct = set(q.get('correct_indices', []))
             for j, opt in enumerate(q.get('options', [])):
-                mark = '*' if j == q.get('correct_index') else ' '
+                mark = '*' if j in correct else ' '
                 self.stdout.write(f'   {mark} {j}. {opt}')
             self.stdout.write(f'   rationale: {q.get("rationale", "")}')
             self.stdout.write(f'   misconception: {q.get("misconception_targeted", "")}')
@@ -109,6 +111,15 @@ class Command(BaseCommand):
         self.stdout.write('Distribución de dificultad:')
         for d, n in sorted(dist.items()):
             self.stdout.write(f'   {d}: {n}')
+
+        # Distribución de tipos
+        types = {}
+        for q in questions:
+            t = q.get('question_type', 'single')
+            types[t] = types.get(t, 0) + 1
+        self.stdout.write('Distribución de tipos:')
+        for t, n in sorted(types.items()):
+            self.stdout.write(f'   {t}: {n}')
 
         # Errores conceptuales distintos cubiertos
         misconceptions = {

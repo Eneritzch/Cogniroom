@@ -13,15 +13,19 @@ QUESTION_SCHEMA = {
                 'type': 'object',
                 'properties': {
                     'text': {'type': 'string'},
+                    'question_type': {
+                        'type': 'string',
+                        'enum': ['single', 'true_false', 'multiple'],
+                    },
                     'options': {'type': 'array', 'items': {'type': 'string'}},
-                    'correct_index': {'type': 'integer', 'enum': [0, 1, 2, 3]},
+                    'correct_indices': {'type': 'array', 'items': {'type': 'integer'}},
                     'difficulty': {'type': 'string', 'enum': ['easy', 'medium', 'hard']},
                     'rationale': {'type': 'string'},
                     'misconception_targeted': {'type': 'string'},
                 },
                 'required': [
-                    'text', 'options', 'correct_index', 'difficulty',
-                    'rationale', 'misconception_targeted',
+                    'text', 'question_type', 'options', 'correct_indices',
+                    'difficulty', 'rationale', 'misconception_targeted',
                 ],
                 'additionalProperties': False,
             },
@@ -88,8 +92,16 @@ GENERATION_RULES = (
     '4. Opciones homogéneas en longitud, gramática y nivel de detalle.\n'
     '5. Una sola idea por pregunta; sin dobles negaciones.\n'
     '6. Anclado únicamente en el material provisto. Si el material no alcanza '
-    'para una pregunta limpia, genera menos preguntas.\n'
-    'Para cada pregunta, "rationale" explica por qué la correcta es correcta y '
+    'para una pregunta limpia, genera menos preguntas.\n\n'
+    'Tipos de pregunta (campo "question_type") y "correct_indices" (lista de '
+    'índices correctos, base 0):\n'
+    '- "single": opción única, 3-5 opciones, exactamente UNA correcta.\n'
+    '- "true_false": exactamente 2 opciones ("Verdadero" y "Falso") y UNA '
+    'correcta; el enunciado es una afirmación evaluable.\n'
+    '- "multiple": 4-6 opciones con DOS O MÁS correctas; las reglas de '
+    'distractores aplican a las incorrectas, y todas las correctas deben estar '
+    'inequívocamente respaldadas por el material.\n'
+    'Para cada pregunta, "rationale" explica por qué las correctas lo son y '
     '"misconception_targeted" nombra el error conceptual que capturan los '
     'distractores. Responde en español.'
 )
@@ -204,10 +216,19 @@ class CognitiveAnalysisService:
             'cache_control': {'type': 'ephemeral'},
         }
 
-    def _generation_messages(self, node_name, difficulty, count, content='', file_id=''):
+    def _generation_messages(self, node_name, difficulty, count, content='', file_id='', question_type=''):
         # El material va primero y marcado como cacheable; la instrucción (que
         # varía por nodo/dificultad/cantidad) va después del breakpoint para no
         # invalidar el prefijo cacheado.
+        type_labels = {
+            'single': 'todas de opción única (question_type="single")',
+            'true_false': 'todas de verdadero/falso (question_type="true_false")',
+            'multiple': 'todas de opción múltiple (question_type="multiple")',
+        }
+        type_clause = type_labels.get(
+            question_type,
+            'combinando tipos (single, true_false, multiple) según convenga al material',
+        )
         return [{
             'role': 'user',
             'content': [
@@ -215,8 +236,8 @@ class CognitiveAnalysisService:
                 {
                     'type': 'text',
                     'text': (
-                        f'Genera exactamente {count} preguntas de opción múltiple '
-                        f'sobre el tema "{node_name}" con dificultad "{difficulty}", '
+                        f'Genera exactamente {count} preguntas sobre el tema '
+                        f'"{node_name}" con dificultad "{difficulty}", {type_clause}, '
                         'basadas únicamente en el material de referencia anterior.'
                     ),
                 },
@@ -250,6 +271,7 @@ class CognitiveAnalysisService:
         count: int,
         content: str = '',
         file_id: str = '',
+        question_type: str = '',
     ) -> list:
         if self.client is None:
             return []
@@ -264,7 +286,10 @@ class CognitiveAnalysisService:
                 'format': {'type': 'json_schema', 'schema': QUESTION_SCHEMA},
             },
             system=GENERATION_RULES,
-            messages=self._generation_messages(node_name, difficulty, count, content=content, file_id=file_id),
+            messages=self._generation_messages(
+                node_name, difficulty, count,
+                content=content, file_id=file_id, question_type=question_type,
+            ),
         )
         try:
             if file_id:
@@ -299,9 +324,10 @@ class CognitiveAnalysisService:
         for i, q in enumerate(questions):
             items.append(
                 f'Pregunta {i + 1}:\n'
+                f"  tipo: {q.get('question_type', 'single')}\n"
                 f"  enunciado: {q.get('text', '')}\n"
                 f"  opciones: {json.dumps(q.get('options', []), ensure_ascii=False)}\n"
-                f"  correcta (índice): {q.get('correct_index')}\n"
+                f"  correctas (índices): {q.get('correct_indices', [])}\n"
             )
 
         user_prompt = (

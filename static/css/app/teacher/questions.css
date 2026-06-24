@@ -182,8 +182,66 @@
   padding: 0;
   display: flex;
   flex-direction: column;
+  gap: var(--s-8);
+}
+
+/* Sección por nodo */
+.qsection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+.qsection__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--s-3);
+  padding-bottom: var(--s-2);
+  border-bottom: 1px solid var(--paper-border-strong);
+}
+
+.qsection__title {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin: 0;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
+  color: var(--ink);
+}
+.qsection__title .icon-svg { color: var(--sage); }
+
+.qsection__count {
+  font-size: var(--fs-sm);
+  color: var(--ink-muted);
+}
+
+.qsection__breakdown {
+  margin-left: auto;
+  font-size: var(--fs-xs);
+  color: var(--ink-faint);
+}
+
+.qsection__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
   gap: var(--s-2);
 }
+
+/* Sub-encabezado por tipo dentro de un nodo */
+.qsection__type {
+  margin-top: var(--s-2);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.qsection__type:first-child { margin-top: 0; }
 
 .questions-empty {
   padding: var(--s-8);
@@ -235,6 +293,22 @@
 
 .qcard__source[data-source='ai']     { background: var(--sage); color: var(--paper-surface); }
 .qcard__source[data-source='manual'] { background: var(--paper-surface); color: var(--ink); border: 1px solid var(--paper-border-strong); }
+
+.qcard__type {
+  padding: 2px 8px;
+  border-radius: var(--r-xs);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: var(--fw-medium);
+  flex-shrink: 0;
+  background: var(--paper-surface);
+  color: var(--ink-muted);
+  border: 1px solid var(--paper-border-strong);
+}
+.qcard__type[data-type='multiple']   { color: var(--terracotta); }
+.qcard__type[data-type='true_false'] { color: var(--stone); }
 
 .qcard__node,
 .qcard__pdf {
@@ -485,7 +559,8 @@
   color: var(--ink-muted);
 }
 
-.qmodal__option input[type="radio"] {
+.qmodal__option input[type="radio"],
+.qmodal__option input[type="checkbox"] {
   flex: 0 0 auto;
   width: 18px;
   height: 18px;
@@ -495,4 +570,25 @@
 .qmodal__option .form-control {
   flex: 1;
   min-width: 0;
+}
+
+.qmodal__option-remove {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-xs);
+  background: transparent;
+  color: var(--ink-faint);
+  cursor: pointer;
+}
+.qmodal__option-remove:hover { color: var(--rust); background: var(--paper-surface); }
+
+.qmodal__add-option {
+  align-self: flex-start;
+  margin-top: var(--s-2);
 }

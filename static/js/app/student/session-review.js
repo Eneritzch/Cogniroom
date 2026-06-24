@@ -146,10 +146,19 @@ function renderStrip(answers) {
 
 
 function renderOptions(a) {
-    const letters = ['A', 'B', 'C', 'D'];
+    const correctSet = new Set(
+        Array.isArray(a.correct_indices) && a.correct_indices.length
+            ? a.correct_indices
+            : (Number.isInteger(a.correct_index) ? [a.correct_index] : [])
+    );
+    const pickedSet = new Set(
+        Array.isArray(a.selected_indices) && a.selected_indices.length
+            ? a.selected_indices
+            : (Number.isInteger(a.selected_index) ? [a.selected_index] : [])
+    );
     return a.options.map((optText, idx) => {
-        const isCorrect = idx === a.correct_index;
-        const isPicked = idx === a.selected_index;
+        const isCorrect = correctSet.has(idx);
+        const isPicked = pickedSet.has(idx);
         let state = '';
         let flag = '';
         if (isCorrect && isPicked) {
@@ -163,7 +172,7 @@ function renderOptions(a) {
             flag = `<span class="rq__opt-flag" data-flag="picked">Tu respuesta</span>`;
         }
         return `<li class="rq__opt" data-state="${state}">
-            <span class="rq__opt-letter">${letters[idx]}</span>
+            <span class="rq__opt-letter">${String.fromCharCode(65 + idx)}</span>
             <span class="rq__opt-text">${escapeHTML(optText)}</span>
             ${flag}
         </li>`;

@@ -276,6 +276,7 @@
 }
 
 .session-feedback__status[data-kind='correct']   { color: var(--moss); }
+.session-feedback__status[data-kind='partial']   { color: var(--amber); }
 .session-feedback__status[data-kind='incorrect'] { color: var(--rust); }
 
 .session-feedback__title {

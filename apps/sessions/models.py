@@ -43,8 +43,13 @@ class Answer(models.Model):
         on_delete=models.CASCADE,
         related_name='answers',
     )
+    # selected_indices es la fuente de verdad de lo que marcó el estudiante;
+    # selected_index queda sincronizado con la primera marcada (compat legacy).
+    selected_indices = models.JSONField(default=list)
     selected_index = models.IntegerField()
     is_correct = models.BooleanField()
+    # score en [0,1]: crédito parcial para opción múltiple (1.0 = acierto total).
+    score = models.FloatField(default=0.0)
     confidence_declared = models.FloatField()
     bkt_mastery_snapshot = models.FloatField(default=0.0)
     response_time_sec = models.IntegerField(default=0)

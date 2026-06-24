@@ -82,6 +82,16 @@
                     </div>
                 </div>
 
+                <div class="questions-controls__group">
+                    <span class="questions-controls__label">Tipo</span>
+                    <div class="questions-controls__chips">
+                        <button type="button" class="questions-chip" data-type-filter="all" aria-pressed="true">Todas</button>
+                        <button type="button" class="questions-chip" data-type-filter="single" aria-pressed="false">Única</button>
+                        <button type="button" class="questions-chip" data-type-filter="true_false" aria-pressed="false">V/F</button>
+                        <button type="button" class="questions-chip" data-type-filter="multiple" aria-pressed="false">Múltiple</button>
+                    </div>
+                </div>
+
                 <label class="questions-search" aria-label="Buscar pregunta">
                     <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
                         <circle cx="11" cy="11" r="7"></circle>
@@ -94,8 +104,6 @@
             <div class="questions-meta" id="questions-meta"></div>
 
             <ul class="questions-list" id="questions-list" aria-label="Banco de preguntas"></ul>
-
-            <nav class="questions-pager" id="questions-pager" aria-label="Paginación del banco"></nav>
         </section>
     </main>
 
@@ -139,6 +147,14 @@
                                 <select class="form-select" id="manual-node" required></select>
                             </div>
                             <div class="qmodal__field">
+                                <label class="form-label" for="manual-type">Tipo</label>
+                                <select class="form-select" id="manual-type">
+                                    <option value="single" selected>Opción única</option>
+                                    <option value="true_false">Verdadero / Falso</option>
+                                    <option value="multiple">Opción múltiple</option>
+                                </select>
+                            </div>
+                            <div class="qmodal__field">
                                 <label class="form-label" for="manual-difficulty">Dificultad</label>
                                 <select class="form-select" id="manual-difficulty">
                                     <option value="easy">Fácil</option>
@@ -153,27 +169,15 @@
                                   placeholder="Escribí la pregunta…"></textarea>
 
                         <fieldset class="qmodal__options">
-                            <legend class="form-label">Opciones <span class="qmodal__hint-inline">marcá la correcta</span></legend>
-                            <div class="qmodal__option">
-                                <input type="radio" name="manual-correct" value="0" aria-label="Opción A correcta" checked>
-                                <span class="qmodal__option-letter num">A</span>
-                                <input class="form-control" type="text" id="manual-opt-0" required placeholder="Opción A">
-                            </div>
-                            <div class="qmodal__option">
-                                <input type="radio" name="manual-correct" value="1" aria-label="Opción B correcta">
-                                <span class="qmodal__option-letter num">B</span>
-                                <input class="form-control" type="text" id="manual-opt-1" required placeholder="Opción B">
-                            </div>
-                            <div class="qmodal__option">
-                                <input type="radio" name="manual-correct" value="2" aria-label="Opción C correcta">
-                                <span class="qmodal__option-letter num">C</span>
-                                <input class="form-control" type="text" id="manual-opt-2" required placeholder="Opción C">
-                            </div>
-                            <div class="qmodal__option">
-                                <input type="radio" name="manual-correct" value="3" aria-label="Opción D correcta">
-                                <span class="qmodal__option-letter num">D</span>
-                                <input class="form-control" type="text" id="manual-opt-3" required placeholder="Opción D">
-                            </div>
+                            <legend class="form-label">Opciones <span class="qmodal__hint-inline" id="manual-correct-hint">marcá la correcta</span></legend>
+                            <div id="manual-options"></div>
+                            <button type="button" class="ds-btn ds-btn--ghost qmodal__add-option" id="manual-add-option">
+                                <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                Agregar opción
+                            </button>
                         </fieldset>
                     </div>
                     <div class="modal-footer">
@@ -199,6 +203,15 @@
                             <div class="qmodal__field">
                                 <label class="form-label" for="gen-node">Nodo</label>
                                 <select class="form-select" id="gen-node" required></select>
+                            </div>
+                            <div class="qmodal__field">
+                                <label class="form-label" for="gen-type">Tipo</label>
+                                <select class="form-select" id="gen-type">
+                                    <option value="" selected>Mezcla (recomendado)</option>
+                                    <option value="single">Opción única</option>
+                                    <option value="true_false">Verdadero / Falso</option>
+                                    <option value="multiple">Opción múltiple</option>
+                                </select>
                             </div>
                             <div class="qmodal__field">
                                 <label class="form-label" for="gen-difficulty">Dificultad</label>
@@ -237,6 +250,7 @@
 
     {% include 'app/partials/_bootstrap-bundle.html' %}
     <script type="module" src="{% static 'js/app/nav-auth.js' %}?v={% now "U" %}"></script>
+    <script type="module" src="{% static 'js/app/custom-select.js' %}?v={% now "U" %}"></script>
     <script type="module" src="{% static 'js/app/teacher/questions.js' %}?v={% now "U" %}"></script>
 </body>
 </html>

@@ -35,7 +35,7 @@ if ($closeBtn) {
 
 let currentIndex = 0;
 let currentQuestion = null;
-let selectedIndex = null;
+let selectedIndices = [];
 let confidenceDeclared = 0.75;
 
 
@@ -93,21 +93,25 @@ function showStage(name) {
 
 function renderQuestion(q) {
     currentQuestion = q;
-    selectedIndex = null;
+    selectedIndices = [];
     $submit.disabled = true;
+
+    const isMultiple = q.question_type === 'multiple';
 
     $current.textContent = String(currentIndex + 1);
     // progreso asintótico (el total no se conoce de antemano)
     const pct = (1 - 1 / (currentIndex + 2)) * 100;
     $progress.style.width = `${pct}%`;
     const nodeName = q.node_name || q.node?.name || 'Sin nodo';
-    $questionEyebrow.textContent = `Pregunta ${currentIndex + 1} · ${nodeName}`;
+    $questionEyebrow.textContent = `Pregunta ${currentIndex + 1} · ${nodeName}`
+        + (isMultiple ? ' · marcá todas las correctas' : '');
     $questionText.textContent = q.statement || '—';
 
     const options = q.options || [];
+    const role = isMultiple ? 'checkbox' : 'radio';
     $optionsList.innerHTML = options.map((optText, i) => {
         return `
-          <button type="button" class="session-option" data-option-index="${i}" aria-pressed="false" role="radio" aria-checked="false">
+          <button type="button" class="session-option" data-option-index="${i}" aria-pressed="false" role="${role}" aria-checked="false">
             <span class="session-option__id">${escapeHTML(String.fromCharCode(65 + i))}</span>
             <span class="session-option__text">${escapeHTML(optText)}</span>
           </button>
@@ -116,12 +120,19 @@ function renderQuestion(q) {
 
     $optionsList.querySelectorAll('.session-option').forEach((btn) => {
         btn.addEventListener('click', () => {
-            $optionsList.querySelectorAll('.session-option').forEach((b) => {
-                b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
-                b.setAttribute('aria-checked', b === btn ? 'true' : 'false');
-            });
-            selectedIndex = Number(btn.dataset.optionIndex);
-            $submit.disabled = false;
+            if (isMultiple) {
+                const pressed = btn.getAttribute('aria-pressed') === 'true';
+                btn.setAttribute('aria-pressed', pressed ? 'false' : 'true');
+                btn.setAttribute('aria-checked', pressed ? 'false' : 'true');
+            } else {
+                $optionsList.querySelectorAll('.session-option').forEach((b) => {
+                    b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+                    b.setAttribute('aria-checked', b === btn ? 'true' : 'false');
+                });
+            }
+            selectedIndices = Array.from($optionsList.querySelectorAll('.session-option[aria-pressed="true"]'))
+                .map((b) => Number(b.dataset.optionIndex));
+            $submit.disabled = selectedIndices.length === 0;
         });
     });
 
@@ -131,6 +142,9 @@ function renderQuestion(q) {
 
 function renderFeedback(result) {
     const correct = result.is_correct === true;
+    const score = typeof result.score === 'number' ? result.score : (correct ? 1 : 0);
+    const partial = !correct && score > 0;
+    const scorePct = Math.round(score * 100);
     const declared = Math.round(confidenceDeclared * 100);
     const masteryRaw = result.bkt_mastery ?? result.bkt_mastery ?? 0;
     const mastery = Math.round(masteryRaw * 100);
@@ -141,14 +155,20 @@ function renderFeedback(result) {
     document.getElementById('feedback-q-num').textContent = String(currentIndex + 1);
 
     const $status = document.getElementById('feedback-status');
-    $status.dataset.kind = correct ? 'correct' : 'incorrect';
-    $status.innerHTML = correct
-        ? '<svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg> Correcta'
-        : '<svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Incorrecta';
+    $status.dataset.kind = correct ? 'correct' : (partial ? 'partial' : 'incorrect');
+    if (correct) {
+        $status.innerHTML = '<svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg> Correcta';
+    } else if (partial) {
+        $status.innerHTML = `<svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 2 a10 10 0 0 1 0 20 z" fill="currentColor" stroke="none"></path></svg> Parcial · ${scorePct}%`;
+    } else {
+        $status.innerHTML = '<svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Incorrecta';
+    }
 
     document.getElementById('feedback-title').textContent = correct
         ? 'Tu respuesta es correcta.'
-        : 'Tu respuesta no es correcta.';
+        : partial
+            ? `Acertaste parcialmente (${scorePct}%).`
+            : 'Tu respuesta no es correcta.';
 
     // La IA corre en segundo plano: el feedback inline ya no viene en la respuesta.
     // Si está pendiente, se avisa; el texto definitivo aparece en el repaso/Diagnósticos.
@@ -206,14 +226,14 @@ function renderFeedback(result) {
 
 
 $submit.addEventListener('click', async () => {
-    if (selectedIndex === null || !currentQuestion) return;
+    if (selectedIndices.length === 0 || !currentQuestion) return;
     $submit.disabled = true;
     $submit.textContent = 'Enviando…';
 
     try {
         const result = await sessions.answer(SESSION_ID, {
             question_id: currentQuestion.id,
-            selected_index: selectedIndex,
+            selected_indices: selectedIndices,
             confidence_declared: confidenceDeclared,
         });
         renderFeedback(result);

@@ -101,23 +101,38 @@ class GenerateQuestionsView(APIView):
             count=data['count'],
             content=content,
             file_id=file_id,
+            question_type=data.get('question_type') or '',
         )
 
         created = []
         for item in generated:
             try:
                 options = item.get('options', [])
-                correct_index = int(item.get('correct_index', 0))
-                if not isinstance(options, list) or len(options) != 4:
+                qtype = item.get('question_type', Question.TYPE_SINGLE)
+                indices = item.get('correct_indices') or []
+                if not isinstance(options, list) or not (2 <= len(options) <= 6):
                     continue
-                if correct_index not in (0, 1, 2, 3):
+                if qtype not in (Question.TYPE_SINGLE, Question.TYPE_TRUE_FALSE, Question.TYPE_MULTIPLE):
+                    continue
+                if not isinstance(indices, list) or not indices:
+                    continue
+                indices = [int(i) for i in indices]
+                if len(set(indices)) != len(indices):
+                    continue
+                if any(i < 0 or i >= len(options) for i in indices):
+                    continue
+                if qtype in Question.SINGLE_ANSWER_TYPES and len(indices) != 1:
+                    continue
+                if qtype == Question.TYPE_TRUE_FALSE and len(options) != 2:
                     continue
                 q = Question.objects.create(
                     node=node,
                     statement=item.get('text', ''),
                     difficulty=item.get('difficulty', data['difficulty']),
+                    question_type=qtype,
                     options=options,
-                    correct_index=correct_index,
+                    correct_indices=indices,
+                    correct_index=indices[0],
                     rationale=item.get('rationale', ''),
                     source=Question.SOURCE_AI,
                     source_pdf=source_pdf,
@@ -173,8 +188,10 @@ class ManualQuestionView(APIView):
             node=node,
             statement=data['statement'],
             difficulty=data['difficulty'],
+            question_type=data['question_type'],
             options=data['options'],
-            correct_index=data['correct_index'],
+            correct_indices=data['correct_indices'],
+            correct_index=data['correct_indices'][0],
             source=Question.SOURCE_MANUAL,
         )
         return Response(QuestionSerializer(question).data, status=status.HTTP_201_CREATED)

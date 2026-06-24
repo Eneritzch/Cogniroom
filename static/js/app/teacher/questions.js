@@ -30,16 +30,14 @@ function activeRoomId() {
 }
 
 
-const PAGE_SIZE = 10;
-
 let ROOM_ID = null;
 let ROOM_INFO = null;
 let BANK = [];
 let NODES = [];
 let currentStatus = 'all';
 let currentSource = 'all';
+let currentType = 'all';
 let currentSearch = '';
-let currentPage = 1;
 
 
 function difficultyMeta(level) {
@@ -73,6 +71,7 @@ function applyFilters(bank) {
     return bank.filter((qst) => {
         if (currentStatus !== 'all' && qst.status !== currentStatus) return false;
         if (currentSource !== 'all' && qst.source !== currentSource) return false;
+        if (currentType !== 'all' && (qst.question_type || 'single') !== currentType) return false;
         if (q) {
             const text = questionText(qst).toLowerCase();
             const name = nodeName(qst.node).toLowerCase();
@@ -90,48 +89,103 @@ function formatDate(iso) {
 }
 
 
+const TYPE_LABEL = { single: 'Opción única', true_false: 'Verdadero / Falso', multiple: 'Opción múltiple' };
+const TYPE_ORDER = { single: 0, true_false: 1, multiple: 2 };
+
+function qType(q) {
+    return q.question_type || 'single';
+}
+
 function renderList() {
     const $list = document.getElementById('questions-list');
     const $meta = document.getElementById('questions-meta');
+    const $pager = document.getElementById('questions-pager');
     if (!$list) return;
+    if ($pager) { $pager.hidden = true; $pager.innerHTML = ''; }
 
     const filtered = applyFilters(BANK);
-    const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-    if (currentPage > totalPages) currentPage = totalPages;
-    const startIdx = (currentPage - 1) * PAGE_SIZE;
-    const visible = filtered.slice(startIdx, startIdx + PAGE_SIZE);
-
     if ($meta) {
-        if (filtered.length === 0) {
-            $meta.textContent = 'Sin resultados';
-        } else {
-            const endIdx = startIdx + visible.length;
-            $meta.textContent = `${startIdx + 1}–${endIdx} de ${filtered.length}`;
-        }
+        $meta.textContent = filtered.length === 0
+            ? 'Sin resultados'
+            : `${filtered.length} pregunta${filtered.length === 1 ? '' : 's'}`;
     }
 
     if (filtered.length === 0) {
         $list.innerHTML = `<li class="questions-empty">Sin preguntas para este filtro.</li>`;
-        renderPager(0, 1);
         return;
     }
 
-    $list.innerHTML = visible.map((q) => {
+    // Agrupar por nodo (sección); dentro de cada nodo, separar por tipo.
+    const byNode = new Map();
+    filtered.forEach((q) => {
+        const node = q.node_name || nodeName(q.node) || 'Sin nodo';
+        if (!byNode.has(node)) byNode.set(node, []);
+        byNode.get(node).push(q);
+    });
+    const sections = Array.from(byNode.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+
+    $list.innerHTML = sections.map(([node, qs]) => {
+        const counts = {};
+        qs.forEach((q) => { const t = qType(q); counts[t] = (counts[t] || 0) + 1; });
+        const breakdown = Object.keys(counts)
+            .sort((a, b) => TYPE_ORDER[a] - TYPE_ORDER[b])
+            .map((t) => `${counts[t]} ${TYPE_LABEL[t]}`)
+            .join(' · ');
+
+        const sorted = qs.slice().sort((a, b) => TYPE_ORDER[qType(a)] - TYPE_ORDER[qType(b)]);
+        let lastType = null;
+        const cards = sorted.map((q) => {
+            const t = qType(q);
+            let divider = '';
+            if (t !== lastType) {
+                lastType = t;
+                divider = `<li class="qsection__type">${TYPE_LABEL[t]}</li>`;
+            }
+            return divider + cardHTML(q);
+        }).join('');
+
+        return `
+        <li class="qsection">
+            <header class="qsection__head">
+                <h3 class="qsection__title">
+                    <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="12" cy="12" r="9"></circle>
+                        <circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"></circle>
+                    </svg>
+                    ${escapeHTML(node)}
+                </h3>
+                <span class="qsection__count num">${qs.length}</span>
+                <span class="qsection__breakdown">${breakdown}</span>
+            </header>
+            <ul class="qsection__list">${cards}</ul>
+        </li>
+        `;
+    }).join('');
+}
+
+
+function cardHTML(q) {
         const diff = difficultyMeta(q.difficulty);
         const status = q.status || (q.is_approved ? 'approved' : 'pending');
         const name = q.node_name || nodeName(q.node);
         const topic = nodeTopic(q.node);
         const sourcePdf = q.source_pdf;
         const options = Array.isArray(q.options) ? q.options : [];
-        const correctIdx = Number.isInteger(q.correct_index) ? q.correct_index : -1;
+        const correctSet = new Set(
+            Array.isArray(q.correct_indices) && q.correct_indices.length
+                ? q.correct_indices
+                : (Number.isInteger(q.correct_index) ? [q.correct_index] : [])
+        );
+        const qtype = q.question_type || 'single';
+        const typeLabel = qtype === 'true_false' ? 'V/F' : qtype === 'multiple' ? 'Múltiple' : 'Única';
 
-        const optionsHTML = options.length === 4 ? `
+        const optionsHTML = options.length >= 2 ? `
             <ol class="qcard__options">
                 ${options.map((opt, idx) => `
-                    <li class="qcard__option${idx === correctIdx ? ' qcard__option--correct' : ''}">
+                    <li class="qcard__option${correctSet.has(idx) ? ' qcard__option--correct' : ''}">
                         <span class="qcard__option-letter num">${String.fromCharCode(65 + idx)}</span>
                         <span class="qcard__option-text">${escapeHTML(opt)}</span>
-                        ${idx === correctIdx ? `
+                        ${correctSet.has(idx) ? `
                             <svg class="icon-svg" width="12" height="12" viewBox="0 0 24 24" aria-label="Respuesta correcta">
                                 <polyline points="20 6 9 17 4 12"></polyline>
                             </svg>
@@ -145,6 +199,7 @@ function renderList() {
         <li class="qcard" data-status="${status}">
             <header class="qcard__head">
                 <span class="qcard__source" data-source="${q.source}">${q.source === 'ai' ? 'IA' : 'Manual'}</span>
+                <span class="qcard__type" data-type="${qtype}">${typeLabel}</span>
                 <span class="qcard__node">
                     <svg class="icon-svg" width="11" height="11" viewBox="0 0 24 24" aria-hidden="true">
                         <circle cx="12" cy="12" r="9"></circle>
@@ -201,57 +256,6 @@ function renderList() {
             </footer>
         </li>
         `;
-    }).join('');
-
-    renderPager(filtered.length, totalPages);
-}
-
-
-function renderPager(total, totalPages) {
-    const $pager = document.getElementById('questions-pager');
-    if (!$pager) return;
-
-    if (total === 0 || totalPages <= 1) {
-        $pager.innerHTML = '';
-        $pager.hidden = true;
-        return;
-    }
-    $pager.hidden = false;
-
-    const pages = pageRange(currentPage, totalPages);
-
-    const parts = [];
-    parts.push(`<span class="questions-pager__info">Página ${currentPage} de ${totalPages}</span>`);
-    parts.push(`<button type="button" class="questions-pager__btn" data-page-go="prev" ${currentPage === 1 ? 'disabled' : ''} aria-label="Anterior">‹</button>`);
-    pages.forEach((p) => {
-        if (p === '…') {
-            parts.push(`<span class="questions-pager__ellipsis">…</span>`);
-        } else {
-            const isCurrent = p === currentPage;
-            parts.push(`<button type="button" class="questions-pager__btn" data-page-go="${p}" ${isCurrent ? 'aria-current="page"' : ''}>${p}</button>`);
-        }
-    });
-    parts.push(`<button type="button" class="questions-pager__btn" data-page-go="next" ${currentPage === totalPages ? 'disabled' : ''} aria-label="Siguiente">›</button>`);
-
-    $pager.innerHTML = parts.join('');
-
-    $pager.querySelectorAll('[data-page-go]').forEach((btn) => {
-        btn.addEventListener('click', () => {
-            const target = btn.dataset.pageGo;
-            if (target === 'prev') currentPage = Math.max(1, currentPage - 1);
-            else if (target === 'next') currentPage = Math.min(totalPages, currentPage + 1);
-            else currentPage = Number(target);
-            renderList();
-        });
-    });
-}
-
-
-function pageRange(current, total) {
-    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-    if (current <= 4) return [1, 2, 3, 4, 5, '…', total];
-    if (current >= total - 3) return [1, '…', total - 4, total - 3, total - 2, total - 1, total];
-    return [1, '…', current - 1, current, current + 1, '…', total];
 }
 
 
@@ -267,7 +271,6 @@ function render() {
     const pendingTotal = BANK.filter((q) => q.status === 'pending').length;
     if ($pending) $pending.textContent = `${pendingTotal} pendiente${pendingTotal === 1 ? '' : 's'} de aprobación`;
 
-    currentPage = 1;
     renderList();
 }
 
@@ -361,21 +364,104 @@ document.getElementById('node-form').addEventListener('submit', async (e) => {
     }
 });
 
+/* ---- Pregunta manual: opciones dinámicas según el tipo ---- */
+const MANUAL_MIN_OPTS = 2;
+const MANUAL_MAX_OPTS = 6;
+
+function manualType() {
+    return document.getElementById('manual-type').value;
+}
+
+function readManualOptionValues() {
+    return Array.from(document.querySelectorAll('#manual-options [data-opt-input]')).map((i) => i.value);
+}
+
+function readManualCorrect() {
+    return Array.from(document.querySelectorAll('#manual-options input[name="manual-correct"]:checked'))
+        .map((i) => Number(i.value));
+}
+
+function renderManualOptions(values, correct) {
+    const type = manualType();
+    const $box = document.getElementById('manual-options');
+    const $hint = document.getElementById('manual-correct-hint');
+    const $add = document.getElementById('manual-add-option');
+    const inputType = type === 'multiple' ? 'checkbox' : 'radio';
+    const fixed = type === 'true_false';
+
+    let opts = values && values.length ? values.slice() : ['', '', '', ''];
+    if (fixed) opts = ['Verdadero', 'Falso'];
+    if (opts.length < MANUAL_MIN_OPTS) opts = opts.concat(Array(MANUAL_MIN_OPTS - opts.length).fill(''));
+    if (opts.length > MANUAL_MAX_OPTS) opts = opts.slice(0, MANUAL_MAX_OPTS);
+
+    let correctSet;
+    if (inputType === 'radio') {
+        const first = correct && correct.length ? correct[0] : 0;
+        correctSet = new Set([first < opts.length ? first : 0]);
+    } else {
+        correctSet = new Set((correct || []).filter((i) => i < opts.length));
+    }
+
+    const removable = !fixed && opts.length > MANUAL_MIN_OPTS;
+    $box.innerHTML = opts.map((val, i) => `
+        <div class="qmodal__option" data-opt-row="${i}">
+            <input type="${inputType}" name="manual-correct" value="${i}" ${correctSet.has(i) ? 'checked' : ''}
+                   aria-label="Opción ${String.fromCharCode(65 + i)} correcta">
+            <span class="qmodal__option-letter num">${String.fromCharCode(65 + i)}</span>
+            <input class="form-control" type="text" data-opt-input="${i}" required
+                   placeholder="Opción ${String.fromCharCode(65 + i)}" value="${escapeHTML(val)}" ${fixed ? 'readonly' : ''}>
+            ${removable ? `<button type="button" class="qmodal__option-remove" data-opt-remove="${i}" aria-label="Quitar opción">
+                <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>` : ''}
+        </div>
+    `).join('');
+
+    if ($hint) $hint.textContent = type === 'multiple' ? 'marcá todas las correctas' : 'marcá la correcta';
+    if ($add) $add.hidden = fixed || opts.length >= MANUAL_MAX_OPTS;
+}
+
+document.getElementById('manual-type').addEventListener('change', () => renderManualOptions(null, null));
+
+document.getElementById('manual-add-option').addEventListener('click', () => {
+    const vals = readManualOptionValues();
+    if (vals.length >= MANUAL_MAX_OPTS) return;
+    vals.push('');
+    renderManualOptions(vals, readManualCorrect());
+});
+
+document.getElementById('manual-options').addEventListener('click', (e) => {
+    const rm = e.target.closest('[data-opt-remove]');
+    if (!rm) return;
+    const idx = Number(rm.dataset.optRemove);
+    const vals = readManualOptionValues().filter((_, i) => i !== idx);
+    const correct = readManualCorrect().filter((i) => i !== idx).map((i) => (i > idx ? i - 1 : i));
+    renderManualOptions(vals, correct);
+});
+
+renderManualOptions(null, null);
+
 /* Crear pregunta manual */
 document.getElementById('manual-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!ROOM_ID) return;
     const nodeId = Number(document.getElementById('manual-node').value);
     if (!nodeId) { toast('Elegí un nodo (creá uno si no hay).', { kind: 'error' }); return; }
-    const options = [0, 1, 2, 3].map((i) => document.getElementById(`manual-opt-${i}`).value.trim());
-    if (options.some((o) => !o)) { toast('Completá las 4 opciones.', { kind: 'error' }); return; }
-    const correct = document.querySelector('input[name="manual-correct"]:checked');
+
+    const type = manualType();
+    const options = readManualOptionValues().map((o) => o.trim());
+    if (options.some((o) => !o)) { toast('Completá todas las opciones.', { kind: 'error' }); return; }
+    const correct = readManualCorrect();
+    if (!correct.length) { toast('Marcá al menos una opción correcta.', { kind: 'error' }); return; }
+    if (type === 'multiple' && correct.length < 2) {
+        toast('Opción múltiple requiere al menos 2 correctas.', { kind: 'error' }); return;
+    }
 
     const payload = {
         node_id: nodeId,
         statement: document.getElementById('manual-statement').value.trim(),
+        question_type: type,
         options,
-        correct_index: Number(correct ? correct.value : 0),
+        correct_indices: correct,
         difficulty: document.getElementById('manual-difficulty').value,
     };
 
@@ -385,7 +471,7 @@ document.getElementById('manual-form').addEventListener('submit', async (e) => {
         await questionsApi.manual(ROOM_ID, payload);
         toast('Pregunta creada.', { kind: 'success' });
         e.target.reset();
-        document.querySelector('input[name="manual-correct"][value="0"]').checked = true;
+        renderManualOptions(null, null);
         hideModal('manualQuestionModal');
         await reloadBank();
     } catch (err) {
@@ -414,6 +500,8 @@ document.getElementById('generate-form').addEventListener('submit', async (e) =>
         difficulty: document.getElementById('gen-difficulty').value,
         count: Number(document.getElementById('gen-count').value) || 5,
     };
+    const genType = document.getElementById('gen-type').value;
+    if (genType) payload.question_type = genType;
     if (pdfId) payload.pdf_id = Number(pdfId);
     else payload.content = content;
 
@@ -478,7 +566,6 @@ async function load() {
 document.querySelectorAll('[data-status-filter]').forEach((btn) => {
     btn.addEventListener('click', () => {
         currentStatus = btn.dataset.statusFilter;
-        currentPage = 1;
         document.querySelectorAll('[data-status-filter]').forEach((b) => {
             b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
         });
@@ -489,8 +576,17 @@ document.querySelectorAll('[data-status-filter]').forEach((btn) => {
 document.querySelectorAll('[data-source-filter]').forEach((btn) => {
     btn.addEventListener('click', () => {
         currentSource = btn.dataset.sourceFilter;
-        currentPage = 1;
         document.querySelectorAll('[data-source-filter]').forEach((b) => {
+            b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+        });
+        renderList();
+    });
+});
+
+document.querySelectorAll('[data-type-filter]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+        currentType = btn.dataset.typeFilter;
+        document.querySelectorAll('[data-type-filter]').forEach((b) => {
             b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
         });
         renderList();
@@ -505,7 +601,6 @@ if ($search) {
         clearTimeout(t);
         t = setTimeout(() => {
             currentSearch = $search.value;
-            currentPage = 1;
             renderList();
         }, 150);
     });
