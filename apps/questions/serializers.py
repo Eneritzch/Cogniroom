@@ -4,10 +4,17 @@ from .models import KnowledgeNode, PDFDocument, Question
 
 
 class KnowledgeNodeSerializer(serializers.ModelSerializer):
+    # Preguntas aprobadas (= contestables) del nodo. El estudiante usa esto para
+    # elegir nodos con material y el docente para ver qué nodos ya tienen banco.
+    approved_count = serializers.SerializerMethodField()
+
     class Meta:
         model = KnowledgeNode
-        fields = ['id', 'room', 'name', 'created_at']
+        fields = ['id', 'room', 'name', 'created_at', 'approved_count']
         read_only_fields = ['id', 'room', 'created_at']
+
+    def get_approved_count(self, obj):
+        return obj.questions.filter(status=Question.STATUS_APPROVED).count()
 
 
 class QuestionSerializer(serializers.ModelSerializer):

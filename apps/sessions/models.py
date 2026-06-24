@@ -25,6 +25,10 @@ class EvaluationSession(models.Model):
         related_name='evaluation_sessions',
     )
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_ACTIVE)
+    # Nodos elegidos por el estudiante al iniciar; vacío = todos los nodos de la
+    # sala (modo adaptativo completo). NextQuestionView restringe la selección
+    # de preguntas a estos nodos cuando hay alguno.
+    selected_node_ids = models.JSONField(default=list, blank=True)
     started_at = models.DateTimeField(auto_now_add=True)
     finished_at = models.DateTimeField(null=True, blank=True)
 

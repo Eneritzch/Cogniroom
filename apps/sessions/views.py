@@ -19,7 +19,7 @@ from apps.cognitive.models import (
 )
 from apps.notifications.models import Notification
 from apps.notifications.services import notify
-from apps.questions.models import Question
+from apps.questions.models import KnowledgeNode, Question
 from apps.questions.serializers import QuestionPublicSerializer
 from apps.rooms.models import Room, RoomMembership
 from services.bkt_engine import BKTEngine
@@ -271,7 +271,24 @@ class SessionListCreateView(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        session = EvaluationSession.objects.create(student=request.user, room=room)
+        # Nodos elegidos por el estudiante; deben pertenecer a la sala. Vacío =
+        # todos (la selección adaptativa abarca toda la sala, como antes).
+        node_ids = serializer.validated_data.get('node_ids') or []
+        if node_ids:
+            valid_ids = list(
+                KnowledgeNode.objects.filter(room=room, id__in=node_ids)
+                .values_list('id', flat=True)
+            )
+            if len(valid_ids) != len(set(node_ids)):
+                return Response(
+                    {'detail': 'Algunos nodos no pertenecen a esta sala.'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            node_ids = valid_ids
+
+        session = EvaluationSession.objects.create(
+            student=request.user, room=room, selected_node_ids=node_ids,
+        )
         return Response(
             EvaluationSessionSerializer(session).data, status=status.HTTP_201_CREATED
         )
@@ -297,6 +314,12 @@ class NextQuestionView(APIView):
             node__room=session.room,
             status=Question.STATUS_APPROVED,
         ).exclude(id__in=answered_ids)
+
+        # El estudiante eligió nodos al iniciar: la evaluación se restringe a
+        # ellos (la selección adaptativa por mastery opera dentro del subconjunto).
+        selected_node_ids = session.selected_node_ids or []
+        if selected_node_ids:
+            candidates = candidates.filter(node_id__in=selected_node_ids)
 
         if not candidates.exists():
             return Response({'completed': True})

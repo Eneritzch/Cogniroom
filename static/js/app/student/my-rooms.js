@@ -1,5 +1,5 @@
 const _v = new URL(import.meta.url).searchParams.get('v') || '';
-const { rooms: roomsApi, sessions: sessionsApi, tokens, ApiError } = await import(`../api.js?v=${_v}`);
+const { rooms: roomsApi, sessions: sessionsApi, questions: questionsApi, tokens, ApiError } = await import(`../api.js?v=${_v}`);
 const { toast } = await import(`../toast.js?v=${_v}`);
 
 
@@ -94,6 +94,15 @@ function renderCard(r) {
            </div>`
         : '';
 
+    // Sala de estudio sin preguntas: el CTA principal lleva a generar, no a
+    // "Empezar evaluación" (que con 0 preguntas no tendría qué servir).
+    const qCount = r.questions ?? 0;
+    const needsContent = !isGroup && qCount === 0;
+    const arrowSvg = `<svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+    const primaryCta = needsContent
+        ? `<a class="rcard__cta" href="/app/questions/" data-action="manage-questions" data-room-id="${r.id_room}">Generar preguntas ${arrowSvg}</a>`
+        : `<a class="rcard__cta" href="#" data-action="start" data-room-id="${r.id_room}">Empezar evaluación ${arrowSvg}</a>`;
+
     return `
     <li class="rcard" data-mode="${r.mode}">
         <header class="rcard__head rcard__head--withbadge">
@@ -155,17 +164,11 @@ function renderCard(r) {
                 Ver historial
             </a>
             <div class="rcard__foot-actions">
-                ${r.mode === 'individual' ? `
-                    <a class="rcard__link" href="/app/questions/" title="Gestionar preguntas">Preguntas</a>
-                    <a class="rcard__link" href="/app/pdfs/" title="Gestionar PDFs">PDFs</a>
+                ${!isGroup ? `
+                    <a class="rcard__link" href="/app/questions/" data-action="manage-questions" data-room-id="${r.id_room}" title="Gestionar preguntas">Preguntas</a>
+                    <a class="rcard__link" href="/app/pdfs/" data-action="manage-pdfs" data-room-id="${r.id_room}" title="Gestionar PDFs">PDFs</a>
                 ` : ''}
-                <a class="rcard__cta" href="#" data-action="start" data-room-id="${r.id_room}">
-                    Empezar evaluación
-                    <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                        <polyline points="12 5 19 12 12 19"></polyline>
-                    </svg>
-                </a>
+                ${primaryCta}
             </div>
         </footer>
     </li>`;
@@ -241,30 +244,124 @@ document.querySelectorAll('[data-mode-filter]').forEach((btn) => {
 });
 
 
-/* Iniciar evaluación: crea una sesión real en la sala y navega a ella. */
-document.getElementById('my-rooms-list').addEventListener('click', async (e) => {
-    const cta = e.target.closest('[data-action="start"]');
-    if (!cta) return;
-    e.preventDefault();
-    const roomId = Number(cta.dataset.roomId);
-    if (!roomId || cta.dataset.loading) return;
+/* Iniciar evaluación: el estudiante elige en qué nodos evaluarse antes de crear
+   la sesión. Los nodos se traen en vivo, así reflejan los que el docente agregó
+   y solo se ofrecen los que ya tienen preguntas aprobadas. */
+let startRoomId = null;
 
-    cta.dataset.loading = '1';
-    cta.style.pointerEvents = 'none';
+document.getElementById('my-rooms-list').addEventListener('click', (e) => {
+    const el = e.target.closest('[data-action]');
+    if (!el) return;
+    const action = el.dataset.action;
+    const roomId = Number(el.dataset.roomId);
+
+    if (action === 'start') {
+        e.preventDefault();
+        if (roomId) openStartEvalModal(roomId);
+        return;
+    }
+    // "Preguntas" / "PDFs" / "Generar preguntas": fijamos la sala activa para que
+    // la página de gestión cargue ESTA sala; el href navega normalmente.
+    if (action === 'manage-questions' || action === 'manage-pdfs') {
+        if (roomId) localStorage.setItem('cogniroom.activeRoomId', String(roomId));
+    }
+});
+
+
+async function openStartEvalModal(roomId) {
+    startRoomId = roomId;
+    const $body = document.getElementById('start-eval-nodes');
+    const $confirm = document.getElementById('start-eval-confirm');
+    const $all = document.getElementById('start-eval-all');
+    if (!$body) return;
+
+    $body.innerHTML = '<p class="start-eval__msg">Cargando nodos…</p>';
+    if ($confirm) $confirm.disabled = true;
+    if ($all) { $all.checked = true; $all.disabled = true; }
+
+    const $modal = document.getElementById('startEvalModal');
+    if ($modal && window.bootstrap) {
+        const instance = window.bootstrap.Modal.getInstance($modal) || new window.bootstrap.Modal($modal);
+        instance.show();
+    }
+
     try {
-        const session = await sessionsApi.create(roomId);
-        location.href = `/app/session/${session.id}/`;
+        const nodes = await questionsApi.listNodes(roomId);
+        const usable = (nodes || []).filter((n) => (n.approved_count ?? 0) > 0);
+        if (usable.length === 0) {
+            $body.innerHTML = '<p class="start-eval__msg">Esta sala todavía no tiene preguntas disponibles para evaluar.</p>';
+            return;
+        }
+        $body.innerHTML = usable.map((n) => `
+            <label class="start-eval__node">
+                <input type="checkbox" class="start-eval__check" value="${n.id}" checked>
+                <span class="start-eval__node-name">${escapeHTML(n.name)}</span>
+                <span class="start-eval__node-count num">${n.approved_count} ${n.approved_count === 1 ? 'pregunta' : 'preguntas'}</span>
+            </label>
+        `).join('');
+        if ($confirm) $confirm.disabled = false;
+        if ($all) { $all.disabled = false; $all.checked = true; }
     } catch (err) {
         if (err instanceof ApiError && err.status === 401) {
             tokens.clear();
             location.replace('/app/');
             return;
         }
-        toast(err?.body?.detail || err?.message || 'No se pudo iniciar la evaluación.', { kind: 'error' });
-        delete cta.dataset.loading;
-        cta.style.pointerEvents = '';
+        $body.innerHTML = '<p class="start-eval__msg">No se pudieron cargar los nodos.</p>';
     }
-});
+}
+
+
+function bindStartEvalModal() {
+    const $all = document.getElementById('start-eval-all');
+    const $body = document.getElementById('start-eval-nodes');
+    const $confirm = document.getElementById('start-eval-confirm');
+
+    if ($all && !$all.dataset.bound) {
+        $all.dataset.bound = '1';
+        $all.addEventListener('change', () => {
+            document.querySelectorAll('.start-eval__check').forEach((c) => { c.checked = $all.checked; });
+        });
+    }
+
+    // "Todos" queda en sync con las casillas individuales.
+    if ($body && !$body.dataset.bound) {
+        $body.dataset.bound = '1';
+        $body.addEventListener('change', () => {
+            const checks = Array.from(document.querySelectorAll('.start-eval__check'));
+            if ($all && checks.length) $all.checked = checks.every((c) => c.checked);
+        });
+    }
+
+    if ($confirm && !$confirm.dataset.bound) {
+        $confirm.dataset.bound = '1';
+        $confirm.addEventListener('click', async () => {
+            if (!startRoomId) return;
+            const checked = Array.from(document.querySelectorAll('.start-eval__check:checked'))
+                .map((c) => Number(c.value));
+            if (checked.length === 0) {
+                toast('Elegí al menos un nodo para evaluarte.', { kind: 'error' });
+                return;
+            }
+            $confirm.disabled = true;
+            const original = $confirm.innerHTML;
+            $confirm.textContent = 'Iniciando…';
+            try {
+                const session = await sessionsApi.create(startRoomId, checked);
+                location.href = `/app/session/${session.id}/`;
+            } catch (err) {
+                if (err instanceof ApiError && err.status === 401) {
+                    tokens.clear();
+                    location.replace('/app/');
+                    return;
+                }
+                toast(err?.body?.detail || err?.message || 'No se pudo iniciar la evaluación.', { kind: 'error' });
+                $confirm.disabled = false;
+                $confirm.innerHTML = original;
+            }
+        });
+    }
+}
 
 
 function bindJoinModal() {
@@ -344,5 +441,6 @@ async function loadRooms() {
 
 bindJoinModal();
 bindCreateStudyModal();
+bindStartEvalModal();
 render();
 loadRooms();

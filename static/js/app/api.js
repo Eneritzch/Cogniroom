@@ -169,7 +169,12 @@ export const pdfs = {
 
 /* ---------- Sessions ---------- */
 export const sessions = {
-    create:       (roomId) => request('/sessions/', { method: 'POST', body: { room_id: roomId } }),
+    create:       (roomId, nodeIds) => request('/sessions/', {
+        method: 'POST',
+        body: (nodeIds && nodeIds.length)
+            ? { room_id: roomId, node_ids: nodeIds }
+            : { room_id: roomId },
+    }),
     nextQuestion: (sessionId) => request(`/sessions/${sessionId}/next-question/`),
     answer:       (sessionId, payload) => request(`/sessions/${sessionId}/answers/`, {
         method: 'POST', body: payload,

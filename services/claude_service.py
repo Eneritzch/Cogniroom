@@ -115,7 +115,10 @@ class CognitiveAnalysisService:
 
     def __init__(self):
         api_key = getattr(settings, 'ANTHROPIC_API_KEY', '') or ''
-        self.client = anthropic.Anthropic(api_key=api_key) if api_key else None
+        # max_retries por encima del default (2): la generación es una request
+        # pesada y la API puede devolver 529 transitorios; sin esto el docente
+        # vería "0 preguntas" por una saturación pasajera.
+        self.client = anthropic.Anthropic(api_key=api_key, max_retries=4) if api_key else None
         self.last_usage = None
 
     def _message(self, system: str, user: str) -> str:

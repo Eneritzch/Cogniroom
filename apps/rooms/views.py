@@ -40,6 +40,26 @@ def _teacher_room_data(room):
     return data
 
 
+def _student_room_data(room, user, request):
+    """Sala enriquecida para la vista del estudiante: los conteos que la tarjeta
+    de "Mis salas" muestra (nodos, sesiones y —en salas de estudio— pdfs y
+    preguntas). Sin esto la tarjeta los lee como 0."""
+    from apps.questions.models import KnowledgeNode, PDFDocument, Question
+    from apps.sessions.models import EvaluationSession
+
+    data = RoomSerializer(room, context={'request': request}).data
+    data['activeNodes'] = KnowledgeNode.objects.filter(room=room).count()
+    data['totalSessions'] = EvaluationSession.objects.filter(
+        room=room, student=user, status=EvaluationSession.STATUS_COMPLETED
+    ).count()
+    if room.mode == 'individual':
+        data['pdfs'] = PDFDocument.objects.filter(room=room).count()
+        data['questions'] = Question.objects.filter(
+            node__room=room, status=Question.STATUS_APPROVED
+        ).count()
+    return data
+
+
 class RoomListCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -55,7 +75,7 @@ class RoomListCreateView(APIView):
         qs = Room.objects.filter(
             Q(id__in=membership_room_ids) | Q(teacher=user, mode='individual')
         ).order_by('-created_at').distinct()
-        return Response(RoomSerializer(qs, many=True, context={'request': request}).data)
+        return Response([_student_room_data(r, user, request) for r in qs])
 
     def post(self, request):
         serializer = RoomCreateSerializer(data=request.data)

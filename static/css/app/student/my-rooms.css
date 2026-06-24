@@ -213,6 +213,66 @@
 }
 
 
+/* Modal "Iniciar evaluación": selección de nodos del estudiante */
+.start-eval__all {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  margin-bottom: var(--s-3);
+  padding-bottom: var(--s-3);
+  border-bottom: 1px solid var(--paper-border);
+  cursor: pointer;
+  font-weight: var(--fw-semibold);
+  color: var(--ink);
+  min-height: 44px;
+}
+
+.start-eval__nodes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.start-eval__node {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: 44px;
+  padding: var(--s-2) var(--s-4);
+  border: 1px solid var(--paper-border);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+
+.start-eval__node:hover {
+  border-color: var(--paper-border-strong);
+}
+
+.start-eval__node-name {
+  flex: 1;
+  min-width: 0;
+  color: var(--ink);
+}
+
+.start-eval__node-count {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+
+.start-eval__msg {
+  margin: 0;
+  padding: var(--s-4) 0;
+  text-align: center;
+  color: var(--ink-muted);
+}
+
+
 .rcard__foot-actions {
   display: flex;
   align-items: center;

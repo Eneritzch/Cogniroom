@@ -12,6 +12,10 @@ class EvaluationSessionSerializer(serializers.ModelSerializer):
 
 class CreateSessionSerializer(serializers.Serializer):
     room_id = serializers.IntegerField()
+    # Nodos en los que el estudiante quiere evaluarse; ausente/vacío = todos.
+    node_ids = serializers.ListField(
+        child=serializers.IntegerField(min_value=1), required=False, allow_empty=True,
+    )
 
 
 class AnswerSerializer(serializers.ModelSerializer):

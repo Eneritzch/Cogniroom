@@ -97,6 +97,50 @@
         </section>
     </main>
 
+    <div class="modal fade" id="startEvalModal" tabindex="-1" aria-labelledby="startEvalModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content create-room-modal">
+                <header class="create-room-modal__head">
+                    <div>
+                        <span class="eyebrow">Iniciar evaluación</span>
+                        <h2 id="startEvalModalTitle" class="create-room-modal__title">¿En qué nodos querés evaluarte?</h2>
+                    </div>
+                    <button type="button" class="create-room-modal__close" data-bs-dismiss="modal" aria-label="Cerrar">
+                        <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </header>
+
+                <div class="create-room-modal__body">
+                    <label class="start-eval__all">
+                        <input type="checkbox" id="start-eval-all" checked>
+                        <span class="start-eval__all-label">Todos los nodos</span>
+                    </label>
+                    <div class="start-eval__nodes" id="start-eval-nodes" role="group" aria-label="Nodos disponibles">
+                        <p class="start-eval__msg">Cargando nodos…</p>
+                    </div>
+                    <p class="create-room-modal__hint">
+                        Solo aparecen los nodos con preguntas. Dentro de los que elijas,
+                        la evaluación ataca primero tus puntos más débiles.
+                    </p>
+                </div>
+
+                <footer class="create-room-modal__foot">
+                    <button type="button" class="ds-btn ds-btn--ghost" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" id="start-eval-confirm" class="ds-btn ds-btn--ink" disabled>
+                        <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                        Empezar
+                    </button>
+                </footer>
+            </div>
+        </div>
+    </div>
+
     <div class="toast-host" id="toast-host" aria-live="polite" aria-atomic="true"></div>
 
     {% include 'app/partials/_bootstrap-bundle.html' %}
