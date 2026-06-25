@@ -152,8 +152,12 @@ def _run_ai_analysis(answer_id, new_mastery):
         claude = CognitiveAnalysisService()
 
         try:
-            correct_answer = question.options[question.correct_index]
-            selected_answer = question.options[answer.selected_index]
+            # Todas las correctas y todas las marcadas (no solo la primera): en
+            # opción múltiple el feedback debe contemplar el conjunto completo.
+            correct_idx = question.correct_indices or [question.correct_index]
+            selected_idx = answer.selected_indices or [answer.selected_index]
+            correct_answer = ' / '.join(question.options[i] for i in correct_idx)
+            selected_answer = ' / '.join(question.options[i] for i in selected_idx)
         except (IndexError, TypeError):
             correct_answer = selected_answer = ''
 

@@ -1,3 +1,5 @@
+import random
+
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.parsers import FormParser, MultiPartParser
@@ -30,6 +32,22 @@ def _is_member(user, room):
     if room.mode == 'individual':
         return room.teacher_id == user.id
     return RoomMembership.objects.filter(room=room, student=user).exists()
+
+
+def shuffle_options(options, correct_indices, qtype):
+    """Randomiza el orden de las opciones y reubica las correctas. Los modelos de
+    lenguaje tienden a poner la respuesta correcta primero (en nuestras pruebas,
+    el 100% en la opción A), lo que el estudiante detecta y juega. Randomizar la
+    posición fuerza a evaluar conocimiento real. Verdadero/Falso conserva su orden
+    natural (Verdadero, Falso)."""
+    if qtype == Question.TYPE_TRUE_FALSE or len(options) < 2:
+        return options, sorted(correct_indices)
+    order = list(range(len(options)))
+    random.shuffle(order)
+    new_options = [options[i] for i in order]
+    correct_set = set(correct_indices)
+    new_correct = sorted(j for j, old in enumerate(order) if old in correct_set)
+    return new_options, new_correct
 
 
 class NodeListCreateView(APIView):
@@ -125,6 +143,9 @@ class GenerateQuestionsView(APIView):
                     continue
                 if qtype == Question.TYPE_TRUE_FALSE and len(options) != 2:
                     continue
+                # Randomiza la posición de la correcta (el modelo la pone siempre
+                # primera); imprescindible para que el estudiante no la adivine.
+                options, indices = shuffle_options(options, indices, qtype)
                 q = Question.objects.create(
                     node=node,
                     statement=item.get('text', ''),
@@ -160,6 +181,70 @@ class GenerateQuestionsView(APIView):
             },
             status=status.HTTP_201_CREATED,
         )
+
+
+class EstimateGenerationView(APIView):
+    """Estima el costo de una generación con IA antes de ejecutarla: tokens de
+    entrada reales (vía count_tokens) + salida aproximada. Sirve para que el
+    docente vea el gasto en el panel antes de darle "Generar"."""
+    permission_classes = [IsAuthenticated]
+
+    INPUT_PER_M = 5.0      # Opus 4.8: USD por millón de tokens de entrada
+    OUTPUT_PER_M = 25.0    # USD por millón de tokens de salida
+    APPROX_OUTPUT_PER_Q = 500  # salida aprox. por pregunta (enunciado+opciones+racional+thinking)
+
+    def post(self, request, room_id):
+        room = get_object_or_404(Room, id=room_id)
+        if room.teacher_id != request.user.id:
+            return Response(
+                {'detail': 'Only the room owner can estimate generation.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        content = (request.data.get('content') or '').strip()
+        pdf_id = request.data.get('pdf_id')
+        difficulty = request.data.get('difficulty') or 'medium'
+        try:
+            count = int(request.data.get('count') or 1)
+        except (TypeError, ValueError):
+            count = 1
+        count = max(1, min(count, 20))
+
+        node_name = ''
+        node_id = request.data.get('node_id')
+        if node_id:
+            node = KnowledgeNode.objects.filter(id=node_id, room=room).first()
+            node_name = node.name if node else ''
+
+        # Si no se pegó texto pero se eligió un PDF, estimamos sobre su texto
+        # extraído (la Files API no soporta count_tokens; el PDF nativo se
+        # aproxima por su texto y puede tokenizar algo distinto).
+        source = 'text'
+        if not content and pdf_id:
+            pdf = PDFDocument.objects.filter(id=pdf_id, room=room).first()
+            if pdf and pdf.extracted_text:
+                content = pdf.extracted_text
+                source = 'pdf'
+
+        # Sin contenido aprovechable o sin API key: no hay estimación.
+        if not content:
+            return Response({'available': False, 'input_tokens': 0, 'approx_cost_usd': 0.0})
+
+        input_tokens = CognitiveAnalysisService().estimate_generation_tokens(
+            content=content, node_name=node_name, difficulty=difficulty, count=count,
+        )
+        if not input_tokens:
+            return Response({'available': False, 'input_tokens': 0, 'approx_cost_usd': 0.0})
+
+        est_output = count * self.APPROX_OUTPUT_PER_Q
+        cost = (input_tokens / 1_000_000) * self.INPUT_PER_M + (est_output / 1_000_000) * self.OUTPUT_PER_M
+        return Response({
+            'available': True,
+            'source': source,
+            'input_tokens': input_tokens,
+            'approx_output_tokens': est_output,
+            'approx_cost_usd': round(cost, 4),
+        })
 
 
 class ManualQuestionView(APIView):

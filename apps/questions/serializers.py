@@ -106,6 +106,10 @@ class ManualQuestionSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 'Opción única y verdadero/falso deben tener exactamente una correcta.'
             )
+        if qtype == Question.TYPE_MULTIPLE and len(indices) < 2:
+            raise serializers.ValidationError(
+                'Opción múltiple debe tener al menos dos respuestas correctas.'
+            )
 
         attrs['correct_indices'] = indices
         return attrs

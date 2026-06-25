@@ -365,3 +365,104 @@ class RoomHeatmapView(APIView):
             'roster': roster,
             'sections': sections,
         })
+
+
+class StudentDetailView(APIView):
+    """Detalle de un estudiante para el docente dueño: resumen + desglose por
+    nodo + diagnósticos de Claude, todo acotado a esta sala."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, room_id, student_id):
+        room = get_object_or_404(Room, id=room_id)
+        if room.teacher_id != request.user.id:
+            return Response(
+                {'detail': 'Only the room owner can view student detail.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        membership = (
+            RoomMembership.objects.filter(room=room, student_id=student_id)
+            .select_related('student', 'section')
+            .first()
+        )
+        if not membership:
+            return Response(
+                {'detail': 'Student is not a member of this room.'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        student = membership.student
+
+        # Desglose por nodo: BKTState = lo que sabe ahora; último CognitiveIndex
+        # = confianza/ICC/perfil de su última respuesta en ese nodo.
+        bkt_by_node = {
+            b.node_id: b
+            for b in BKTState.objects.filter(student=student, node__room=room)
+        }
+        nodes_data = []
+        for node in room.nodes.order_by('id'):
+            bkt = bkt_by_node.get(node.id)
+            latest = (
+                CognitiveIndex.objects.filter(student=student, node=node)
+                .order_by('-calculated_at')
+                .first()
+            )
+            if not bkt and not latest:
+                continue  # el estudiante no tocó este nodo
+            nodes_data.append({
+                'node_id': node.id,
+                'node_name': node.name,
+                'bkt_mastery': round(bkt.p_mastery, 4) if bkt else round(float(latest.bkt_mastery), 4),
+                'avg_confidence': round(float(latest.avg_confidence), 4) if latest else None,
+                'icc_value': round(float(latest.icc_value), 4) if latest else None,
+                'profile': latest.profile if latest else None,
+                'attempts': bkt.attempts if bkt else 0,
+            })
+
+        # Resumen = promedio de las filas por nodo, así el encabezado queda
+        # coherente con la tabla (no mezcla histórico con estado actual).
+        def _avg(vals):
+            vals = [v for v in vals if v is not None]
+            return round(sum(vals) / len(vals), 4) if vals else 0.0
+
+        mastery_avg = _avg([n['bkt_mastery'] for n in nodes_data])
+        conf_avg = _avg([n['avg_confidence'] for n in nodes_data])
+        icc_avg = _avg([n['icc_value'] for n in nodes_data])
+        gap = round(conf_avg - mastery_avg, 4)
+        if gap > 0.2:
+            profile = 'overconfident'
+        elif gap < -0.2:
+            profile = 'underconfident'
+        else:
+            profile = 'calibrated'
+
+        diagnoses = (
+            AIDiagnosis.objects.filter(session__room=room, student=student)
+            .order_by('-generated_at')
+        )
+
+        section = None
+        if membership.section_id:
+            section = {'code': membership.section.code, 'name': membership.section.name}
+
+        return Response({
+            'student': {
+                'id': student.id,
+                'first_name': student.first_name,
+                'last_name': student.last_name,
+                'username': student.username,
+                'email': student.email,
+            },
+            'section': section,
+            'summary': {
+                'profile': profile,
+                'avg_confidence': conf_avg,
+                'bkt_mastery': mastery_avg,
+                'icc_value': icc_avg,
+                'metacognitive_gap': gap,
+                'answers_count': Answer.objects.filter(
+                    session__room=room, session__student=student
+                ).count(),
+            },
+            'nodes': nodes_data,
+            'diagnoses': AIDiagnosisSerializer(diagnoses, many=True).data,
+        })

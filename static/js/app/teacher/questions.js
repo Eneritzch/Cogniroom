@@ -534,6 +534,52 @@ document.getElementById('generate-form').addEventListener('submit', async (e) =>
 });
 
 
+/* Estimación de costo (tokens) antes de generar — se actualiza al tipear/cambiar. */
+let genEstTimer = null;
+
+function scheduleGenEstimate() {
+    clearTimeout(genEstTimer);
+    genEstTimer = setTimeout(updateGenEstimate, 400);
+}
+
+async function updateGenEstimate() {
+    const $est = document.getElementById('gen-estimate');
+    if (!$est || !ROOM_ID) return;
+    const pdfId = document.getElementById('gen-pdf')?.value;
+    const content = document.getElementById('gen-content')?.value.trim() || '';
+    // Hace falta una fuente: texto pegado o un PDF elegido.
+    if (!content && !pdfId) { $est.hidden = true; return; }
+    const payload = {
+        node_id: Number(document.getElementById('gen-node')?.value) || undefined,
+        difficulty: document.getElementById('gen-difficulty')?.value || 'medium',
+        count: Number(document.getElementById('gen-count')?.value) || 5,
+    };
+    // El texto pegado tiene prioridad (igual que al generar); si no, el PDF.
+    if (content) payload.content = content;
+    else payload.pdf_id = Number(pdfId);
+    try {
+        const r = await questionsApi.estimate(ROOM_ID, payload);
+        if (r?.available) {
+            $est.hidden = false;
+            const aprox = r.source === 'pdf' ? ' · aprox. por PDF' : '';
+            $est.textContent = `≈ ${r.input_tokens.toLocaleString('es')} tokens de entrada · ~$${r.approx_cost_usd.toFixed(4)} estimado${aprox}`;
+        } else {
+            $est.hidden = true;
+        }
+    } catch (_) {
+        $est.hidden = true;
+    }
+}
+
+document.getElementById('gen-content')?.addEventListener('input', scheduleGenEstimate);
+document.getElementById('gen-count')?.addEventListener('input', scheduleGenEstimate);
+['gen-difficulty', 'gen-node', 'gen-pdf'].forEach((id) => {
+    document.getElementById(id)?.addEventListener('change', scheduleGenEstimate);
+});
+// Al abrir el modal, estimar si ya hay una fuente (PDF preseleccionado o texto).
+document.getElementById('generateQuestionModal')?.addEventListener('shown.bs.modal', updateGenEstimate);
+
+
 async function load() {
     let list;
     try {

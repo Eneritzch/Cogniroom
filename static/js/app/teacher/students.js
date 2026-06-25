@@ -187,7 +187,7 @@ function renderList() {
 
             <div class="student-card__foot">
                 <span class="student-card__diff" data-tone="${tone}" title="${summaryShort(s.profile, gapPts)}">${gapText} pts</span>
-                <button type="button" class="student-card__action">
+                <button type="button" class="student-card__action" data-student-id="${s.user?.id ?? ''}">
                     ${actionLabel(s.profile)}
                     <svg class="icon-svg" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true">
                         <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -438,6 +438,111 @@ if ($more) {
         visibleCount += PAGE_SIZE;
         renderList();
     });
+}
+
+
+/* ---- Detalle de un estudiante (modal) ---- */
+
+function pct(v) { return v == null ? '—' : `${Math.round(v * 100)}%`; }
+function icc2(v) { return v == null ? '—' : Number(v).toFixed(2); }
+
+document.getElementById('students-rows').addEventListener('click', (e) => {
+    const btn = e.target.closest('.student-card__action');
+    if (!btn) return;
+    const studentId = Number(btn.dataset.studentId);
+    if (studentId) openStudentDetail(studentId);
+});
+
+async function openStudentDetail(studentId) {
+    const $modal = document.getElementById('studentDetailModal');
+    const $body = document.getElementById('student-detail-body');
+    const $title = document.getElementById('studentDetailTitle');
+    if (!$modal || !$body) return;
+
+    $body.innerHTML = '<p class="student-detail__msg">Cargando…</p>';
+    if ($title) $title.textContent = 'Detalle del estudiante';
+    if (window.bootstrap) {
+        const inst = window.bootstrap.Modal.getInstance($modal) || new window.bootstrap.Modal($modal);
+        inst.show();
+    }
+    try {
+        const d = await roomsApi.studentDetail(ROOM_ID, studentId);
+        renderStudentDetail(d);
+    } catch (err) {
+        if (err instanceof ApiError && err.status === 401) { tokens.clear(); location.replace('/app/'); return; }
+        $body.innerHTML = `<p class="student-detail__msg">${escapeHTML(err?.body?.detail || 'No se pudo cargar el detalle.')}</p>`;
+    }
+}
+
+function renderStudentDetail(d) {
+    // El título del modal queda fijo ("Detalle del estudiante"); el nombre va
+    // una sola vez, en el encabezado del cuerpo junto al perfil.
+    const $body = document.getElementById('student-detail-body');
+    const st = d.student || {};
+    const name = `${st.first_name || ''} ${st.last_name || ''}`.trim() || st.username || 'Estudiante';
+
+    const sum = d.summary || {};
+    const gapPts = Math.round((sum.metacognitive_gap ?? 0) * 100);
+    const gapText = gapPts > 0 ? `+${gapPts}` : `${gapPts}`;
+    const sectionLine = d.section
+        ? `<span class="student-detail__section">${escapeHTML(`${d.section.code} · ${d.section.name}`)}</span>`
+        : '';
+
+    const summaryHTML = `
+      <header class="student-detail__head">
+        <div class="student-detail__id">
+          <span class="student-detail__name">${escapeHTML(name)}</span>
+          ${sectionLine}
+        </div>
+        <span class="pill" data-profile="${sum.profile}">${profileLabel(sum.profile)}</span>
+      </header>
+      <dl class="student-detail__stats">
+        <div><dt>Cree saber</dt><dd class="num">${pct(sum.avg_confidence)}</dd></div>
+        <div><dt>Realmente sabe</dt><dd class="num">${pct(sum.bkt_mastery)}</dd></div>
+        <div><dt>ICC</dt><dd class="num">${icc2(sum.icc_value)}</dd></div>
+        <div><dt>Brecha</dt><dd class="num" data-tone="${gapTone(sum.metacognitive_gap ?? 0)}">${gapText} pts</dd></div>
+        <div><dt>Respuestas</dt><dd class="num">${sum.answers_count ?? 0}</dd></div>
+      </dl>`;
+
+    const nodes = d.nodes || [];
+    const nodesHTML = nodes.length === 0
+        ? '<p class="student-detail__msg">Todavía no respondió en ningún nodo.</p>'
+        : `<table class="student-detail__nodes">
+             <thead><tr><th>Nodo</th><th>Cree</th><th>Sabe</th><th>ICC</th><th>Perfil</th></tr></thead>
+             <tbody>${nodes.map((n) => `
+               <tr>
+                 <td>${escapeHTML(n.node_name)}</td>
+                 <td class="num">${pct(n.avg_confidence)}</td>
+                 <td class="num">${pct(n.bkt_mastery)}</td>
+                 <td class="num">${icc2(n.icc_value)}</td>
+                 <td>${n.profile ? `<span class="pill pill--sm" data-profile="${n.profile}">${profileLabel(n.profile)}</span>` : '—'}</td>
+               </tr>`).join('')}</tbody>
+           </table>`;
+
+    const diags = d.diagnoses || [];
+    const diagsHTML = diags.length === 0
+        ? '<p class="student-detail__msg">Sin diagnósticos de IA todavía (se generan cuando hay desalineación grave).</p>'
+        : diags.map((dg) => `
+            <article class="student-detail__diag">
+              <header class="student-detail__diag-head">
+                <span class="pill pill--sm" data-profile="${dg.classification}">${profileLabel(dg.classification)}</span>
+                ${dg.node_name ? `<span class="student-detail__diag-node">${escapeHTML(dg.node_name)}</span>` : ''}
+                <span class="student-detail__diag-date num">${escapeHTML((dg.generated_at || '').slice(0, 10))}</span>
+              </header>
+              ${dg.reasoning ? `<p class="student-detail__diag-text">${escapeHTML(dg.reasoning)}</p>` : ''}
+              ${dg.recommendation ? `<p class="student-detail__diag-rec"><strong>Recomendación:</strong> ${escapeHTML(dg.recommendation)}</p>` : ''}
+            </article>`).join('');
+
+    $body.innerHTML = `
+      ${summaryHTML}
+      <section class="student-detail__block">
+        <h3 class="student-detail__subtitle">Desglose por nodo</h3>
+        ${nodesHTML}
+      </section>
+      <section class="student-detail__block">
+        <h3 class="student-detail__subtitle">Diagnósticos de IA</h3>
+        ${diagsHTML}
+      </section>`;
 }
 
 

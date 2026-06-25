@@ -537,6 +537,14 @@
   color: var(--ink-faint);
 }
 
+.qmodal__estimate {
+  margin: var(--s-2) 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  color: var(--sage-strong, var(--sage));
+}
+
 .qmodal__options {
   display: flex;
   flex-direction: column;

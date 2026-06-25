@@ -129,6 +129,8 @@ class Question(models.Model):
             raise ValidationError('correct_indices contiene índices fuera de rango.')
         if self.question_type in self.SINGLE_ANSWER_TYPES and len(indices) != 1:
             raise ValidationError('Opción única y verdadero/falso deben tener exactamente una correcta.')
+        if self.question_type == self.TYPE_MULTIPLE and len(indices) < 2:
+            raise ValidationError('Opción múltiple debe tener al menos dos respuestas correctas.')
 
     def score_answer(self, selected_indices) -> float:
         """Devuelve un score en [0,1]. Única/V-F: 1.0 si el conjunto marcado

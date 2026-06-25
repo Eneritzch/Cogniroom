@@ -117,6 +117,7 @@ export const rooms = {
         body: section_id != null ? { access_code, section_id } : { access_code },
     }),
     members:     (roomId) => request(`/rooms/${roomId}/members/`),
+    studentDetail: (roomId, studentId) => request(`/rooms/${roomId}/students/${studentId}/`),
     blindSpots:  (roomId) => request(`/rooms/${roomId}/metrics/blind-spots/`),
     atRisk:      (roomId) => request(`/rooms/${roomId}/metrics/at-risk/`),
     heatmap:     (roomId) => request(`/rooms/${roomId}/metrics/heatmap/`),
@@ -140,6 +141,9 @@ export const questions = {
     }),
     list:     (roomId) => request(`/rooms/${roomId}/questions/`),
     generate: (roomId, payload) => request(`/rooms/${roomId}/questions/generate/`, {
+        method: 'POST', body: payload,
+    }),
+    estimate: (roomId, payload) => request(`/rooms/${roomId}/questions/estimate/`, {
         method: 'POST', body: payload,
     }),
     manual:   (roomId, payload) => request(`/rooms/${roomId}/questions/manual/`, {
