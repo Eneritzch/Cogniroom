@@ -442,10 +442,11 @@ class SubmitAnswerView(APIView):
             _recalc_blind_spot(question.node, session.room)
 
         # Diagnóstico con IA fuera del request: no bloquea al estudiante. Se
-        # dispara solo en desalineación grave (icc < 0.5); el feedback y el
-        # AIDiagnosis se persisten en background y aparecen en el repaso e
-        # historial de diagnósticos.
-        ai_pending = icc_result['icc'] < 0.5
+        # dispara en desalineación (icc < 0.6); el feedback y el AIDiagnosis se
+        # persisten en background y aparecen en el repaso e historial. El umbral
+        # 0.6 (acordado con el equipo) amplía la cobertura analítica del
+        # diagnóstico a costa de un poco más de uso de IA.
+        ai_pending = icc_result['icc'] < 0.6
         if ai_pending:
             _schedule_ai_analysis(answer.id, new_mastery)
 

@@ -28,7 +28,7 @@ CogniRoom es una plataforma web donde docentes crean **salas** (clases), suben *
 1. Actualiza el dominio del estudiante (BKT — Corbett & Anderson 1994).
 2. Mide la **calibración cognitiva** (ICC = `1 − |confianza − dominio|`).
 3. Detecta perfiles **sobreconfiados / calibrados / subconfiados**.
-4. Si la calibración es grave (`ICC < 0.5`), invoca a Claude para explicar el error y sugerir intervención.
+4. Si la calibración está desalineada (`ICC < 0.6`), invoca a Claude para explicar el error y sugerir intervención.
 5. Calcula **puntos ciegos colectivos** (IPC promedio por nodo en salas grupales).
 
 ---
@@ -418,7 +418,7 @@ Ningún módulo UI llama a `fetch` directamente — todos importan `api.js`. As�
 - Reglas universales en `Model.save()` (auto-aprobación de preguntas), no duplicadas en cada vista.
 
 ### IA
-- Claude se llama **solo cuando `icc < 0.5`** → costo controlado.
+- Claude se llama **solo cuando `icc < 0.6`** → costo controlado.
 - Si `ANTHROPIC_API_KEY` falta, el servicio devuelve defaults vacíos. **El flujo del estudiante nunca se rompe por fallos de IA.**
 
 ### Front-end

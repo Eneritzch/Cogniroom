@@ -157,7 +157,7 @@ Recordar siempre la separación:
 - **Serializers separados por intención**: lectura, escritura, acción (ej. `RoomSerializer`, `RoomCreateSerializer`, `JoinRoomSerializer`).
 - **FK entre apps**: usar string reference (`'evaluation_sessions.EvaluationSession'`) para no crear imports circulares.
 - **Migraciones del app `sessions`**: requieren label explícito → `python manage.py makemigrations evaluation_sessions`.
-- **Claude solo se llama si `icc < 0.5`**. Mantener este gate. Si la API key falta, devolver defaults vacíos — el flujo del estudiante **nunca** se rompe por un fallo de IA.
+- **Claude solo se llama si `icc < 0.6`**. Mantener este gate. Si la API key falta, devolver defaults vacíos — el flujo del estudiante **nunca** se rompe por un fallo de IA.
 - **JWT**: no tocar `ACCESS_TOKEN_LIFETIME` (8 h) ni `REFRESH_TOKEN_LIFETIME` (7 d) sin justificación.
 - **CORS**: whitelist explícita en `CORS_ALLOWED_ORIGINS`. Nunca `CORS_ALLOW_ALL_ORIGINS = True`.
 - **No SQL crudo** salvo medición justificada. ORM en todas las queries.

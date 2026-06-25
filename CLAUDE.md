@@ -136,12 +136,12 @@ Está en [apps/sessions/views.py:148](apps/sessions/views.py). Orden estricto:
 5. `ICCCalculator.calculate()` → icc, gap, profile.
 6. Crea `CognitiveIndex` (snapshot histórico).
 7. Crea `Answer`.
-8. **Si `icc < 0.5`:** llama Claude para `explain_error()` + `analyze_student()` → guarda `AIDiagnosis`.
+8. **Si `icc < 0.6`:** llama Claude para `explain_error()` + `analyze_student()` → guarda `AIDiagnosis`.
 9. **Si sala es `group`:** recalcula `BlindSpotIndex` (promedio de ICC en ese nodo).
 10. Retorna JSON: `is_correct, icc, gap, profile, bkt_mastery, ai_feedback, risk_level`.
 
 ### Claude se llama condicionalmente
-Solo cuando `icc < 0.5` (desalineación grave). Esto mantiene costos controlados (~$5–10 USD total estimado para semestre completo).
+Solo cuando `icc < 0.6` (desalineación). Esto mantiene costos controlados (~$5–10 USD total estimado para semestre completo).
 
 Si `ANTHROPIC_API_KEY` no está configurada, los métodos del servicio devuelven defaults vacíos — **el flujo del estudiante nunca se rompe por fallos de IA**.
 
