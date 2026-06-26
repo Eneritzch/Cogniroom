@@ -97,6 +97,39 @@ class RoomListCreateView(APIView):
         return Response(RoomSerializer(room).data, status=status.HTTP_201_CREATED)
 
 
+class RoomDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, room_id):
+        room = get_object_or_404(Room, id=room_id)
+        if room.teacher_id != request.user.id:
+            return Response(
+                {'detail': 'Only the owner can edit this room.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        fields = []
+        name = request.data.get('name')
+        if name is not None:
+            name = name.strip()
+            if not name:
+                return Response(
+                    {'detail': 'El nombre no puede estar vacío.'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            room.name = name
+            fields.append('name')
+
+        subject = request.data.get('subject')
+        if subject is not None and subject.strip():
+            room.subject = subject.strip()
+            fields.append('subject')
+
+        if fields:
+            room.save(update_fields=fields)
+        return Response(_teacher_room_data(room))
+
+
 class JoinRoomView(APIView):
     permission_classes = [IsAuthenticated]
 

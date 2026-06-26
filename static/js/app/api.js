@@ -112,6 +112,7 @@ export const me = {
 export const rooms = {
     list:        () => request('/rooms/'),
     create:      (data) => request('/rooms/', { method: 'POST', body: data }),
+    update:      (roomId, data) => request(`/rooms/${roomId}/`, { method: 'PATCH', body: data }),
     join:        (access_code, section_id) => request('/rooms/join/', {
         method: 'POST',
         body: section_id != null ? { access_code, section_id } : { access_code },
@@ -139,6 +140,12 @@ export const questions = {
     createNode: (roomId, name) => request(`/rooms/${roomId}/nodes/`, {
         method: 'POST', body: { name },
     }),
+    updateNode: (roomId, nodeId, name) => request(`/rooms/${roomId}/nodes/${nodeId}/`, {
+        method: 'PATCH', body: { name },
+    }),
+    deleteNode: (roomId, nodeId) => request(`/rooms/${roomId}/nodes/${nodeId}/`, {
+        method: 'DELETE',
+    }),
     list:     (roomId) => request(`/rooms/${roomId}/questions/`),
     generate: (roomId, payload) => request(`/rooms/${roomId}/questions/generate/`, {
         method: 'POST', body: payload,
@@ -154,6 +161,9 @@ export const questions = {
     }),
     reject:   (roomId, ids) => request(`/rooms/${roomId}/questions/reject/`, {
         method: 'POST', body: { question_ids: ids },
+    }),
+    update:   (roomId, questionId, payload) => request(`/rooms/${roomId}/questions/${questionId}/`, {
+        method: 'PATCH', body: payload,
     }),
 };
 

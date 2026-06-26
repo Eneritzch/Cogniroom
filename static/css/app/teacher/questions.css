@@ -638,3 +638,106 @@
   align-self: flex-start;
   margin-top: var(--s-2);
 }
+
+
+/* ---- Gestión de nodos (modal) ---- */
+.qnode-create {
+  display: flex;
+  gap: var(--s-2);
+}
+
+.qnode-create .form-control { flex: 1; min-width: 0; }
+.qnode-create .ds-btn { flex: 0 0 auto; }
+
+.qnode-list {
+  list-style: none;
+  margin: var(--s-3) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.qnode {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-2) var(--s-3);
+  background: var(--paper-surface);
+  border: 1px solid var(--paper-border);
+  border-radius: var(--r-md);
+}
+
+.qnode--empty {
+  justify-content: center;
+  border-style: dashed;
+  color: var(--ink-muted);
+  font-size: var(--fs-sm);
+}
+
+.qnode__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: var(--fw-medium);
+  color: var(--ink);
+}
+
+.qnode__input { flex: 1; min-width: 0; }
+
+.qnode__count {
+  flex: 0 0 auto;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--ink-faint);
+}
+
+.qnode__actions {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.qnode__confirm {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  color: var(--rust);
+}
+
+.qnode__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--paper-border);
+  border-radius: var(--r-sm);
+  color: var(--ink-muted);
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out),
+              background-color var(--dur-fast) var(--ease-out);
+}
+
+.qnode__btn:hover {
+  color: var(--ink);
+  border-color: var(--paper-border-strong);
+  background: var(--paper-elevated);
+}
+
+.qnode__btn--danger:hover {
+  color: var(--rust);
+  border-color: var(--rust);
+}
+
+.qnode__btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

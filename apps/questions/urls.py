@@ -5,15 +5,18 @@ from .views import (
     EstimateGenerationView,
     GenerateQuestionsView,
     ManualQuestionView,
+    NodeDetailView,
     NodeListCreateView,
     PDFDetailView,
     PDFUploadListView,
+    QuestionDetailView,
     QuestionListView,
     RejectQuestionsView,
 )
 
 urlpatterns = [
     path('<int:room_id>/nodes/', NodeListCreateView.as_view(), name='node-list-create'),
+    path('<int:room_id>/nodes/<int:node_id>/', NodeDetailView.as_view(), name='node-detail'),
     path(
         '<int:room_id>/questions/generate/',
         GenerateQuestionsView.as_view(),
@@ -43,6 +46,11 @@ urlpatterns = [
         '<int:room_id>/questions/',
         QuestionListView.as_view(),
         name='question-list',
+    ),
+    path(
+        '<int:room_id>/questions/<int:question_id>/',
+        QuestionDetailView.as_view(),
+        name='question-detail',
     ),
     path(
         '<int:room_id>/pdfs/',

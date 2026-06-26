@@ -24,6 +24,13 @@ function activeRoomId() {
 const PAGE_SIZE = 6;
 let currentPage = 1;
 let ROOMS = [];
+let RENAME_ID = null;
+
+function modalInstance(id) {
+    const $m = document.getElementById(id);
+    if (!$m || !window.bootstrap) return null;
+    return window.bootstrap.Modal.getInstance($m) || new window.bootstrap.Modal($m);
+}
 
 
 async function copyToClipboard(text) {
@@ -157,6 +164,7 @@ function renderCard(r, isActive) {
         ` : ''}
 
         <footer class="rcard__foot">
+            <button type="button" class="rcard__link" data-rename="${r.id}" data-name="${escapeHTML(d.name)}">Renombrar</button>
             ${isActive
                 ? '<span class="rcard__activelabel">Activa</span>'
                 : `<button type="button" class="rcard__link" data-activate="${r.id}">Hacer activa</button>`
@@ -271,6 +279,16 @@ function bindActions() {
             if (el.tagName !== 'A') render();
         });
     });
+
+    document.querySelectorAll('[data-rename]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            RENAME_ID = Number(btn.dataset.rename);
+            const $input = document.getElementById('room-rename-input');
+            if ($input) $input.value = btn.dataset.name || '';
+            const m = modalInstance('roomRenameModal');
+            if (m) m.show();
+        });
+    });
 }
 
 
@@ -290,6 +308,29 @@ async function loadRooms() {
         toast('No se pudieron cargar las salas.', { kind: 'error' });
     }
 }
+
+const $roomRenameForm = document.getElementById('room-rename-form');
+if ($roomRenameForm) {
+    $roomRenameForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = (document.getElementById('room-rename-input').value || '').trim();
+        if (!name || !RENAME_ID) return;
+        const $submit = $roomRenameForm.querySelector('[type="submit"]');
+        if ($submit) $submit.disabled = true;
+        try {
+            await roomsApi.update(RENAME_ID, { name });
+            toast('Sala renombrada.', { kind: 'success' });
+            const m = modalInstance('roomRenameModal');
+            if (m) m.hide();
+            await loadRooms();
+        } catch (err) {
+            toast(err?.body?.detail || err?.message || 'No se pudo renombrar la sala.', { kind: 'error' });
+        } finally {
+            if ($submit) $submit.disabled = false;
+        }
+    });
+}
+
 
 render();
 loadRooms();

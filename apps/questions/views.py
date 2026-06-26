@@ -80,6 +80,50 @@ class NodeListCreateView(APIView):
         return Response(KnowledgeNodeSerializer(node).data, status=status.HTTP_201_CREATED)
 
 
+class NodeDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def _owned_node(self, request, room_id, node_id):
+        room = get_object_or_404(Room, id=room_id)
+        if room.teacher_id != request.user.id:
+            return None, Response(
+                {'detail': 'Only the room owner can manage nodes.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        return get_object_or_404(KnowledgeNode, id=node_id, room=room), None
+
+    def patch(self, request, room_id, node_id):
+        node, error = self._owned_node(request, room_id, node_id)
+        if error:
+            return error
+        name = (request.data.get('name') or '').strip()
+        if not name:
+            return Response({'detail': 'name is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        if KnowledgeNode.objects.filter(room_id=node.room_id, name=name).exclude(id=node.id).exists():
+            return Response(
+                {'detail': 'Ya existe un nodo con ese nombre en la sala.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        node.name = name
+        node.save(update_fields=['name'])
+        return Response(KnowledgeNodeSerializer(node).data)
+
+    def delete(self, request, room_id, node_id):
+        node, error = self._owned_node(request, room_id, node_id)
+        if error:
+            return error
+        # Solo nodos vacíos: con preguntas asociadas se perderían en cascada las
+        # respuestas, el BKT y los índices de los estudiantes. Para nodos con datos
+        # la vía es archivar (a definir), no borrar.
+        if node.questions.exists():
+            return Response(
+                {'detail': 'No se puede borrar un nodo con preguntas. Solo se borran nodos vacíos.'},
+                status=status.HTTP_409_CONFLICT,
+            )
+        node.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 class GenerateQuestionsView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -356,6 +400,39 @@ class QuestionListView(APIView):
             node__room=room, status=Question.STATUS_APPROVED
         ).order_by('id')
         return Response(QuestionPublicSerializer(qs, many=True).data)
+
+
+class QuestionDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, room_id, question_id):
+        room = get_object_or_404(Room, id=room_id)
+        if room.teacher_id != request.user.id:
+            return Response(
+                {'detail': 'Only the room owner can edit questions.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        question = get_object_or_404(Question, id=question_id, node__room=room)
+
+        serializer = ManualQuestionSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        node = get_object_or_404(KnowledgeNode, id=data['node_id'], room=room)
+        question.node = node
+        question.statement = data['statement']
+        question.difficulty = data['difficulty']
+        question.question_type = data['question_type']
+        question.options = data['options']
+        question.correct_indices = data['correct_indices']
+
+        level = request.data.get('cognitive_level')
+        if level is not None:
+            question.cognitive_level = level if level in dict(Question.COGNITIVE_LEVEL_CHOICES) else ''
+
+        # save() sincroniza correct_index y NO toca el status (solo auto-aprueba al crear).
+        question.save()
+        return Response(QuestionSerializer(question).data)
 
 
 def _extract_pdf_text(file_obj) -> str:

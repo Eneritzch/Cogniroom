@@ -36,10 +36,9 @@
                     <button type="button" class="ds-btn ds-btn--ghost" data-bs-toggle="modal" data-bs-target="#nodeModal">
                         <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
                             <circle cx="12" cy="12" r="9"></circle>
-                            <line x1="12" y1="9" x2="12" y2="15"></line>
-                            <line x1="9" y1="12" x2="15" y2="12"></line>
+                            <circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"></circle>
                         </svg>
-                        Nuevo nodo
+                        Nodos
                     </button>
                     <button type="button" class="ds-btn ds-btn--secondary" data-bs-toggle="modal" data-bs-target="#manualQuestionModal">
                         <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
@@ -114,26 +113,23 @@
         </section>
     </main>
 
-    <!-- Modal: nuevo nodo de conocimiento -->
+    <!-- Modal: gestionar nodos (crear / renombrar / borrar vacíos) -->
     <div class="modal fade" id="nodeModal" tabindex="-1" aria-labelledby="nodeModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <form id="node-form">
-                    <div class="modal-header">
-                        <h2 class="modal-title h5" id="nodeModalLabel">Nuevo nodo</h2>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                    </div>
-                    <div class="modal-body">
-                        <label class="form-label" for="node-name">Nombre del nodo</label>
+                <div class="modal-header">
+                    <h2 class="modal-title h5" id="nodeModalLabel">Gestionar nodos</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="node-form" class="qnode-create">
                         <input class="form-control" type="text" id="node-name" maxlength="200" required
-                               placeholder="Ej. Recursividad" autocomplete="off">
-                        <p class="qmodal__hint">Un nodo agrupa preguntas de un mismo tema dentro de la sala.</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="ds-btn ds-btn--ghost" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="ds-btn ds-btn--ink">Crear nodo</button>
-                    </div>
-                </form>
+                               placeholder="Nombre del nuevo nodo" autocomplete="off" aria-label="Nombre del nuevo nodo">
+                        <button type="submit" class="ds-btn ds-btn--ink">Crear</button>
+                    </form>
+                    <p class="qmodal__hint">Un nodo agrupa preguntas de un mismo tema. Solo se pueden borrar nodos sin preguntas.</p>
+                    <ul class="qnode-list" id="qnode-list" aria-label="Nodos de la sala"></ul>
+                </div>
             </div>
         </div>
     </div>

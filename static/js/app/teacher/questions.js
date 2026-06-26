@@ -11,6 +11,14 @@ function hideModal(id) {
     }
 }
 
+function showModal(id) {
+    const $modal = document.getElementById(id);
+    if ($modal && window.bootstrap) {
+        const instance = window.bootstrap.Modal.getInstance($modal) || new window.bootstrap.Modal($modal);
+        instance.show();
+    }
+}
+
 
 if (!tokens.access) {
     location.replace('/app/');
@@ -39,6 +47,12 @@ let currentSource = 'all';
 let currentType = 'all';
 let currentSearch = '';
 let currentNode = 'all';
+let EDIT_ID = null;
+
+const SVG_CHECK = '<svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+const SVG_X = '<svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+const SVG_PENCIL = '<svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>';
+const SVG_TRASH = '<svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>';
 
 
 function difficultyMeta(level) {
@@ -275,6 +289,13 @@ function cardHTML(q) {
                 ${diff ? `<span class="qcard__diff" data-tone="${diff.tone}">${diff.label}</span>` : ''}
 
                 <div class="qcard__actions">
+                    <button type="button" class="qcard__btn qcard__btn--ghost" data-action="edit" data-q-id="${q.id}">
+                        <svg class="icon-svg" width="11" height="11" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 20h9"></path>
+                            <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+                        </svg>
+                        Editar
+                    </button>
                     ${status !== 'rejected' ? `
                         <button type="button" class="qcard__btn qcard__btn--ghost" data-action="reject" data-q-id="${q.id}">
                             <svg class="icon-svg" width="11" height="11" viewBox="0 0 24 24" aria-hidden="true">
@@ -322,6 +343,12 @@ document.getElementById('questions-list').addEventListener('click', async (e) =>
     const id = Number(btn.dataset.qId);
     const action = btn.dataset.action;
     if (!id) return;
+
+    if (action === 'edit') {
+        const q = BANK.find((x) => x.id === id);
+        if (q) openEditQuestion(q);
+        return;
+    }
 
     btn.disabled = true;
     try {
@@ -427,13 +454,121 @@ document.getElementById('node-form').addEventListener('submit', async (e) => {
         await questionsApi.createNode(ROOM_ID, name);
         toast('Nodo creado.', { kind: 'success' });
         $name.value = '';
-        hideModal('nodeModal');
-        await refreshNodes();
+        await refreshNodes();   // actualiza NODES + el selector "Nodo"
+        renderNodeManager();    // refresca la lista (el modal queda abierto)
+        $name.focus();
     } catch (err) {
         const msg = apiErrorMessage(err, 'No se pudo crear el nodo.');
         if (msg) toast(msg, { kind: 'error' });
     }
 });
+
+
+/* ---- Gestión de nodos (modal): renombrar / borrar vacíos ---- */
+function renderNodeManager() {
+    const $list = document.getElementById('qnode-list');
+    if (!$list) return;
+    const counts = new Map();
+    BANK.forEach((q) => {
+        const n = q.node_name || nodeName(q.node) || 'Sin nodo';
+        counts.set(n, (counts.get(n) || 0) + 1);
+    });
+    if (!NODES.length) {
+        $list.innerHTML = '<li class="qnode qnode--empty">Todavía no hay nodos. Creá el primero arriba.</li>';
+        return;
+    }
+    const sorted = [...NODES].sort((a, b) => a.name.localeCompare(b.name));
+    $list.innerHTML = sorted.map((n) => {
+        const c = counts.get(n.name) || 0;
+        const label = c === 0 ? 'sin preguntas' : `${c} ${c === 1 ? 'pregunta' : 'preguntas'}`;
+        return `
+        <li class="qnode" data-node-id="${n.id}" data-node-name="${escapeHTML(n.name)}">
+            <span class="qnode__name">${escapeHTML(n.name)}</span>
+            <span class="qnode__count num">${label}</span>
+            <div class="qnode__actions">
+                <button type="button" class="qnode__btn" data-qnode="rename" aria-label="Renombrar ${escapeHTML(n.name)}">${SVG_PENCIL}</button>
+                <button type="button" class="qnode__btn qnode__btn--danger" data-qnode="delete" ${c > 0 ? 'disabled' : ''} title="${c > 0 ? 'Tiene preguntas: no se puede borrar' : 'Borrar nodo'}" aria-label="Borrar ${escapeHTML(n.name)}">${SVG_TRASH}</button>
+            </div>
+        </li>`;
+    }).join('');
+}
+
+function startNodeRename(li) {
+    const name = li.dataset.nodeName || '';
+    li.innerHTML = `
+        <input class="form-control qnode__input" type="text" value="${escapeHTML(name)}" maxlength="200" aria-label="Nuevo nombre del nodo">
+        <div class="qnode__actions">
+            <button type="button" class="qnode__btn" data-qnode="save" aria-label="Guardar">${SVG_CHECK}</button>
+            <button type="button" class="qnode__btn" data-qnode="cancel" aria-label="Cancelar">${SVG_X}</button>
+        </div>`;
+    const $input = li.querySelector('.qnode__input');
+    $input.focus();
+    $input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); li.querySelector('[data-qnode="save"]').click(); }
+        if (e.key === 'Escape') { e.preventDefault(); renderNodeManager(); }
+    });
+}
+
+async function saveNodeRename(li, nodeId) {
+    const val = (li.querySelector('.qnode__input')?.value || '').trim();
+    if (!val) { toast('El nombre no puede estar vacío.', { kind: 'error' }); return; }
+    try {
+        await questionsApi.updateNode(ROOM_ID, nodeId, val);
+        toast('Nodo renombrado.', { kind: 'success' });
+        await refreshNodes();
+        await reloadBank();   // las preguntas traen el node_name actualizado
+        renderNodeManager();
+    } catch (err) {
+        const msg = apiErrorMessage(err, 'No se pudo renombrar el nodo.');
+        if (msg) toast(msg, { kind: 'error' });
+    }
+}
+
+function confirmNodeDelete(li) {
+    const $actions = li.querySelector('.qnode__actions');
+    if (!$actions) return;
+    $actions.innerHTML = `
+        <span class="qnode__confirm">¿Borrar?</span>
+        <button type="button" class="qnode__btn qnode__btn--danger" data-qnode="delete-yes" aria-label="Sí, borrar">${SVG_CHECK}</button>
+        <button type="button" class="qnode__btn" data-qnode="delete-no" aria-label="No borrar">${SVG_X}</button>`;
+}
+
+async function doNodeDelete(nodeId) {
+    try {
+        await questionsApi.deleteNode(ROOM_ID, nodeId);
+        toast('Nodo borrado.', { kind: 'success' });
+        await refreshNodes();
+        renderNodeManager();
+        renderList();
+    } catch (err) {
+        const msg = apiErrorMessage(err, 'No se pudo borrar el nodo.');
+        if (msg) toast(msg, { kind: 'error' });
+        renderNodeManager();
+    }
+}
+
+const $qnodeList = document.getElementById('qnode-list');
+if ($qnodeList) {
+    $qnodeList.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-qnode]');
+        if (!btn || !ROOM_ID) return;
+        const li = btn.closest('.qnode');
+        if (!li) return;
+        const nodeId = Number(li.dataset.nodeId);
+        const action = btn.dataset.qnode;
+        if (action === 'rename') startNodeRename(li);
+        else if (action === 'save') saveNodeRename(li, nodeId);
+        else if (action === 'cancel') renderNodeManager();
+        else if (action === 'delete') confirmNodeDelete(li);
+        else if (action === 'delete-yes') doNodeDelete(nodeId);
+        else if (action === 'delete-no') renderNodeManager();
+    });
+}
+
+const $nodeModalEl = document.getElementById('nodeModal');
+if ($nodeModalEl) {
+    $nodeModalEl.addEventListener('shown.bs.modal', renderNodeManager);
+}
 
 /* ---- Pregunta manual: opciones dinámicas según el tipo ---- */
 const MANUAL_MIN_OPTS = 2;
@@ -511,6 +646,52 @@ document.getElementById('manual-options').addEventListener('click', (e) => {
 
 renderManualOptions(null, null);
 
+/* ---- Edición de preguntas (reusa el modal manual) ---- */
+function setManualMode(editId) {
+    const $title = document.getElementById('manualQuestionLabel');
+    const $submit = document.getElementById('manual-submit');
+    if ($title) $title.textContent = editId ? 'Editar pregunta' : 'Crear pregunta manual';
+    if ($submit) $submit.textContent = editId ? 'Guardar cambios' : 'Guardar pregunta';
+}
+
+function openEditQuestion(q) {
+    EDIT_ID = q.id;
+    const nodeId = (q.node && typeof q.node === 'object') ? q.node.id : q.node;
+    const $node = document.getElementById('manual-node');
+    if ($node && nodeId != null) {
+        $node.value = String(nodeId);
+        $node.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    // El tipo se setea primero: su 'change' resetea las opciones; luego se rellenan.
+    const $type = document.getElementById('manual-type');
+    $type.value = q.question_type || 'single';
+    $type.dispatchEvent(new Event('change', { bubbles: true }));
+
+    const $diff = document.getElementById('manual-difficulty');
+    $diff.value = q.difficulty || 'medium';
+    $diff.dispatchEvent(new Event('change', { bubbles: true }));
+
+    document.getElementById('manual-statement').value = q.statement || '';
+
+    const opts = Array.isArray(q.options) ? q.options : [];
+    const correct = (Array.isArray(q.correct_indices) && q.correct_indices.length)
+        ? q.correct_indices
+        : (Number.isInteger(q.correct_index) ? [q.correct_index] : []);
+    renderManualOptions(opts, correct);
+
+    setManualMode(q.id);
+    showModal('manualQuestionModal');
+}
+
+// Al cerrar el modal manual, vuelve a modo "crear" (limpio) para la próxima vez.
+document.getElementById('manualQuestionModal').addEventListener('hidden.bs.modal', () => {
+    EDIT_ID = null;
+    setManualMode(null);
+    document.getElementById('manual-form').reset();
+    renderManualOptions(null, null);
+});
+
+
 /* Crear pregunta manual */
 document.getElementById('manual-form').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -539,14 +720,18 @@ document.getElementById('manual-form').addEventListener('submit', async (e) => {
     const $submit = document.getElementById('manual-submit');
     $submit.disabled = true;
     try {
-        await questionsApi.manual(ROOM_ID, payload);
-        toast('Pregunta creada.', { kind: 'success' });
+        if (EDIT_ID) {
+            await questionsApi.update(ROOM_ID, EDIT_ID, payload);
+        } else {
+            await questionsApi.manual(ROOM_ID, payload);
+        }
+        toast(EDIT_ID ? 'Pregunta actualizada.' : 'Pregunta creada.', { kind: 'success' });
         e.target.reset();
         renderManualOptions(null, null);
         hideModal('manualQuestionModal');
         await reloadBank();
     } catch (err) {
-        const msg = apiErrorMessage(err, 'No se pudo crear la pregunta.');
+        const msg = apiErrorMessage(err, EDIT_ID ? 'No se pudo guardar la pregunta.' : 'No se pudo crear la pregunta.');
         if (msg) toast(msg, { kind: 'error' });
     } finally {
         $submit.disabled = false;

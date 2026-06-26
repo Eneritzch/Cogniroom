@@ -50,6 +50,27 @@
         </section>
     </main>
 
+    <div class="modal fade" id="roomRenameModal" tabindex="-1" aria-labelledby="roomRenameLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form id="room-rename-form">
+                    <div class="modal-header">
+                        <h2 class="modal-title h5" id="roomRenameLabel">Renombrar sala</h2>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <label class="form-label" for="room-rename-input">Nombre de la sala</label>
+                        <input class="form-control" type="text" id="room-rename-input" maxlength="200" required autocomplete="off">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="ds-btn ds-btn--ghost" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="ds-btn ds-btn--ink">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <div class="toast-host" id="toast-host" aria-live="polite" aria-atomic="true"></div>
 
     {% include 'app/partials/_bootstrap-bundle.html' %}
