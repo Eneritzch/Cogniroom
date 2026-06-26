@@ -26,8 +26,8 @@ class QuestionSerializer(serializers.ModelSerializer):
         model = Question
         fields = [
             'id', 'node', 'node_name', 'statement', 'difficulty', 'question_type',
-            'options', 'correct_index', 'correct_indices', 'source', 'source_pdf',
-            'status', 'is_approved', 'created_at',
+            'cognitive_level', 'options', 'correct_index', 'correct_indices',
+            'source', 'source_pdf', 'status', 'is_approved', 'created_at',
         ]
         read_only_fields = ['id', 'source', 'status', 'is_approved', 'created_at']
 

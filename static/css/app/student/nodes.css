@@ -1,0 +1,138 @@
+/* Mensaje que orienta y motiva. */
+.nodes-insight {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-3);
+  margin-top: var(--s-5);
+  padding: var(--s-4) var(--s-5);
+  background: var(--sage-soft);
+  border: 1px solid var(--paper-border);
+  border-left: 3px solid var(--sage);
+  border-radius: var(--r-lg);
+}
+
+.nodes-insight__icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: var(--sage);
+  margin-top: 1px;
+}
+
+.nodes-insight__text {
+  margin: 0;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-base);
+  color: var(--ink);
+}
+
+.nodes-insight__text strong {
+  color: var(--sage-strong);
+  font-weight: var(--fw-semibold);
+}
+
+.nodes-hero {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+  margin-top: var(--s-5);
+}
+
+.nodes-hero__metric {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  flex: 1 1 150px;
+  padding: var(--s-4) var(--s-5);
+  background: var(--paper-elevated);
+  border: 1px solid var(--paper-border);
+  border-radius: var(--r-lg);
+}
+
+.nodes-hero__k {
+  color: var(--ink-muted);
+}
+
+.nodes-hero__v {
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-semibold);
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+
+.nodes-hero__metric--profile {
+  gap: var(--s-3);
+  justify-content: space-between;
+}
+
+.nodes-hero__hint {
+  font-size: var(--fs-xs);
+  line-height: var(--lh-snug);
+  color: var(--ink-faint);
+}
+
+.nodes-graph-section {
+  margin-top: var(--s-6);
+}
+
+/* Leyenda en lenguaje humano, debajo del grafo (ya no apretada en la esquina). */
+.nodes-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3) var(--s-5);
+  margin-top: var(--s-4);
+  font-size: var(--fs-sm);
+  color: var(--ink-muted);
+}
+
+.nodes-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nodes-legend__dot {
+  flex: 0 0 auto;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.nodes-legend__item--aura {
+  color: var(--amber);
+}
+
+.nodes-legend__aura {
+  flex: 0 0 auto;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1.5px dashed var(--amber);
+}
+
+/* Estado calibración en lenguaje humano (tarjeta + lectura del grafo). */
+.node-card__status {
+  font-weight: var(--fw-medium);
+}
+
+.node-card__status[data-tone='amber'] { color: var(--amber); }
+.node-card__status[data-tone='stone'] { color: var(--stone); }
+.node-card__status[data-tone='moss']  { color: var(--moss); }
+
+.knowledge-graph__readout-tag {
+  display: block;
+  margin-top: var(--s-1);
+  font-size: 10px;
+  font-weight: var(--fw-medium);
+}
+
+.knowledge-graph__readout-tag[data-tone='amber'] { color: var(--amber); }
+.knowledge-graph__readout-tag[data-tone='stone'] { color: var(--stone); }
+.knowledge-graph__readout-tag[data-tone='moss']  { color: var(--moss); }
+
+/* En su página dedicada el grafo es protagonista: más alto en desktop. */
+@media (min-width: 768px) {
+  .knowledge-graph--feature .knowledge-graph__svg {
+    height: 500px;
+  }
+}

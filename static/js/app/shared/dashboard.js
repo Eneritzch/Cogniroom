@@ -534,8 +534,6 @@ async function bootstrapStudent(user) {
     document.getElementById('student-mini-gap').textContent = `${gap >= 0 ? '+' : ''}${gap}`;
     document.getElementById('student-mini-gap').dataset.tone = gapTone(gap);
 
-    renderStudentNodes(nodes || []);
-
     const latestDiag = (diagnoses || [])[0];
     if (latestDiag) {
         renderStudentDiagnosis({
@@ -545,9 +543,10 @@ async function bootstrapStudent(user) {
         });
     }
 
+    // El grafo y la grilla de nodos se movieron a su página dedicada
+    // (/app/nodes/). Acá solo se conserva el "nodo prioritario" del hero.
     const graphNodes = buildGraphNodes(nodes || []);
     if (graphNodes.length) {
-        renderKnowledgeGraph(graphNodes);
         renderHeroFocus(graphNodes);
     }
 }

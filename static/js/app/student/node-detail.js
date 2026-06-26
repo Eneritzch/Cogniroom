@@ -24,6 +24,20 @@ function profileLabel(p) {
     })[p] || '—';
 }
 
+function gapSubText(gapPts) {
+    const a = Math.abs(gapPts);
+    if (gapPts < -15) return `tu confianza está ${a} pts por debajo de tu dominio`;
+    if (gapPts > 15)  return `tu confianza supera tu dominio en ${a} pts`;
+    return 'confianza y dominio bien alineados';
+}
+
+// Momentos reveladores: alta confianza con error, o baja confianza con acierto.
+function answerFlag(declared, is_correct) {
+    if (!is_correct && declared >= 0.65) return { tone: 'rust', text: 'Sobreconfianza' };
+    if (is_correct && declared <= 0.45)  return { tone: 'stone', text: 'Subestimación' };
+    return null;
+}
+
 function fmt(n, decimals = 2) {
     return typeof n === 'number' ? n.toFixed(decimals) : '—';
 }
@@ -83,7 +97,6 @@ function paintHeader(n) {
     document.getElementById('node-topic').textContent = n.description || '';
     document.getElementById('node-name').textContent = n.name;
     document.getElementById('node-room-name').textContent = n.room.name;
-    document.getElementById('node-room-link').href = `/app/room/${n.room.id_room}/`;
     document.getElementById('node-updated').textContent = `Actualizado ${fmtDateLong(n.updated_at)}`;
 
     const $pill = document.getElementById('node-profile-pill');
@@ -105,6 +118,7 @@ function paintKpis(n) {
     const gapEl = document.getElementById('node-gap');
     gapEl.textContent = `${gapPts >= 0 ? '+' : ''}${gapPts}`;
     gapEl.dataset.tone = gapToneFromPts(gapPts);
+    document.getElementById('node-gap-sub').textContent = gapSubText(gapPts);
 
     document.getElementById('node-attempts').textContent = n.attempts;
 
@@ -118,12 +132,39 @@ function paintKpis(n) {
     const offset = C * (1 - clamped);
     $fill.setAttribute('stroke-dasharray', C.toFixed(2));
     $fill.setAttribute('stroke-dashoffset', offset.toFixed(2));
-    $val.textContent = clamped.toFixed(2);
+    $val.textContent = `${Math.round(clamped * 100)}%`;
     $ring.dataset.profile = n.profile;
-    $sub.textContent = `${profileLabel(n.profile)} · ${n.attempts} intentos`;
+    $sub.textContent = `${profileLabel(n.profile)} · ${n.attempts} pregunta${n.attempts === 1 ? '' : 's'}`;
 
     document.getElementById('node-mastery-sub').textContent = mast >= 70
         ? 'dominio sólido' : mast >= 50 ? 'en construcción' : 'requiere práctica';
+}
+
+
+function paintInsight(n) {
+    const $box = document.getElementById('node-insight');
+    const $text = document.getElementById('node-insight-text');
+    if (!$box || !$text) return;
+
+    const conf = Math.round(n.avg_confidence * 100);
+    const mast = Math.round(n.bkt_mastery * 100);
+
+    let msg;
+    let tone;
+    if (n.profile === 'underconfident') {
+        tone = 'stone';
+        msg = `En este tema tu dominio real (<strong>${mast}%</strong>) supera tu confianza declarada (<strong>${conf}%</strong>). Conviene reforzar la confianza y continuar practicando para consolidarlo.`;
+    } else if (n.profile === 'overconfident') {
+        tone = 'amber';
+        msg = `En este tema tu confianza declarada (<strong>${conf}%</strong>) supera tu dominio real (<strong>${mast}%</strong>). Conviene repasarlo antes de avanzar.`;
+    } else {
+        tone = 'moss';
+        msg = `En este tema tu autoevaluación coincide con tu dominio real (declaraste <strong>${conf}%</strong>, dominas <strong>${mast}%</strong>). Un nivel de ajuste recomendable.`;
+    }
+
+    $box.dataset.tone = tone;
+    $text.innerHTML = msg;
+    $box.hidden = false;
 }
 
 
@@ -173,6 +214,7 @@ function paintResponses(n) {
         const masteryFallback = Math.max(0, (r.confidence_declared ?? 0) - 0.15);
         const masteryVal = r.bkt_mastery ?? masteryFallback;
         const masteryPct = `${Math.round(masteryVal * 100)}%`;
+        const flag = answerFlag(r.confidence_declared ?? 0, r.is_correct);
         return `
         <a class="node-response" href="/app/session/${r.id_session}/review/" data-correct="${r.is_correct}">
             <span class="node-response__icon" aria-hidden="true">
@@ -184,6 +226,7 @@ function paintResponses(n) {
             </span>
             <div class="node-response__body">
                 <p class="node-response__statement">${escapeHTML(r.statement)}</p>
+                ${flag ? `<span class="node-response__flag" data-tone="${flag.tone}">${flag.text}</span>` : ''}
                 <div class="node-response__meta">
                     <span>${fmtDateLong(r.answered_at)}</span>
                     <span>·</span>
@@ -191,7 +234,7 @@ function paintResponses(n) {
                         Confianza ${confPct}%
                     </span>
                     <span>·</span>
-                    <span>BKT ${masteryPct}</span>
+                    <span>Dominio ${masteryPct}</span>
                     <span>·</span>
                     <span>Sesión #${r.id_session}</span>
                 </div>
@@ -243,6 +286,7 @@ async function init() {
 
     paintHeader(node);
     paintKpis(node);
+    paintInsight(node);
     paintBkt(node);
     paintAi(node);
     paintResponses(node);

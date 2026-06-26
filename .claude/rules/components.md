@@ -42,9 +42,7 @@ Si un bloque de HTML (header, footer, navegación, card, callout, etc.) **aparec
 | Partial | Qué contiene | Cuándo incluirlo |
 |---|---|---|
 | [`_app-sidebar.html`](../../templates/app/partials/_app-sidebar.html) | Sidebar lateral con logo + nav vertical + toggle colapsar | TODA página autenticada (dashboard, room, diagnoses). Acepta `with active='nombre'`. |
-| [`_app-topbar.html`](../../templates/app/partials/_app-topbar.html) | Top bar con search + notificaciones + profile pill | TODA página autenticada, **después** del `_app-sidebar` y dentro del `<main class="dashboard-shell__main">` |
-| [`_app-header.html`](../../templates/app/partials/_app-header.html) | Top nav horizontal (legacy) | Solo cuando NO uses sidebar. Hoy: ninguno. Mantener por si vuelve a hacer falta. |
-| [`_app-footer.html`](../../templates/app/partials/_app-footer.html) | Footer simple con brand + meta | Páginas con layout horizontal (no usado en dashboard-shell, que oculta footer por CSS) |
+| [`_app-topbar.html`](../../templates/app/partials/_app-topbar.html) | Top bar con search + notificaciones + profile pill | TODA página autenticada, **después** del `_app-sidebar` y dentro del `<main class="dashboard-shell__main">` || [`_app-footer.html`](../../templates/app/partials/_app-footer.html) | Footer simple con brand + meta | Páginas con layout horizontal (no usado en dashboard-shell, que oculta footer por CSS) |
 | [`_styles.html`](../../templates/app/partials/_styles.html) | Todos los `<link>` a CSS (tokens + base + components) | Dentro del `<head>` de **cada** template. Es la primera línea después del `<title>`. |
 | [`_bootstrap-bundle.html`](../../templates/app/partials/_bootstrap-bundle.html) | Script bundle de Bootstrap | Al final del body, antes de los `<script>` de página |
 

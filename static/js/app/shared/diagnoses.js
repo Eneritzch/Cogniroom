@@ -24,6 +24,15 @@ function profileLabel(p) {
     })[p] || '—';
 }
 
+const PROBLEM_LABEL = {
+    vacio_conceptual: 'Vacío conceptual',
+    confusion_conceptual: 'Confusión conceptual',
+    error_procedimental: 'Error procedimental',
+    aplicacion_incorrecta: 'Aplicación incorrecta',
+    sin_patron: 'Sin patrón claro',
+};
+function problemLabel(p) { return PROBLEM_LABEL[p] || ''; }
+
 const DIAG_TITLES = {
     overconfident: 'Brecha de sobreconfianza detectada',
     underconfident: 'Subestimación del propio dominio',
@@ -71,6 +80,7 @@ function renderDiagnosis(diag) {
     const recommendation = diag.recommendation || '';
     const date = formatDate(diag.generated_at);
     const risk = diag.risk_level || 'medium';
+    const problemType = diag.problem_type || '';
     const failureProb = diag.failure_probability != null
         ? Number(diag.failure_probability).toFixed(2)
         : '—';
@@ -107,6 +117,7 @@ function renderDiagnosis(diag) {
         ` : ''}
         <footer class="diagnoses-item__meta">
           <span class="pill" data-profile="${escapeHTML(classification)}">${profileLabel(classification)}</span>
+          ${problemType ? `<span class="pill" data-problem="${escapeHTML(problemType)}">${problemLabel(problemType)}</span>` : ''}
           <span class="pill" data-risk="${escapeHTML(risk)}">${riskLabel(risk)}</span>
           <span class="diagnoses-item__failure">Predicción de fallo: <span class="num">${failureProb}</span></span>
           ${sessionId ? `<a class="diagnoses-item__link" href="/app/session/${sessionId}/review/">Ver sesión →</a>` : ''}

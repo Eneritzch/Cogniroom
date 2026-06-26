@@ -1,6 +1,6 @@
 /**
  * Login page controller.
- * Vinculado a templates/app/index.html
+ * Vinculado a templates/app/public/login.html
  *
  * Validación:
  *   - El form usa `novalidate`: desactiva la validación automática al

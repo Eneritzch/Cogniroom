@@ -1,0 +1,126 @@
+{% load static %}<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Tu mapa de conocimiento: lo que creés saber frente a lo que realmente dominás, tema por tema.">
+    <title>Mi conocimiento · CogniRoom</title>
+    {% include 'app/partials/_styles.html' %}
+    <link rel="stylesheet" href="{% static 'css/app/shared/dashboard.css' %}?v={% now "U" %}">
+    <link rel="stylesheet" href="{% static 'css/app/student/nodes.css' %}?v={% now "U" %}">
+</head>
+<body class="nodes-page dashboard-shell">
+
+    {% include 'app/partials/_app-sidebar.html' with active='nodes' %}
+
+    <main class="dashboard-shell__main">
+
+        {% include 'app/partials/_app-topbar.html' %}
+
+        <span class="eyebrow">Mi conocimiento</span>
+        <div class="room-head">
+            <h1 class="room-title">Tu mapa de conocimiento</h1>
+            <div class="room-meta">
+                <span>Comparación, tema por tema, entre lo que <strong>crees saber</strong> y lo que <strong>realmente dominas</strong>, para identificar dónde reforzar primero.</span>
+            </div>
+        </div>
+
+        <aside class="nodes-insight" id="nodes-insight" hidden>
+            <span class="nodes-insight__icon" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"></path>
+                    <path d="M9 18h6"></path>
+                    <path d="M10 22h4"></path>
+                </svg>
+            </span>
+            <p class="nodes-insight__text" id="nodes-insight-text"></p>
+        </aside>
+
+        <section class="nodes-hero" aria-label="Resumen de tu conocimiento">
+            <div class="nodes-hero__metric">
+                <span class="nodes-hero__k eyebrow">Qué tan bien te conocés</span>
+                <span class="nodes-hero__v num" id="nodes-hero-icc">—</span>
+                <span class="nodes-hero__hint">coincidencia entre tu autoevaluación y la realidad</span>
+            </div>
+            <div class="nodes-hero__metric">
+                <span class="nodes-hero__k eyebrow">Cuánto dominás</span>
+                <span class="nodes-hero__v num" id="nodes-hero-mastery">—</span>
+                <span class="nodes-hero__hint">promedio de todos tus temas</span>
+            </div>
+            <div class="nodes-hero__metric">
+                <span class="nodes-hero__k eyebrow">Temas en progreso</span>
+                <span class="nodes-hero__v num" id="nodes-hero-count">—</span>
+                <span class="nodes-hero__hint">temas en curso</span>
+            </div>
+            <div class="nodes-hero__metric nodes-hero__metric--profile">
+                <span class="nodes-hero__k eyebrow">Cómo te evaluás</span>
+                <span class="pill" id="nodes-hero-pill" data-profile="calibrated">—</span>
+                <span class="nodes-hero__hint" id="nodes-hero-profile-hint"></span>
+            </div>
+        </section>
+
+        <section class="dashboard-section nodes-graph-section">
+            <div class="dashboard-section__head">
+                <div>
+                    <span class="eyebrow">Tu mapa</span>
+                    <h2 class="dashboard-section__title">Cada tema, a tu alrededor</h2>
+                </div>
+                <span class="dashboard-section__head-meta">Pasa el cursor sobre un tema para ver el detalle; toca para abrirlo</span>
+            </div>
+            <div class="knowledge-graph knowledge-graph--feature" id="knowledge-graph">
+                <div class="knowledge-graph__corners" aria-hidden="true">
+                    <span></span><span></span><span></span><span></span>
+                </div>
+                <div class="knowledge-graph__meta knowledge-graph__meta--left">
+                    <span class="num">TU CONOCIMIENTO</span>
+                    <span class="knowledge-graph__meta-pulse" aria-hidden="true"></span>
+                </div>
+                <div class="knowledge-graph__meta knowledge-graph__meta--right num">CogniRoom</div>
+                <svg class="knowledge-graph__svg" viewBox="0 0 100 70" aria-hidden="true" id="knowledge-graph-svg"></svg>
+                <div class="knowledge-graph__readout" id="knowledge-graph-readout">
+                    <span class="knowledge-graph__readout-empty">Pasa el cursor sobre un tema</span>
+                </div>
+            </div>
+            <div class="nodes-legend" aria-label="Qué significan los colores">
+                <span class="nodes-legend__item"><span class="nodes-legend__dot" style="background:var(--rust);"></span> Por reforzar</span>
+                <span class="nodes-legend__item"><span class="nodes-legend__dot" style="background:var(--amber);"></span> En camino</span>
+                <span class="nodes-legend__item"><span class="nodes-legend__dot" style="background:var(--sage);"></span> Bien encaminado</span>
+                <span class="nodes-legend__item"><span class="nodes-legend__dot" style="background:var(--moss);"></span> Dominado</span>
+                <span class="nodes-legend__item nodes-legend__item--aura"><span class="nodes-legend__aura" aria-hidden="true"></span> Halo giratorio: sobreconfianza</span>
+            </div>
+        </section>
+
+        <section class="dashboard-section" id="nodes">
+            <div class="dashboard-section__head">
+                <div>
+                    <span class="eyebrow">Tus temas</span>
+                    <h2 class="dashboard-section__title">
+                        <span id="nodes-count">—</span> temas · empezá por los de arriba
+                    </h2>
+                </div>
+                <div class="student-nodes__legend">
+                    <span class="student-nodes__legend-item">
+                        <span class="student-nodes__legend-swatch student-nodes__legend-swatch--declared"></span>
+                        Lo que creés saber
+                    </span>
+                    <span class="student-nodes__legend-item">
+                        <span class="student-nodes__legend-swatch student-nodes__legend-swatch--mastery"></span>
+                        Lo que realmente sabés
+                    </span>
+                </div>
+            </div>
+            <div class="student-nodes__grid" id="student-nodes-grid">
+                <div class="node-card skeleton" aria-hidden="true" style="height:200px;"></div>
+                <div class="node-card skeleton" aria-hidden="true" style="height:200px;"></div>
+                <div class="node-card skeleton" aria-hidden="true" style="height:200px;"></div>
+            </div>
+        </section>
+    </main>
+
+    <div class="toast-host" id="toast-host" aria-live="polite" aria-atomic="true"></div>
+
+    {% include 'app/partials/_bootstrap-bundle.html' %}
+    <script type="module" src="{% static 'js/app/nav-auth.js' %}?v={% now "U" %}"></script>
+    <script type="module" src="{% static 'js/app/student/nodes.js' %}?v={% now "U" %}"></script>
+</body>
+</html>

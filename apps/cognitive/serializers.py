@@ -58,7 +58,7 @@ class AIDiagnosisSerializer(serializers.ModelSerializer):
         model = AIDiagnosis
         fields = [
             'id', 'student', 'session', 'room', 'node', 'node_name', 'classification',
-            'risk_level', 'risk_node', 'failure_probability', 'reasoning',
+            'problem_type', 'risk_level', 'risk_node', 'failure_probability', 'reasoning',
             'recommendation', 'generated_at',
         ]
 

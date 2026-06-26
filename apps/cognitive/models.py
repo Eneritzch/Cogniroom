@@ -81,6 +81,21 @@ class AIDiagnosis(models.Model):
         (RISK_LOW, 'Low'),
     ]
 
+    # Tipo de error cognitivo (distinto del perfil de calibración): qué le falla,
+    # no si está sobre/subconfiado. Lo clasifica Claude en analyze_student().
+    PROBLEM_CONCEPTUAL_GAP = 'vacio_conceptual'
+    PROBLEM_CONFUSION = 'confusion_conceptual'
+    PROBLEM_PROCEDURAL = 'error_procedimental'
+    PROBLEM_MISAPPLICATION = 'aplicacion_incorrecta'
+    PROBLEM_NONE = 'sin_patron'
+    PROBLEM_TYPE_CHOICES = [
+        (PROBLEM_CONCEPTUAL_GAP, 'Vacío conceptual'),
+        (PROBLEM_CONFUSION, 'Confusión entre conceptos'),
+        (PROBLEM_PROCEDURAL, 'Error procedimental'),
+        (PROBLEM_MISAPPLICATION, 'Aplicación incorrecta'),
+        (PROBLEM_NONE, 'Sin patrón claro'),
+    ]
+
     student = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -99,6 +114,9 @@ class AIDiagnosis(models.Model):
         related_name='ai_diagnoses',
     )
     classification = models.CharField(max_length=20)
+    problem_type = models.CharField(
+        max_length=24, choices=PROBLEM_TYPE_CHOICES, blank=True, default='',
+    )
     risk_level = models.CharField(max_length=10, choices=RISK_CHOICES)
     risk_node = models.JSONField(default=list)
     failure_probability = models.FloatField()

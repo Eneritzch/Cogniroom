@@ -179,11 +179,15 @@ def _run_ai_analysis(answer_id, new_mastery):
             failure_probability = 0.5
 
         risk_level = diagnosis.get('risk_level', 'low')
+        problem_type = diagnosis.get('problem_type', '') or ''
+        if problem_type not in dict(AIDiagnosis.PROBLEM_TYPE_CHOICES):
+            problem_type = ''
         AIDiagnosis.objects.create(
             student=user,
             session=session,
             node=question.node,
             classification=diagnosis.get('profile', 'calibrated'),
+            problem_type=problem_type,
             risk_level=risk_level,
             risk_node=diagnosis.get('risk_nodes', []) or [],
             failure_probability=failure_probability,

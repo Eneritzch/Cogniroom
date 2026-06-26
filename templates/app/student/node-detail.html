@@ -13,17 +13,17 @@
 </head>
 <body class="node-page dashboard-shell">
 
-    {% include 'app/partials/_app-sidebar.html' with active='dashboard' %}
+    {% include 'app/partials/_app-sidebar.html' with active='nodes' %}
 
     <main class="dashboard-shell__main">
 
         {% include 'app/partials/_app-topbar.html' %}
 
-        <a href="/app/dashboard/" class="node-back">
+        <a href="/app/nodes/" class="node-back">
             <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
-            Volver al dashboard
+            Volver a mi conocimiento
         </a>
 
         <header class="node-hero">
@@ -31,13 +31,13 @@
                 <span class="eyebrow" id="node-topic">—</span>
                 <h1 class="node-hero__title" id="node-name">—</h1>
                 <div class="node-hero__meta">
-                    <a href="#" id="node-room-link" class="node-hero__room">
+                    <span id="node-room-link" class="node-hero__room">
                         <svg class="icon-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <path d="M3 21V8l9-5 9 5v13"></path>
                             <path d="M9 21V12h6v9"></path>
                         </svg>
                         <span id="node-room-name">—</span>
-                    </a>
+                    </span>
                     <span class="room-meta__sep">·</span>
                     <span class="node-hero__updated num" id="node-updated">—</span>
                 </div>
@@ -45,7 +45,7 @@
             <div class="node-hero__cta">
                 <span class="pill" data-profile="calibrated" id="node-profile-pill">—</span>
                 <a href="/app/my-rooms/" class="ds-btn ds-btn--ink">
-                    Practicar este nodo
+                    Practicar este tema
                     <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <polygon points="5 3 19 12 5 21 5 3"></polygon>
                     </svg>
@@ -53,7 +53,18 @@
             </div>
         </header>
 
-        <section class="node-kpis" aria-label="Métricas principales del nodo">
+        <aside class="node-insight" id="node-insight" hidden>
+            <span class="node-insight__icon" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"></path>
+                    <path d="M9 18h6"></path>
+                    <path d="M10 22h4"></path>
+                </svg>
+            </span>
+            <p class="node-insight__text" id="node-insight-text"></p>
+        </aside>
+
+        <section class="node-kpis" aria-label="Tu dominio y tu confianza en este tema">
             <article class="node-kpi node-kpi--ring">
                 <div class="calibration-ring" data-profile="calibrated" id="node-ring" style="width:140px;height:140px;">
                     <svg class="calibration-ring__svg" width="140" height="140" aria-hidden="true">
@@ -62,31 +73,31 @@
                     </svg>
                     <div class="calibration-ring__center">
                         <span class="calibration-ring__value num" id="node-ring-value" style="font-size:32px;">—</span>
-                        <span class="calibration-ring__label eyebrow">ICC</span>
+                        <span class="calibration-ring__label eyebrow">calibración</span>
                     </div>
                 </div>
                 <div class="node-kpi__ringside">
-                    <span class="eyebrow">Calibración</span>
+                    <span class="eyebrow">Qué tan bien te conocés</span>
                     <span class="node-kpi__sub" id="node-ring-sub">—</span>
                 </div>
             </article>
 
             <article class="node-kpi">
-                <span class="node-kpi__k eyebrow">Mastery (BKT)</span>
+                <span class="node-kpi__k eyebrow">Lo que realmente sabés</span>
                 <span class="node-kpi__v num" id="node-mastery">—</span>
-                <span class="node-kpi__sub" id="node-mastery-sub">probabilidad de acertar</span>
+                <span class="node-kpi__sub" id="node-mastery-sub">tu dominio del tema</span>
             </article>
 
             <article class="node-kpi">
-                <span class="node-kpi__k eyebrow">Confianza promedio</span>
+                <span class="node-kpi__k eyebrow">Lo que creés saber</span>
                 <span class="node-kpi__v num" id="node-confidence">—</span>
-                <span class="node-kpi__sub">declarada en este nodo</span>
+                <span class="node-kpi__sub">tu autoevaluación</span>
             </article>
 
             <article class="node-kpi">
-                <span class="node-kpi__k eyebrow">Gap</span>
+                <span class="node-kpi__k eyebrow">Tu calibración</span>
                 <span class="node-kpi__v num" id="node-gap">—</span>
-                <span class="node-kpi__sub">confianza vs. mastery</span>
+                <span class="node-kpi__sub" id="node-gap-sub">—</span>
             </article>
 
             <article class="node-kpi">
@@ -96,38 +107,39 @@
             </article>
         </section>
 
-        <section class="node-row" aria-label="Parámetros BKT del nodo">
+        <section class="node-row" aria-label="Cómo medimos tu dominio">
             <article class="node-card node-card--bkt">
                 <header class="node-card__head">
-                    <h2 class="node-card__title">Parámetros BKT</h2>
-                    <span class="node-card__hint">Modelo bayesiano</span>
+                    <h2 class="node-card__title">Cómo medimos tu dominio</h2>
+                    <span class="node-card__hint">el modelo detrás de tu %</span>
                 </header>
+                <p class="bkt-intro">El porcentaje de dominio no se calcula contando aciertos: un modelo lo estima considerando la probabilidad de acertar por azar y de fallar por descuido. Estos son sus valores.</p>
                 <ul class="bkt-list">
                     <li class="bkt-row">
                         <div class="bkt-row__k">
-                            <span class="bkt-row__label">p(mastery)</span>
-                            <span class="bkt-row__expl">Probabilidad actual de dominar el nodo</span>
+                            <span class="bkt-row__label">Probabilidad de que ya domines el tema</span>
+                            <span class="bkt-row__expl"><code class="bkt-row__code">p(mastery)</code> probabilidad actual de dominio</span>
                         </div>
                         <span class="bkt-row__v num" id="bkt-mastery">—</span>
                     </li>
                     <li class="bkt-row">
                         <div class="bkt-row__k">
-                            <span class="bkt-row__label">p(transit)</span>
-                            <span class="bkt-row__expl">Probabilidad de aprender en cada intento</span>
+                            <span class="bkt-row__label">Aprendizaje estimado por intento</span>
+                            <span class="bkt-row__expl"><code class="bkt-row__code">p(transit)</code> incremento de dominio por intento</span>
                         </div>
                         <span class="bkt-row__v num" id="bkt-transit">—</span>
                     </li>
                     <li class="bkt-row">
                         <div class="bkt-row__k">
-                            <span class="bkt-row__label">p(guess)</span>
-                            <span class="bkt-row__expl">Acertar sin dominar (suerte)</span>
+                            <span class="bkt-row__label">Probabilidad de acertar por azar</span>
+                            <span class="bkt-row__expl"><code class="bkt-row__code">p(guess)</code> acierto sin dominar el tema</span>
                         </div>
                         <span class="bkt-row__v num" id="bkt-guess">—</span>
                     </li>
                     <li class="bkt-row">
                         <div class="bkt-row__k">
-                            <span class="bkt-row__label">p(slip)</span>
-                            <span class="bkt-row__expl">Fallar dominando (descuido)</span>
+                            <span class="bkt-row__label">Probabilidad de fallar por descuido</span>
+                            <span class="bkt-row__expl"><code class="bkt-row__code">p(slip)</code> fallo aun dominando el tema</span>
                         </div>
                         <span class="bkt-row__v num" id="bkt-slip">—</span>
                     </li>
@@ -158,7 +170,7 @@
 
         <section class="node-card node-card--responses">
             <header class="node-card__head">
-                <h2 class="node-card__title">Respuestas recientes en este nodo</h2>
+                <h2 class="node-card__title">Tus respuestas en este tema</h2>
                 <span class="node-card__hint" id="node-responses-count">—</span>
             </header>
             <ul class="node-responses" id="node-responses" aria-label="Respuestas recientes"></ul>

@@ -146,11 +146,15 @@ class GenerateQuestionsView(APIView):
                 # Randomiza la posición de la correcta (el modelo la pone siempre
                 # primera); imprescindible para que el estudiante no la adivine.
                 options, indices = shuffle_options(options, indices, qtype)
+                level = item.get('cognitive_level', '')
+                if level not in dict(Question.COGNITIVE_LEVEL_CHOICES):
+                    level = ''
                 q = Question.objects.create(
                     node=node,
                     statement=item.get('text', ''),
                     difficulty=item.get('difficulty', data['difficulty']),
                     question_type=qtype,
+                    cognitive_level=level,
                     options=options,
                     correct_indices=indices,
                     correct_index=indices[0],

@@ -20,12 +20,16 @@ QUESTION_SCHEMA = {
                     'options': {'type': 'array', 'items': {'type': 'string'}},
                     'correct_indices': {'type': 'array', 'items': {'type': 'integer'}},
                     'difficulty': {'type': 'string', 'enum': ['easy', 'medium', 'hard']},
+                    'cognitive_level': {
+                        'type': 'string',
+                        'enum': ['recordar', 'comprender', 'aplicar', 'analizar', 'evaluar', 'crear'],
+                    },
                     'rationale': {'type': 'string'},
                     'misconception_targeted': {'type': 'string'},
                 },
                 'required': [
                     'text', 'question_type', 'options', 'correct_indices',
-                    'difficulty', 'rationale', 'misconception_targeted',
+                    'difficulty', 'cognitive_level', 'rationale', 'misconception_targeted',
                 ],
                 'additionalProperties': False,
             },
@@ -103,7 +107,11 @@ GENERATION_RULES = (
     'inequívocamente respaldadas por el material.\n'
     'Para cada pregunta, "rationale" explica por qué las correctas lo son y '
     '"misconception_targeted" nombra el error conceptual que capturan los '
-    'distractores. Responde en español.'
+    'distractores. Clasifica además el nivel cognitivo en "cognitive_level" '
+    '(taxonomía de Bloom): "recordar" (datos/definiciones), "comprender" '
+    '(explicar/interpretar), "aplicar" (usar en un caso concreto), "analizar" '
+    '(descomponer/relacionar), "evaluar" (juzgar con criterios) o "crear" '
+    '(proponer/diseñar algo nuevo). Responde en español.'
 )
 
 
@@ -148,6 +156,7 @@ class CognitiveAnalysisService:
             'prediction': 0.5,
             'reasoning': '',
             'recommendation': '',
+            'problem_type': 'sin_patron',
         }
 
         system = (
@@ -169,9 +178,15 @@ class CognitiveAnalysisService:
             '  "risk_level": "high|medium|low",\n'
             '  "risk_nodes": ["nodo1", "nodo2"],\n'
             '  "prediction": 0.0,\n'
+            '  "problem_type": "vacio_conceptual|confusion_conceptual|error_procedimental|aplicacion_incorrecta|sin_patron",\n'
             '  "reasoning": "texto",\n'
             '  "recommendation": "texto"\n'
-            '}'
+            '}\n'
+            '"problem_type" es el TIPO de error cognitivo (no la calibración): '
+            '"vacio_conceptual" (no conoce el concepto), "confusion_conceptual" '
+            '(mezcla conceptos), "error_procedimental" (conoce pero falla al aplicar), '
+            '"aplicacion_incorrecta" (aplica bien un concepto equivocado) o '
+            '"sin_patron" (sin patrón claro).'
         )
 
         raw = self._message(system, user_prompt)

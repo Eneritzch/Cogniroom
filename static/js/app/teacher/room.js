@@ -256,6 +256,13 @@ function renderPdfs(list) {
 
 async function bootstrap() {
     try {
+        // Pantalla exclusiva del docente: si llega un estudiante (p. ej. por URL), se redirige.
+        const currentUser = await auth.me();
+        if (currentUser.role !== 'teacher') {
+            location.replace('/app/dashboard/');
+            return;
+        }
+
         const [members, heatmap, bank, pdfList, blindSpots, allRooms] = await Promise.all([
             rooms.members(ROOM_ID).catch(() => ({ roster: [] })),
             rooms.heatmap(ROOM_ID).catch(() => ({ nodes: [], roster: [] })),

@@ -24,6 +24,15 @@ function profileLabel(p) {
     })[p] || '—';
 }
 
+const PROBLEM_LABEL = {
+    vacio_conceptual: 'Vacío conceptual',
+    confusion_conceptual: 'Confusión conceptual',
+    error_procedimental: 'Error procedimental',
+    aplicacion_incorrecta: 'Aplicación incorrecta',
+    sin_patron: 'Sin patrón claro',
+};
+function problemLabel(p) { return PROBLEM_LABEL[p] || ''; }
+
 
 const PAGE_SIZE = 20;
 
@@ -526,6 +535,7 @@ function renderStudentDetail(d) {
             <article class="student-detail__diag">
               <header class="student-detail__diag-head">
                 <span class="pill pill--sm" data-profile="${dg.classification}">${profileLabel(dg.classification)}</span>
+                ${dg.problem_type ? `<span class="pill pill--sm" data-problem="${dg.problem_type}">${problemLabel(dg.problem_type)}</span>` : ''}
                 ${dg.node_name ? `<span class="student-detail__diag-node">${escapeHTML(dg.node_name)}</span>` : ''}
                 <span class="student-detail__diag-date num">${escapeHTML((dg.generated_at || '').slice(0, 10))}</span>
               </header>

@@ -38,6 +38,10 @@
 }
 
 
+/* Selector de nodo en la barra de filtros (compacto). */
+.questions-controls__group .cselect { min-width: 150px; }
+
+
 .questions-controls {
   display: flex;
   flex-direction: column;
@@ -223,6 +227,19 @@
   color: var(--ink-faint);
 }
 
+/* Cabecera de nodo colapsable */
+.qsection__head { cursor: pointer; user-select: none; }
+
+.qsection__chevron {
+  flex: 0 0 auto;
+  align-self: center;
+  color: var(--ink-faint);
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.qsection--collapsed .qsection__chevron { transform: rotate(-90deg); }
+.qsection--collapsed .qsection__list { display: none; }
+
 .qsection__list {
   list-style: none;
   margin: 0;
@@ -309,6 +326,27 @@
 }
 .qcard__type[data-type='multiple']   { color: var(--terracotta); }
 .qcard__type[data-type='true_false'] { color: var(--stone); }
+
+.qcard__bloom {
+  padding: 2px 8px;
+  border-radius: var(--r-xs);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: var(--fw-medium);
+  flex-shrink: 0;
+  background: color-mix(in srgb, var(--stone) 16%, transparent);
+  color: var(--stone);
+}
+
+/* Orden cognitivo superior (analizar/evaluar/crear) resaltado en cálido. */
+.qcard__bloom[data-bloom='analizar'],
+.qcard__bloom[data-bloom='evaluar'],
+.qcard__bloom[data-bloom='crear'] {
+  background: color-mix(in srgb, var(--amber) 16%, transparent);
+  color: var(--amber);
+}
 
 .qcard__node,
 .qcard__pdf {

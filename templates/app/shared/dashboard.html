@@ -138,64 +138,6 @@
                 </div>
             </section>
 
-            <section class="dashboard-section" id="graph">
-                <div class="dashboard-section__head">
-                    <div>
-                        <span class="eyebrow">Grafo de conocimiento</span>
-                        <h2 class="dashboard-section__title">
-                            Tu mapa cognitivo · <span class="dashboard-section__title-muted">12 nodos</span>
-                        </h2>
-                    </div>
-                    <span class="dashboard-section__head-meta num">⬡ ring discontinuo = sobreconfianza activa</span>
-                </div>
-                <div class="knowledge-graph" id="knowledge-graph" style="margin-top:var(--s-5);">
-                    <div class="knowledge-graph__corners" aria-hidden="true">
-                        <span></span><span></span><span></span><span></span>
-                    </div>
-                    <div class="knowledge-graph__meta knowledge-graph__meta--left">
-                        <span class="num">GRAPH · 12 NODES</span>
-                        <span class="knowledge-graph__meta-pulse" aria-hidden="true"></span>
-                    </div>
-                    <div class="knowledge-graph__meta knowledge-graph__meta--right num">MAPA COGNITIVO</div>
-                    <svg class="knowledge-graph__svg" viewBox="0 0 100 70" aria-hidden="true" id="knowledge-graph-svg"></svg>
-                    <div class="knowledge-graph__legend">
-                        <span class="knowledge-graph__legend-dot"><span style="background:var(--rust);"></span><span class="num">&lt; 0.4</span></span>
-                        <span class="knowledge-graph__legend-dot"><span style="background:var(--amber);"></span><span class="num">0.4–0.6</span></span>
-                        <span class="knowledge-graph__legend-dot"><span style="background:var(--sage);"></span><span class="num">0.6–0.8</span></span>
-                        <span class="knowledge-graph__legend-dot"><span style="background:var(--moss);"></span><span class="num">&gt; 0.8</span></span>
-                    </div>
-                    <div class="knowledge-graph__readout" id="knowledge-graph-readout">
-                        <span class="knowledge-graph__readout-empty">// hover sobre un nodo</span>
-                    </div>
-                </div>
-            </section>
-
-            <section class="dashboard-section" id="nodes">
-                <div class="dashboard-section__head">
-                    <div>
-                        <span class="eyebrow">Tus nodos</span>
-                        <h2 class="dashboard-section__title" id="nodes-count-title">
-                            <span id="nodes-count">—</span> nodos activos · ordenados por metacognitive_gap
-                        </h2>
-                    </div>
-                    <div class="student-nodes__legend">
-                        <span class="student-nodes__legend-item">
-                            <span class="student-nodes__legend-swatch student-nodes__legend-swatch--declared"></span>
-                            Confianza declarada
-                        </span>
-                        <span class="student-nodes__legend-item">
-                            <span class="student-nodes__legend-swatch student-nodes__legend-swatch--mastery"></span>
-                            Mastery real
-                        </span>
-                    </div>
-                </div>
-                <div class="student-nodes__grid" id="student-nodes-grid">
-                    <div class="node-card skeleton" aria-hidden="true" style="height:200px;"></div>
-                    <div class="node-card skeleton" aria-hidden="true" style="height:200px;"></div>
-                    <div class="node-card skeleton" aria-hidden="true" style="height:200px;"></div>
-                </div>
-            </section>
-
             <aside class="student-underconfidence" id="student-underconfidence" hidden>
                 <svg class="icon-svg" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
                     <polyline points="22 17 13.5 8.5 8.5 13.5 2 7"></polyline>

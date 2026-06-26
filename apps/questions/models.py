@@ -76,6 +76,23 @@ class Question(models.Model):
     ]
     SINGLE_ANSWER_TYPES = (TYPE_SINGLE, TYPE_TRUE_FALSE)
 
+    # Nivel cognitivo (taxonomía de Bloom revisada): qué habilidad evalúa la
+    # pregunta. Lo clasifica Claude al generar; en manual lo elige el docente.
+    LEVEL_REMEMBER = 'recordar'
+    LEVEL_UNDERSTAND = 'comprender'
+    LEVEL_APPLY = 'aplicar'
+    LEVEL_ANALYZE = 'analizar'
+    LEVEL_EVALUATE = 'evaluar'
+    LEVEL_CREATE = 'crear'
+    COGNITIVE_LEVEL_CHOICES = [
+        (LEVEL_REMEMBER, 'Recordar'),
+        (LEVEL_UNDERSTAND, 'Comprender'),
+        (LEVEL_APPLY, 'Aplicar'),
+        (LEVEL_ANALYZE, 'Analizar'),
+        (LEVEL_EVALUATE, 'Evaluar'),
+        (LEVEL_CREATE, 'Crear'),
+    ]
+
     STATUS_PENDING = 'pending'
     STATUS_APPROVED = 'approved'
     STATUS_REJECTED = 'rejected'
@@ -89,6 +106,9 @@ class Question(models.Model):
     statement = models.TextField()
     difficulty = models.CharField(max_length=10, choices=DIFFICULTY_CHOICES)
     question_type = models.CharField(max_length=12, choices=TYPE_CHOICES, default=TYPE_SINGLE)
+    cognitive_level = models.CharField(
+        max_length=12, choices=COGNITIVE_LEVEL_CHOICES, blank=True, default='',
+    )
     options = models.JSONField()
     # correct_indices es la fuente de verdad (lista de índices correctos).
     # correct_index queda sincronizado con la primera correcta para compat.

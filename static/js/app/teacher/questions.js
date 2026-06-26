@@ -38,6 +38,7 @@ let currentStatus = 'all';
 let currentSource = 'all';
 let currentType = 'all';
 let currentSearch = '';
+let currentNode = 'all';
 
 
 function difficultyMeta(level) {
@@ -69,6 +70,7 @@ function questionText(q) {
 function applyFilters(bank) {
     const q = currentSearch.trim().toLowerCase();
     return bank.filter((qst) => {
+        if (currentNode !== 'all' && (qst.node_name || nodeName(qst.node) || 'Sin nodo') !== currentNode) return false;
         if (currentStatus !== 'all' && qst.status !== currentStatus) return false;
         if (currentSource !== 'all' && qst.source !== currentSource) return false;
         if (currentType !== 'all' && (qst.question_type || 'single') !== currentType) return false;
@@ -91,6 +93,12 @@ function formatDate(iso) {
 
 const TYPE_LABEL = { single: 'Opción única', true_false: 'Verdadero / Falso', multiple: 'Opción múltiple' };
 const TYPE_ORDER = { single: 0, true_false: 1, multiple: 2 };
+
+const BLOOM_LABEL = {
+    recordar: 'Recordar', comprender: 'Comprender', aplicar: 'Aplicar',
+    analizar: 'Analizar', evaluar: 'Evaluar', crear: 'Crear',
+};
+function bloomLabel(l) { return BLOOM_LABEL[l] || l; }
 
 function qType(q) {
     return q.question_type || 'single';
@@ -146,7 +154,10 @@ function renderList() {
 
         return `
         <li class="qsection">
-            <header class="qsection__head">
+            <header class="qsection__head" data-qsection-toggle role="button" tabindex="0" aria-expanded="true">
+                <svg class="icon-svg qsection__chevron" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
                 <h3 class="qsection__title">
                     <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
                         <circle cx="12" cy="12" r="9"></circle>
@@ -161,6 +172,33 @@ function renderList() {
         </li>
         `;
     }).join('');
+}
+
+
+// Selector "Nodo": lista TODOS los nodos de la sala (incluidos los vacíos) con su
+// conteo; al elegir uno, filtra el banco a ese nodo.
+function fillNodeFilter() {
+    const $sel = document.getElementById('node-filter');
+    if (!$sel) return;
+
+    const counts = new Map();
+    BANK.forEach((q) => {
+        const n = q.node_name || nodeName(q.node) || 'Sin nodo';
+        counts.set(n, (counts.get(n) || 0) + 1);
+    });
+
+    const names = new Map();
+    NODES.forEach((n) => names.set(n.name, counts.get(n.name) || 0));
+    counts.forEach((c, n) => { if (!names.has(n)) names.set(n, c); });
+
+    const ordered = Array.from(names.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+    if (currentNode !== 'all' && !ordered.some(([n]) => n === currentNode)) currentNode = 'all';
+
+    const qLabel = (c) => (c === 0 ? 'sin preguntas' : `${c} ${c === 1 ? 'pregunta' : 'preguntas'}`);
+    $sel.innerHTML = `<option value="all" ${currentNode === 'all' ? 'selected' : ''}>Todos los nodos</option>`
+        + ordered.map(([name, c]) =>
+            `<option value="${escapeHTML(name)}" ${name === currentNode ? 'selected' : ''}>${escapeHTML(name)} · ${qLabel(c)}</option>`
+        ).join('');
 }
 
 
@@ -200,6 +238,7 @@ function cardHTML(q) {
             <header class="qcard__head">
                 <span class="qcard__source" data-source="${q.source}">${q.source === 'ai' ? 'IA' : 'Manual'}</span>
                 <span class="qcard__type" data-type="${qtype}">${typeLabel}</span>
+                ${q.cognitive_level ? `<span class="qcard__bloom" data-bloom="${q.cognitive_level}">${bloomLabel(q.cognitive_level)}</span>` : ''}
                 <span class="qcard__node">
                     <svg class="icon-svg" width="11" height="11" viewBox="0 0 24 24" aria-hidden="true">
                         <circle cx="12" cy="12" r="9"></circle>
@@ -271,6 +310,7 @@ function render() {
     const pendingTotal = BANK.filter((q) => q.status === 'pending').length;
     if ($pending) $pending.textContent = `${pendingTotal} pendiente${pendingTotal === 1 ? '' : 's'} de aprobación`;
 
+    fillNodeFilter();
     renderList();
 }
 
@@ -297,6 +337,36 @@ document.getElementById('questions-list').addEventListener('click', async (e) =>
 });
 
 
+/* Filtro por nodo (selector compacto). */
+const $nodeFilter = document.getElementById('node-filter');
+if ($nodeFilter) {
+    $nodeFilter.addEventListener('change', () => {
+        currentNode = $nodeFilter.value || 'all';
+        renderList();
+    });
+}
+
+/* Colapsar / expandir secciones de nodo. */
+function toggleSection(head) {
+    const sec = head.closest('.qsection');
+    if (!sec) return;
+    const collapsed = sec.classList.toggle('qsection--collapsed');
+    head.setAttribute('aria-expanded', String(!collapsed));
+}
+const $listEl = document.getElementById('questions-list');
+$listEl.addEventListener('click', (e) => {
+    const head = e.target.closest('[data-qsection-toggle]');
+    if (head) toggleSection(head);
+});
+$listEl.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const head = e.target.closest('[data-qsection-toggle]');
+    if (!head) return;
+    e.preventDefault();
+    toggleSection(head);
+});
+
+
 async function reloadBank() {
     BANK = (await questionsApi.list(ROOM_ID)) || [];
     render();
@@ -318,6 +388,7 @@ async function refreshNodes() {
     try {
         NODES = (await questionsApi.listNodes(ROOM_ID)) || [];
         fillNodeSelects();
+        fillNodeFilter();
     } catch (_) { /* sin nodos: los selects muestran el placeholder */ }
 }
 
