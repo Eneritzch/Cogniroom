@@ -10,9 +10,9 @@ if (!tokens.access) {
 
 function profileLabel(p) {
     return ({
-        overconfident: 'Sobreconfiado',
-        underconfident: 'Subconfiado',
-        calibrated: 'Calibrado',
+        overconfident: 'Confía de más',
+        underconfident: 'Confía de menos',
+        calibrated: 'Confianza justa',
     })[p] || '—';
 }
 
@@ -100,7 +100,7 @@ function bindPersonalForm() {
         $save.disabled = !dirty;
         $hint.textContent = dirty
             ? 'Hay cambios sin guardar.'
-            : 'Editá un campo para activar guardar.';
+            : 'Edite un campo para activar guardar.';
     }
 
     fields.forEach((id) => {

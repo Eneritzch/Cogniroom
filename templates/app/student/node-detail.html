@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Detalle cognitivo de un nodo de conocimiento del estudiante.">
-    <title>Detalle de nodo · CogniRoom</title>
+    <meta name="description" content="Detalle de un tema de conocimiento del estudiante.">
+    <title>Detalle de tema · CogniRoom</title>
     {% include 'app/partials/_styles.html' %}
     <link rel="stylesheet" href="{% static 'css/app/shared/dashboard.css' %}?v={% now "U" %}">
     <link rel="stylesheet" href="{% static 'css/app/teacher/room.css' %}?v={% now "U" %}">
@@ -64,7 +64,7 @@
             <p class="node-insight__text" id="node-insight-text"></p>
         </aside>
 
-        <section class="node-kpis" aria-label="Tu dominio y tu confianza en este tema">
+        <section class="node-kpis" aria-label="Lo que sabe y lo que cree saber en este tema">
             <article class="node-kpi node-kpi--ring">
                 <div class="calibration-ring" data-profile="calibrated" id="node-ring" style="width:140px;height:140px;">
                     <svg class="calibration-ring__svg" width="140" height="140" aria-hidden="true">
@@ -73,29 +73,29 @@
                     </svg>
                     <div class="calibration-ring__center">
                         <span class="calibration-ring__value num" id="node-ring-value" style="font-size:32px;">—</span>
-                        <span class="calibration-ring__label eyebrow">calibración</span>
+                        <span class="calibration-ring__label eyebrow">Autoconocimiento</span>
                     </div>
                 </div>
                 <div class="node-kpi__ringside">
-                    <span class="eyebrow">Qué tan bien te conocés</span>
+                    <span class="eyebrow">Qué tan bien se conoce</span>
                     <span class="node-kpi__sub" id="node-ring-sub">—</span>
                 </div>
             </article>
 
             <article class="node-kpi">
-                <span class="node-kpi__k eyebrow">Lo que realmente sabés</span>
+                <span class="node-kpi__k eyebrow">Lo que realmente sabe</span>
                 <span class="node-kpi__v num" id="node-mastery">—</span>
-                <span class="node-kpi__sub" id="node-mastery-sub">tu dominio del tema</span>
+                <span class="node-kpi__sub" id="node-mastery-sub">lo que sabe del tema</span>
             </article>
 
             <article class="node-kpi">
-                <span class="node-kpi__k eyebrow">Lo que creés saber</span>
+                <span class="node-kpi__k eyebrow">Lo que cree saber</span>
                 <span class="node-kpi__v num" id="node-confidence">—</span>
                 <span class="node-kpi__sub">tu autoevaluación</span>
             </article>
 
             <article class="node-kpi">
-                <span class="node-kpi__k eyebrow">Tu calibración</span>
+                <span class="node-kpi__k eyebrow">Diferencia</span>
                 <span class="node-kpi__v num" id="node-gap">—</span>
                 <span class="node-kpi__sub" id="node-gap-sub">—</span>
             </article>
@@ -107,39 +107,39 @@
             </article>
         </section>
 
-        <section class="node-row" aria-label="Cómo medimos tu dominio">
+        <section class="node-row" aria-label="Cómo medimos lo que sabe">
             <article class="node-card node-card--bkt">
                 <header class="node-card__head">
-                    <h2 class="node-card__title">Cómo medimos tu dominio</h2>
+                    <h2 class="node-card__title">Cómo medimos lo que sabe</h2>
                     <span class="node-card__hint">el modelo detrás de tu %</span>
                 </header>
-                <p class="bkt-intro">El porcentaje de dominio no se calcula contando aciertos: un modelo lo estima considerando la probabilidad de acertar por azar y de fallar por descuido. Estos son sus valores.</p>
+                <p class="bkt-intro">El porcentaje no se calcula contando aciertos: un modelo lo estima considerando la probabilidad de acertar por azar y de fallar por descuido. Estos son sus valores.</p>
                 <ul class="bkt-list">
                     <li class="bkt-row">
                         <div class="bkt-row__k">
-                            <span class="bkt-row__label">Probabilidad de que ya domines el tema</span>
-                            <span class="bkt-row__expl"><code class="bkt-row__code">p(mastery)</code> probabilidad actual de dominio</span>
+                            <span class="bkt-row__label">Probabilidad de que ya domine el tema</span>
+                            <span class="bkt-row__expl">probabilidad actual de que lo domine</span>
                         </div>
                         <span class="bkt-row__v num" id="bkt-mastery">—</span>
                     </li>
                     <li class="bkt-row">
                         <div class="bkt-row__k">
                             <span class="bkt-row__label">Aprendizaje estimado por intento</span>
-                            <span class="bkt-row__expl"><code class="bkt-row__code">p(transit)</code> incremento de dominio por intento</span>
+                            <span class="bkt-row__expl">cuánto sabe más por cada intento</span>
                         </div>
                         <span class="bkt-row__v num" id="bkt-transit">—</span>
                     </li>
                     <li class="bkt-row">
                         <div class="bkt-row__k">
                             <span class="bkt-row__label">Probabilidad de acertar por azar</span>
-                            <span class="bkt-row__expl"><code class="bkt-row__code">p(guess)</code> acierto sin dominar el tema</span>
+                            <span class="bkt-row__expl">acertar sin dominar el tema</span>
                         </div>
                         <span class="bkt-row__v num" id="bkt-guess">—</span>
                     </li>
                     <li class="bkt-row">
                         <div class="bkt-row__k">
                             <span class="bkt-row__label">Probabilidad de fallar por descuido</span>
-                            <span class="bkt-row__expl"><code class="bkt-row__code">p(slip)</code> fallo aun dominando el tema</span>
+                            <span class="bkt-row__expl">fallar aun dominando el tema</span>
                         </div>
                         <span class="bkt-row__v num" id="bkt-slip">—</span>
                     </li>

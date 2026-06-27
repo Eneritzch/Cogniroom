@@ -18,9 +18,9 @@ function escapeHTML(s) {
 
 function profileLabel(p) {
     return ({
-        overconfident: 'Sobreconfiado',
-        underconfident: 'Subconfiado',
-        calibrated: 'Calibrado',
+        overconfident: 'Confía de más',
+        underconfident: 'Confía de menos',
+        calibrated: 'Confianza justa',
     })[p] || '—';
 }
 
@@ -34,9 +34,9 @@ const PROBLEM_LABEL = {
 function problemLabel(p) { return PROBLEM_LABEL[p] || ''; }
 
 const DIAG_TITLES = {
-    overconfident: 'Brecha de sobreconfianza detectada',
-    underconfident: 'Subestimación del propio dominio',
-    calibrated: 'Calibración alineada',
+    overconfident: 'Cree saber más de lo que realmente sabe',
+    underconfident: 'Sabe más de lo que cree saber',
+    calibrated: 'Lo que cree saber y lo que sabe coinciden',
 };
 
 
@@ -182,7 +182,7 @@ function render() {
         $list.hidden = true;
         $empty.hidden = false;
         $empty.querySelector('.diagnoses-empty__title').textContent = 'Sin resultados.';
-        $empty.querySelector('.diagnoses-empty__body').textContent = 'Probá quitando algún filtro o seleccionando otro nivel de riesgo.';
+        $empty.querySelector('.diagnoses-empty__body').textContent = 'Prueba quitando algún filtro o seleccionando otro nivel de riesgo.';
         const $cta = $empty.querySelector('.diagnoses-empty__cta');
         if ($cta) $cta.hidden = true;
         return;

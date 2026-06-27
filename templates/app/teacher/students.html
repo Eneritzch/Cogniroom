@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Lista de estudiantes con perfil cognitivo de la sala activa.">
+    <meta name="description" content="Lista de estudiantes con su perfil de la sala activa.">
     <title>Estudiantes · CogniRoom</title>
     {% include 'app/partials/_styles.html' %}
     <link rel="stylesheet" href="{% static 'css/app/shared/dashboard.css' %}?v={% now "U" %}">
@@ -54,15 +54,15 @@
                         <button type="button" class="students-chip" data-profile-filter="all" aria-pressed="true">Todos</button>
                         <button type="button" class="students-chip" data-profile-filter="overconfident" aria-pressed="false">
                             <span class="students-chip__dot" data-profile="overconfident"></span>
-                            Sobreconfiados
+                            Confían de más
                         </button>
                         <button type="button" class="students-chip" data-profile-filter="calibrated" aria-pressed="false">
                             <span class="students-chip__dot" data-profile="calibrated"></span>
-                            Calibrados
+                            Confianza justa
                         </button>
                         <button type="button" class="students-chip" data-profile-filter="underconfident" aria-pressed="false">
                             <span class="students-chip__dot" data-profile="underconfident"></span>
-                            Subconfiados
+                            Confían de menos
                         </button>
                     </div>
                 </div>

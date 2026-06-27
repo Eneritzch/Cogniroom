@@ -4,9 +4,21 @@ from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-this-in-production')
-DEBUG = config('DEBUG', default=True, cast=bool)
-ALLOWED_HOSTS = [h.strip() for h in config('ALLOWED_HOSTS', default='*').split(',') if h.strip()]
+DEBUG = config('DEBUG', default=False, cast=bool)
+
+# En producción (DEBUG=False) no hay default: si falta SECRET_KEY el arranque
+# falla en vez de firmar con una clave pública conocida.
+SECRET_KEY = (
+    config('SECRET_KEY', default='django-insecure-dev-only-key')
+    if DEBUG else config('SECRET_KEY')
+)
+
+# Sin comodín: en producción exige hosts explícitos; en dev cae a localhost.
+ALLOWED_HOSTS = [
+    h.strip()
+    for h in config('ALLOWED_HOSTS', default='localhost,127.0.0.1' if DEBUG else '').split(',')
+    if h.strip()
+]
 
 ANTHROPIC_API_KEY = config('ANTHROPIC_API_KEY', default='')
 

@@ -18,9 +18,9 @@ function escapeHTML(s) {
 
 function profileLabel(p) {
     return ({
-        overconfident: 'Sobreconfiado',
-        underconfident: 'Subconfiado',
-        calibrated: 'Calibrado',
+        overconfident: 'Confía de más',
+        underconfident: 'Confía de menos',
+        calibrated: 'Confianza justa',
     })[p] || '—';
 }
 
@@ -54,7 +54,7 @@ function cellColorBold(v) {
 
 
 function profileShort(p) {
-    return ({ calibrated: 'Cal.', overconfident: 'Sobre.', underconfident: 'Sub.' })[p] || '—';
+    return ({ calibrated: 'Confianza justa', overconfident: 'Confía de más', underconfident: 'Confía de menos' })[p] || '—';
 }
 
 
@@ -127,14 +127,14 @@ function renderInsights(data) {
             <span class="insight-card__k">Tema más débil</span>
             <strong class="insight-card__v">${escapeHTML(nodeName(weakest.node))}</strong>
             <span class="insight-card__sub">
-                <span class="num">${Math.round(weakest.avg * 100)}%</span> de dominio promedio
+                el grupo domina <span class="num">${Math.round(weakest.avg * 100)}%</span> en promedio
             </span>
         </article>
         <article class="insight-card insight-card--strong">
             <span class="insight-card__k">Tema más fuerte</span>
             <strong class="insight-card__v">${escapeHTML(nodeName(strongest.node))}</strong>
             <span class="insight-card__sub">
-                <span class="num">${Math.round(strongest.avg * 100)}%</span> de dominio promedio
+                el grupo domina <span class="num">${Math.round(strongest.avg * 100)}%</span> en promedio
             </span>
         </article>
         <article class="insight-card insight-card--risk">

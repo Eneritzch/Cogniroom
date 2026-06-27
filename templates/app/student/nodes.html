@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Tu mapa de conocimiento: lo que creés saber frente a lo que realmente dominás, tema por tema.">
+    <meta name="description" content="Tu mapa de conocimiento: lo que cree saber frente a lo que realmente domina, tema por tema.">
     <title>Mi conocimiento · CogniRoom</title>
     {% include 'app/partials/_styles.html' %}
     <link rel="stylesheet" href="{% static 'css/app/shared/dashboard.css' %}?v={% now "U" %}">
@@ -21,7 +21,7 @@
         <div class="room-head">
             <h1 class="room-title">Tu mapa de conocimiento</h1>
             <div class="room-meta">
-                <span>Comparación, tema por tema, entre lo que <strong>crees saber</strong> y lo que <strong>realmente dominas</strong>, para identificar dónde reforzar primero.</span>
+                <span>Comparación, tema por tema, entre lo que <strong>cree saber</strong> y lo que <strong>realmente sabe</strong>, para identificar dónde reforzar primero.</span>
             </div>
         </div>
 
@@ -38,12 +38,12 @@
 
         <section class="nodes-hero" aria-label="Resumen de tu conocimiento">
             <div class="nodes-hero__metric">
-                <span class="nodes-hero__k eyebrow">Qué tan bien te conocés</span>
+                <span class="nodes-hero__k eyebrow">Qué tan bien se conoce</span>
                 <span class="nodes-hero__v num" id="nodes-hero-icc">—</span>
                 <span class="nodes-hero__hint">coincidencia entre tu autoevaluación y la realidad</span>
             </div>
             <div class="nodes-hero__metric">
-                <span class="nodes-hero__k eyebrow">Cuánto dominás</span>
+                <span class="nodes-hero__k eyebrow">Lo que realmente sabe</span>
                 <span class="nodes-hero__v num" id="nodes-hero-mastery">—</span>
                 <span class="nodes-hero__hint">promedio de todos tus temas</span>
             </div>
@@ -53,7 +53,7 @@
                 <span class="nodes-hero__hint">temas en curso</span>
             </div>
             <div class="nodes-hero__metric nodes-hero__metric--profile">
-                <span class="nodes-hero__k eyebrow">Cómo te evaluás</span>
+                <span class="nodes-hero__k eyebrow">Cómo se evalúa</span>
                 <span class="pill" id="nodes-hero-pill" data-profile="calibrated">—</span>
                 <span class="nodes-hero__hint" id="nodes-hero-profile-hint"></span>
             </div>
@@ -86,7 +86,7 @@
                 <span class="nodes-legend__item"><span class="nodes-legend__dot" style="background:var(--amber);"></span> En camino</span>
                 <span class="nodes-legend__item"><span class="nodes-legend__dot" style="background:var(--sage);"></span> Bien encaminado</span>
                 <span class="nodes-legend__item"><span class="nodes-legend__dot" style="background:var(--moss);"></span> Dominado</span>
-                <span class="nodes-legend__item nodes-legend__item--aura"><span class="nodes-legend__aura" aria-hidden="true"></span> Halo giratorio: sobreconfianza</span>
+                <span class="nodes-legend__item nodes-legend__item--aura"><span class="nodes-legend__aura" aria-hidden="true"></span> Halo giratorio: confía de más</span>
             </div>
         </section>
 
@@ -95,17 +95,17 @@
                 <div>
                     <span class="eyebrow">Tus temas</span>
                     <h2 class="dashboard-section__title">
-                        <span id="nodes-count">—</span> temas · empezá por los de arriba
+                        <span id="nodes-count">—</span> temas · empiece por los de arriba
                     </h2>
                 </div>
                 <div class="student-nodes__legend">
                     <span class="student-nodes__legend-item">
                         <span class="student-nodes__legend-swatch student-nodes__legend-swatch--declared"></span>
-                        Lo que creés saber
+                        Lo que cree saber
                     </span>
                     <span class="student-nodes__legend-item">
                         <span class="student-nodes__legend-swatch student-nodes__legend-swatch--mastery"></span>
-                        Lo que realmente sabés
+                        Lo que realmente sabe
                     </span>
                 </div>
             </div>

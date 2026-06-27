@@ -1,3 +1,4 @@
+from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -29,6 +30,11 @@ class MarkNotificationsReadView(APIView):
         ids = request.data.get('ids')
         qs = Notification.objects.filter(recipient=request.user, is_read=False)
         if ids:
+            if not isinstance(ids, list) or not all(isinstance(i, int) for i in ids):
+                return Response(
+                    {'detail': 'El campo "ids" debe ser una lista de enteros.'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             qs = qs.filter(id__in=ids)
         qs.update(is_read=True)
         unread = Notification.objects.filter(

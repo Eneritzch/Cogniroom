@@ -35,7 +35,7 @@ function escapeHTML(s) {
 }
 
 function profileLabel(p) {
-    return ({ calibrated: 'Cal.', overconfident: 'Sobre.', underconfident: 'Sub.' })[p] || '—';
+    return ({ calibrated: 'Confianza justa', overconfident: 'Confía de más', underconfident: 'Confía de menos' })[p] || '—';
 }
 
 function fullName(user) {
@@ -127,7 +127,7 @@ function renderMetricsStats(heatmap, blindSpots) {
     const blind = (blindSpots || []).filter((b) => b.alert).length;
     document.getElementById('stat-blind-nodes').textContent = String(blind);
     document.getElementById('stat-blind-detail').textContent =
-        `${blind} de ${(blindSpots || []).length} nodos`;
+        `${blind} de ${(blindSpots || []).length} temas`;
 
     document.getElementById('stat-evaluated').textContent = String(roster.length);
     document.getElementById('stat-evaluated-detail').textContent =
@@ -162,7 +162,7 @@ function renderStudents(members) {
             <div class="room-list__aside">
                 ${section ? `<span class="room-list__tag">${escapeHTML(section.code)}</span>` : ''}
                 <span class="pill" data-profile="${r.profile}">${profileLabel(r.profile)}</span>
-                <span class="room-list__metric num" title="Brecha metacognitiva">${sign}${Math.round(gap * 100)}</span>
+                <span class="room-list__metric num" title="Diferencia entre lo que cree saber y lo que realmente sabe">${sign}${Math.round(gap * 100)}</span>
             </div>
         </li>`;
     }).join('');

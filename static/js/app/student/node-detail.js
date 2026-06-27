@@ -18,23 +18,23 @@ function escapeHTML(s) {
 
 function profileLabel(p) {
     return ({
-        overconfident: 'Sobreconfiado',
-        underconfident: 'Subconfiado',
-        calibrated: 'Calibrado',
+        overconfident: 'Confía de más',
+        underconfident: 'Confía de menos',
+        calibrated: 'Confianza justa',
     })[p] || '—';
 }
 
 function gapSubText(gapPts) {
     const a = Math.abs(gapPts);
-    if (gapPts < -15) return `tu confianza está ${a} pts por debajo de tu dominio`;
-    if (gapPts > 15)  return `tu confianza supera tu dominio en ${a} pts`;
-    return 'confianza y dominio bien alineados';
+    if (gapPts < -15) return `lo que cree saber está ${a} pts por debajo de lo que sabe`;
+    if (gapPts > 15)  return `lo que cree saber supera lo que sabe en ${a} pts`;
+    return 'lo que cree saber y lo que sabe están bien alineados';
 }
 
 // Momentos reveladores: alta confianza con error, o baja confianza con acierto.
 function answerFlag(declared, is_correct) {
-    if (!is_correct && declared >= 0.65) return { tone: 'rust', text: 'Sobreconfianza' };
-    if (is_correct && declared <= 0.45)  return { tone: 'stone', text: 'Subestimación' };
+    if (!is_correct && declared >= 0.65) return { tone: 'rust', text: 'Confió de más' };
+    if (is_correct && declared <= 0.45)  return { tone: 'stone', text: 'Se subestimó' };
     return null;
 }
 
@@ -137,7 +137,7 @@ function paintKpis(n) {
     $sub.textContent = `${profileLabel(n.profile)} · ${n.attempts} pregunta${n.attempts === 1 ? '' : 's'}`;
 
     document.getElementById('node-mastery-sub').textContent = mast >= 70
-        ? 'dominio sólido' : mast >= 50 ? 'en construcción' : 'requiere práctica';
+        ? 'nivel sólido' : mast >= 50 ? 'en construcción' : 'requiere práctica';
 }
 
 
@@ -153,13 +153,13 @@ function paintInsight(n) {
     let tone;
     if (n.profile === 'underconfident') {
         tone = 'stone';
-        msg = `En este tema tu dominio real (<strong>${mast}%</strong>) supera tu confianza declarada (<strong>${conf}%</strong>). Conviene reforzar la confianza y continuar practicando para consolidarlo.`;
+        msg = `En este tema lo que realmente sabe (<strong>${mast}%</strong>) supera lo que cree saber (<strong>${conf}%</strong>). Conviene reforzar la confianza y continuar practicando para consolidarlo.`;
     } else if (n.profile === 'overconfident') {
         tone = 'amber';
-        msg = `En este tema tu confianza declarada (<strong>${conf}%</strong>) supera tu dominio real (<strong>${mast}%</strong>). Conviene repasarlo antes de avanzar.`;
+        msg = `En este tema lo que cree saber (<strong>${conf}%</strong>) supera lo que realmente sabe (<strong>${mast}%</strong>). Conviene repasarlo antes de avanzar.`;
     } else {
         tone = 'moss';
-        msg = `En este tema tu autoevaluación coincide con tu dominio real (declaraste <strong>${conf}%</strong>, dominas <strong>${mast}%</strong>). Un nivel de ajuste recomendable.`;
+        msg = `En este tema tu autoevaluación coincide con lo que realmente sabe (cree saber <strong>${conf}%</strong>, domina <strong>${mast}%</strong>). Un nivel de ajuste recomendable.`;
     }
 
     $box.dataset.tone = tone;
@@ -203,7 +203,7 @@ function paintResponses(n) {
     if (list.length === 0) {
         $list.innerHTML = `<li class="node-response" style="cursor:default; opacity:0.6;">
             <div class="node-response__body">
-                <p class="node-response__statement">Aún no respondiste preguntas de este nodo.</p>
+                <p class="node-response__statement">Aún no ha respondido preguntas de este tema.</p>
             </div>
         </li>`;
         return;
@@ -231,10 +231,10 @@ function paintResponses(n) {
                     <span>${fmtDateLong(r.answered_at)}</span>
                     <span>·</span>
                     <span class="node-response__conf" data-tone="${confTone(r.confidence_declared, r.is_correct)}">
-                        Confianza ${confPct}%
+                        Cree saber ${confPct}%
                     </span>
                     <span>·</span>
-                    <span>Dominio ${masteryPct}</span>
+                    <span>Sabe ${masteryPct}</span>
                     <span>·</span>
                     <span>Sesión #${r.id_session}</span>
                 </div>
@@ -251,12 +251,12 @@ function paintResponses(n) {
 
 function paintNotFound() {
     document.getElementById('node-topic').textContent = '—';
-    document.getElementById('node-name').textContent = 'Nodo no encontrado';
+    document.getElementById('node-name').textContent = 'Tema no encontrado';
     document.getElementById('node-room-name').textContent = '—';
     document.getElementById('node-updated').textContent = 'Sin datos';
     document.getElementById('node-responses').innerHTML = `<li class="node-response" style="cursor:default;">
         <div class="node-response__body">
-            <p class="node-response__statement">No tenemos datos para este nodo todavía. Volvé al dashboard y elegí otro.</p>
+            <p class="node-response__statement">No tenemos datos para este tema todavía. Vuelva al dashboard y elija otro.</p>
         </div>
     </li>`;
 }
@@ -280,7 +280,7 @@ async function init() {
             paintNotFound();
             return;
         }
-        toast('No se pudo cargar el nodo.', { kind: 'error' });
+        toast('No se pudo cargar el tema.', { kind: 'error' });
         return;
     }
 

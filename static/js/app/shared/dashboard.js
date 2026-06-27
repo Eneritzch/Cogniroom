@@ -29,10 +29,10 @@ function escapeHTML(s) {
 
 function profileLabel(profile) {
     return ({
-        calibrated: 'Calibrado',
-        overconfident: 'Sobreconfiado',
-        underconfident: 'Subconfiado',
-    })[profile] || 'Calibrado';
+        calibrated: 'Confianza justa',
+        overconfident: 'Confía de más',
+        underconfident: 'Confía de menos',
+    })[profile] || 'Confianza justa';
 }
 
 function profileFromGap(gap) {
@@ -95,7 +95,7 @@ function renderStudentNodeCard(node) {
           </div>
           <div class="node-card__mastery">
             <span class="node-card__mastery-value num">${mastery}<span class="node-card__mastery-value-unit">%</span></span>
-            <span class="node-card__mastery-label eyebrow">mastery</span>
+            <span class="node-card__mastery-label eyebrow">Lo que realmente sabe</span>
           </div>
         </header>
         <div class="dual-bar">
@@ -117,8 +117,8 @@ function renderStudentNodeCard(node) {
         </div>
         <footer class="node-card__meta">
           <span><span class="num">${attempts}</span> intentos</span>
-          <span>BKT <span class="num">${fmt(bkt)}</span></span>
-          <span>gap <span class="num node-card__gap" data-tone="${tone}">${gap >= 0 ? '+' : ''}${gap}</span></span>
+          <span>Lo que realmente sabe <span class="num">${fmt(bkt)}</span></span>
+          <span>Diferencia <span class="num node-card__gap" data-tone="${tone}">${gap >= 0 ? '+' : ''}${gap}</span></span>
         </footer>
       </article>
     `;
@@ -129,7 +129,7 @@ function renderStudentNodes(nodes) {
     const $grid = document.getElementById('student-nodes-grid');
     const $count = document.getElementById('nodes-count');
     if (!nodes || nodes.length === 0) {
-        $grid.innerHTML = `<p class="empty" style="flex:1;">Aún no hay nodos rastreados. Inicia una sesión para empezar a registrar tu dominio.</p>`;
+        $grid.innerHTML = `<p class="empty" style="flex:1;">Aún no hay temas registrados. Inicia una sesión para empezar a registrar lo que realmente sabe.</p>`;
         $count.textContent = '0';
         return;
     }
@@ -175,7 +175,7 @@ function buildGraphNodes(nodes) {
         const y = totalRows > 1 ? ((row + 0.5) / totalRows) * 56 + 7 : 35;
         return {
             id_node: n.node_id,
-            name: n.name || n.node_name || 'Nodo',
+            name: n.name || n.node_name || 'Tema',
             description: n.description || '',
             p_mastery: n.p_mastery ?? 0,
             avg_confidence: n.avg_confidence ?? (n.p_mastery ?? 0),
@@ -300,7 +300,7 @@ function renderKnowledgeGraph(graphNodes) {
 
     const updateReadout = () => {
         if (!hover) {
-            $readout.innerHTML = '<span class="knowledge-graph__readout-empty">// hover sobre un nodo</span>';
+            $readout.innerHTML = '<span class="knowledge-graph__readout-empty">// pasa el cursor sobre un tema</span>';
             return;
         }
         const n = byId[hover];
@@ -365,7 +365,7 @@ function renderBlindSpots(items) {
     const $list = document.getElementById('teacher-blind-spots');
     if (!$list) return;
     if (!items || items.length === 0) {
-        $list.innerHTML = `<p class="empty" style="padding:var(--s-3);">Sin puntos ciegos detectados todavía.</p>`;
+        $list.innerHTML = `<p class="empty" style="padding:var(--s-3);">Sin puntos ciegos del grupo detectados todavía.</p>`;
         return;
     }
     $list.innerHTML = items.map((b) => {
@@ -384,7 +384,7 @@ function renderBlindSpots(items) {
             </div>
             <div class="blind-spots__meta">
               <span><span class="num">${b.total_student ?? 0}</span> estudiantes afectados</span>
-              <button class="blind-spots__action" type="button">Ver nodo →</button>
+              <button class="blind-spots__action" type="button">Ver tema →</button>
             </div>
           </div>
         `;
@@ -447,7 +447,7 @@ function renderStudentRooms(items) {
     const $count = document.getElementById('student-rooms-count');
 
     if (!items || items.length === 0) {
-        $list.innerHTML = `<p class="empty">No estás inscrito en ninguna sala todavía. Pedile al docente el código de acceso.</p>`;
+        $list.innerHTML = `<p class="empty">No estás inscrito en ninguna sala todavía. Pídale al docente el código de acceso.</p>`;
         $count.textContent = '0 salas';
         return;
     }
@@ -480,9 +480,9 @@ function renderStudentRooms(items) {
 
 
 const DIAG_TITLES = {
-    overconfident: 'Brecha de sobreconfianza detectada',
-    underconfident: 'Subestimación del propio dominio',
-    calibrated: 'Calibración alineada',
+    overconfident: 'Confía de más: cree saber más de lo que realmente sabe',
+    underconfident: 'Confía de menos: sabe más de lo que cree',
+    calibrated: 'Confianza justa: lo que cree y lo que sabe coinciden',
 };
 
 

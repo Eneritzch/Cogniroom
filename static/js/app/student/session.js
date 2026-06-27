@@ -102,9 +102,9 @@ function renderQuestion(q) {
     // progreso asintótico (el total no se conoce de antemano)
     const pct = (1 - 1 / (currentIndex + 2)) * 100;
     $progress.style.width = `${pct}%`;
-    const nodeName = q.node_name || q.node?.name || 'Sin nodo';
+    const nodeName = q.node_name || q.node?.name || 'Sin tema';
     $questionEyebrow.textContent = `Pregunta ${currentIndex + 1} · ${nodeName}`
-        + (isMultiple ? ' · marcá todas las correctas' : '');
+        + (isMultiple ? ' · marque todas las correctas' : '');
     $questionText.textContent = q.statement || '—';
 
     const options = q.options || [];
@@ -178,7 +178,7 @@ function renderFeedback(result) {
         : '';
     document.getElementById('feedback-explanation').textContent = result.explanation || fbString
         || pendingMsg
-        || `Tu mastery actual para este nodo es ${(mastery / 100).toFixed(2)}.`;
+        || `Lo que sabes ahora de este tema es ${(mastery / 100).toFixed(2)}.`;
 
     const $declFill = document.getElementById('feedback-decl-fill');
     const $mastFill = document.getElementById('feedback-mast-fill');

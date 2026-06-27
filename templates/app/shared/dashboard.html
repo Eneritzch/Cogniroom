@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Panel CogniRoom — calibración cognitiva, nodos y diagnóstico IA.">
+    <meta name="description" content="Panel CogniRoom — qué tan bien se conoce cada estudiante, temas y diagnóstico IA.">
     <title>CogniRoom · Dashboard</title>
     {% include 'app/partials/_styles.html' %}
     <link rel="stylesheet" href="{% static 'css/app/shared/dashboard.css' %}?v={% now "U" %}">
@@ -17,7 +17,7 @@
         {% include 'app/partials/_app-topbar.html' %}
 
         <section class="dashboard-view" data-view="student" hidden aria-labelledby="student-heading">
-            <span class="dashboard-eyebrow eyebrow">Mi perfil cognitivo</span>
+            <span class="dashboard-eyebrow eyebrow">Mi perfil</span>
             <h1 id="student-heading" class="dashboard-title display">
                 <span id="student-greeting"></span>, así te ves esta semana.
             </h1>
@@ -32,27 +32,27 @@
                         </svg>
                         <div class="calibration-ring__center">
                             <span class="calibration-ring__value" id="student-ring-value" style="font-size:57.2px;">—</span>
-                            <span class="calibration-ring__label eyebrow">ICC actual</span>
+                            <span class="calibration-ring__label eyebrow">Autoconocimiento</span>
                             <span class="calibration-ring__sublabel" id="student-ring-sub">—</span>
                         </div>
                     </div>
                     <span class="pill" data-profile="overconfident" id="student-pill">—</span>
                     <p class="student-hero__note" id="student-note">
-                        Tu confianza supera tu mastery en la mayoría de los nodos.
+                        Lo que cree saber supera lo que realmente sabe en la mayoría de los temas.
                         No es un problema de estudio — es un problema de autoconocimiento.
                     </p>
                     <div class="student-hero__mini">
                         <div class="student-hero__mini-cell">
                             <div class="student-hero__mini-k" data-tone="amber" id="student-mini-icc">—</div>
-                            <div class="student-hero__mini-v">ICC</div>
+                            <div class="student-hero__mini-v">Autoconocimiento</div>
                         </div>
                         <div class="student-hero__mini-cell">
                             <div class="student-hero__mini-k" id="student-mini-mastery">—</div>
-                            <div class="student-hero__mini-v">Mastery</div>
+                            <div class="student-hero__mini-v">Domina el tema</div>
                         </div>
                         <div class="student-hero__mini-cell">
                             <div class="student-hero__mini-k" data-tone="amber" id="student-mini-gap">—</div>
-                            <div class="student-hero__mini-v">Gap pts</div>
+                            <div class="student-hero__mini-v">Diferencia (pts)</div>
                         </div>
                     </div>
                 </div>
@@ -67,7 +67,7 @@
                         </header>
                         <h3 class="ai-diagnosis__title" id="student-diag-title">«Aún no hay diagnóstico disponible.»</h3>
                         <p class="ai-diagnosis__body" id="student-diag-body">
-                            Responde algunas preguntas en una sesión para que el tutor analice tu calibración.
+                            Responde algunas preguntas en una sesión para que el tutor analice qué tan bien te conoces.
                         </p>
                         <div class="ai-diagnosis__meta" id="student-diag-meta" hidden>
                             <span class="pill" data-risk="" id="student-diag-risk">—</span>
@@ -100,20 +100,20 @@
                             <div class="hero-focus__metrics">
                                 <div class="hero-focus__metric">
                                     <span class="hero-focus__metric-k num" id="hero-focus-mastery">—</span>
-                                    <span class="hero-focus__metric-v">Mastery</span>
+                                    <span class="hero-focus__metric-v">Lo que realmente sabe</span>
                                 </div>
                                 <div class="hero-focus__metric">
                                     <span class="hero-focus__metric-k num" id="hero-focus-conf">—</span>
-                                    <span class="hero-focus__metric-v">Confianza</span>
+                                    <span class="hero-focus__metric-v">Lo que cree saber</span>
                                 </div>
                                 <div class="hero-focus__metric">
                                     <span class="hero-focus__metric-k num" data-tone="amber" id="hero-focus-gap">—</span>
-                                    <span class="hero-focus__metric-v">Gap pts</span>
+                                    <span class="hero-focus__metric-v">Diferencia (pts)</span>
                                 </div>
                             </div>
                         </div>
                         <a href="#" class="hero-focus__cta" id="hero-focus-cta">
-                            Ir al nodo
+                            Ir al tema
                             <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <line x1="5" y1="12" x2="19" y2="12"></line>
                                 <polyline points="12 5 19 12 12 19"></polyline>
@@ -144,7 +144,7 @@
                     <polyline points="16 17 22 17 22 11"></polyline>
                 </svg>
                 <div>
-                    <h3 class="student-underconfidence__title" id="student-under-title">Subestimás un nodo.</h3>
+                    <h3 class="student-underconfidence__title" id="student-under-title">Confía de menos en un tema.</h3>
                     <p class="student-underconfidence__body" id="student-under-body"></p>
                 </div>
             </aside>
@@ -157,7 +157,7 @@
                     <span class="eyebrow">Panel docente</span>
                     <h1 id="teacher-heading" class="d-hero__title display">Dashboard</h1>
                     <p class="d-hero__lead">
-                        Monitorea la calibración cognitiva de tu cohorte y detecta dónde
+                        Vea qué tan bien se conoce cada estudiante y detecte dónde
                         intervenir antes de la próxima evaluación.
                     </p>
                 </div>
@@ -169,7 +169,7 @@
                         <span id="kpi-rooms-label" class="d-kpi__k">Salas activas</span>
                     </header>
                     <div class="d-kpi__v num" id="rooms-value">—</div>
-                    <p class="d-kpi__hint" id="rooms-hint">Salas con is_active = true.</p>
+                    <p class="d-kpi__hint" id="rooms-hint">Salas que tiene abiertas en este momento.</p>
                 </article>
 
                 <article class="d-kpi" aria-labelledby="kpi-students-label">
@@ -177,7 +177,7 @@
                         <span id="kpi-students-label" class="d-kpi__k">Estudiantes inscritos</span>
                     </header>
                     <div class="d-kpi__v num" id="students-value">—</div>
-                    <p class="d-kpi__hint" id="students-hint">Sumatoria de room_membership.</p>
+                    <p class="d-kpi__hint" id="students-hint">Total de estudiantes inscritos en sus salas.</p>
                 </article>
 
                 <article class="d-kpi" aria-labelledby="kpi-answers-label">
@@ -185,7 +185,7 @@
                         <span id="kpi-answers-label" class="d-kpi__k">Respuestas registradas</span>
                     </header>
                     <div class="d-kpi__v num" id="answers-value">—</div>
-                    <p class="d-kpi__hint" id="answers-hint">Total acumulado de student_response.</p>
+                    <p class="d-kpi__hint" id="answers-hint">Respuestas que han enviado sus estudiantes.</p>
                 </article>
 
                 <article class="d-kpi" aria-labelledby="kpi-diags-label">
@@ -193,7 +193,7 @@
                         <span id="kpi-diags-label" class="d-kpi__k">Notas del tutor IA</span>
                     </header>
                     <div class="d-kpi__v num" id="diags-value">—</div>
-                    <p class="d-kpi__hint" id="diags-hint">Diagnósticos generados al detectar descalibración.</p>
+                    <p class="d-kpi__hint" id="diags-hint">Notas del tutor IA cuando un estudiante cree saber más (o menos) de lo que realmente sabe.</p>
                 </article>
             </section>
 
@@ -232,7 +232,7 @@
                     <header class="d-card__head">
                         <div>
                             <h3 id="donut-title" class="d-card__title">Salud del grupo</h3>
-                            <p class="d-card__sub">Distribución por perfil cognitivo</p>
+                            <p class="d-card__sub">Cómo se conoce el grupo</p>
                         </div>
                     </header>
                     <div class="d-donut">
@@ -244,23 +244,23 @@
                         </svg>
                         <div class="d-donut__center">
                             <div class="d-donut__pct num" id="donut-pct">—</div>
-                            <div class="d-donut__label">Calibrados</div>
+                            <div class="d-donut__label">Confianza justa</div>
                         </div>
                     </div>
                     <ul class="d-donut__legend">
                         <li>
                             <span class="d-donut__dot" data-tone="moss" aria-hidden="true"></span>
-                            <span class="d-donut__legend-label">Calibrados</span>
+                            <span class="d-donut__legend-label">Confianza justa</span>
                             <span class="d-donut__legend-val num" id="donut-cal">0</span>
                         </li>
                         <li>
                             <span class="d-donut__dot" data-tone="amber" aria-hidden="true"></span>
-                            <span class="d-donut__legend-label">Sobreconfiados</span>
+                            <span class="d-donut__legend-label">Confían de más</span>
                             <span class="d-donut__legend-val num" id="donut-over">0</span>
                         </li>
                         <li>
                             <span class="d-donut__dot" data-tone="stone" aria-hidden="true"></span>
-                            <span class="d-donut__legend-label">Subconfiados</span>
+                            <span class="d-donut__legend-label">Confían de menos</span>
                             <span class="d-donut__legend-val num" id="donut-und">0</span>
                         </li>
                     </ul>

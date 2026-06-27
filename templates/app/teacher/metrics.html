@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Mastery por nodo × estudiante de la sala activa.">
+    <meta name="description" content="Lo que cada estudiante realmente sabe por tema en la sala activa.">
     <title>Métricas · CogniRoom</title>
     {% include 'app/partials/_styles.html' %}
     <link rel="stylesheet" href="{% static 'css/app/shared/dashboard.css' %}?v={% now "U" %}">
@@ -24,7 +24,7 @@
             <div class="room-meta">
                 <span><span id="room-students">—</span> estudiantes</span>
                 <span class="room-meta__sep">·</span>
-                <span>Dominio por nodo de conocimiento</span>
+                <span>Lo que cada estudiante realmente sabe por tema</span>
             </div>
         </div>
 
@@ -55,15 +55,15 @@
                         <button type="button" class="metrics-chip" data-profile-filter="all" aria-pressed="true">Todos</button>
                         <button type="button" class="metrics-chip" data-profile-filter="overconfident" aria-pressed="false">
                             <span class="metrics-chip__dot" data-profile="overconfident"></span>
-                            Sobreconfiados
+                            Confían de más
                         </button>
                         <button type="button" class="metrics-chip" data-profile-filter="calibrated" aria-pressed="false">
                             <span class="metrics-chip__dot" data-profile="calibrated"></span>
-                            Calibrados
+                            Confianza justa
                         </button>
                         <button type="button" class="metrics-chip" data-profile-filter="underconfident" aria-pressed="false">
                             <span class="metrics-chip__dot" data-profile="underconfident"></span>
-                            Subconfiados
+                            Confían de menos
                         </button>
                     </div>
                 </div>

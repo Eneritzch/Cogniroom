@@ -160,4 +160,20 @@ class PDFDocumentDetailSerializer(serializers.ModelSerializer):
 
 
 class PDFUploadSerializer(serializers.Serializer):
+    MAX_BYTES = 10 * 1024 * 1024  # 10 MB
+
     file = serializers.FileField()
+
+    def validate_file(self, value):
+        if value.size > self.MAX_BYTES:
+            raise serializers.ValidationError(
+                'El PDF supera el tamaño máximo permitido (10 MB).'
+            )
+        if not (value.name or '').lower().endswith('.pdf'):
+            raise serializers.ValidationError('El archivo debe tener extensión .pdf.')
+        # Magic bytes: un .pdf renombrado o un binario arbitrario no pasa.
+        head = value.read(5)
+        value.seek(0)
+        if head[:5] != b'%PDF-':
+            raise serializers.ValidationError('El archivo no es un PDF válido.')
+        return value

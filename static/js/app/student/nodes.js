@@ -18,18 +18,18 @@ function escapeHTML(s) {
 
 function profileLabel(p) {
     return ({
-        calibrated: 'Calibrado',
-        overconfident: 'Sobreconfiado',
-        underconfident: 'Subconfiado',
-    })[p] || 'Calibrado';
+        calibrated: 'Confianza justa',
+        overconfident: 'Confía de más',
+        underconfident: 'Confía de menos',
+    })[p] || 'Confianza justa';
 }
 
 // Lectura humana de la brecha (cree − sabe), en puntos porcentuales. El umbral
 // 20 coincide con la definición de perfil del proyecto (gap > 0.2 = sobreconfiado).
 function nodeStatus(gapPct) {
-    if (gapPct > 20)  return { tone: 'amber', text: 'Sobreconfianza' };
-    if (gapPct < -20) return { tone: 'stone', text: 'Subestimación' };
-    return { tone: 'moss', text: 'Bien calibrado' };
+    if (gapPct > 20)  return { tone: 'amber', text: 'Confía de más' };
+    if (gapPct < -20) return { tone: 'stone', text: 'Confía de menos' };
+    return { tone: 'moss', text: 'Confianza justa' };
 }
 
 function masteryColor(m) {
@@ -58,7 +58,7 @@ function renderNodeCard(node) {
           </div>
           <div class="node-card__mastery">
             <span class="node-card__mastery-value num">${mastery}<span class="node-card__mastery-value-unit">%</span></span>
-            <span class="node-card__mastery-label eyebrow">lo sabés</span>
+            <span class="node-card__mastery-label eyebrow">domina el tema</span>
           </div>
         </header>
         <div class="dual-bar">
@@ -92,7 +92,7 @@ function renderNodes(nodes) {
     const $count = document.getElementById('nodes-count');
     if (!$grid) return;
     if (!nodes || nodes.length === 0) {
-        $grid.innerHTML = '<p class="empty" style="flex:1;">Aún no hay nodos rastreados. Iniciá una evaluación para empezar a registrar tu dominio.</p>';
+        $grid.innerHTML = '<p class="empty" style="flex:1;">Aún no hay temas seguidos. Inicie una evaluación para empezar a registrar lo que sabe.</p>';
         if ($count) $count.textContent = '0';
         return;
     }
@@ -123,7 +123,7 @@ function buildGraphNodes(nodes) {
         }
         return {
             id_node: node.node_id,
-            name: node.name || node.node_name || 'Nodo',
+            name: node.name || node.node_name || 'Tema',
             description: node.description || '',
             p_mastery: node.p_mastery ?? 0,
             avg_confidence: node.avg_confidence ?? (node.p_mastery ?? 0),
@@ -167,8 +167,8 @@ function renderKnowledgeGraph(graphNodes) {
         $readout.innerHTML = `
             <span class="knowledge-graph__readout-name">${escapeHTML(n.name)}</span>
             <div class="knowledge-graph__readout-nums">
-                <span>Sabés <b>${know}%</b></span>
-                <span>Creés saber <b>${think}%</b></span>
+                <span>Sabe <b>${know}%</b></span>
+                <span>Cree saber <b>${think}%</b></span>
             </div>
             <span class="knowledge-graph__readout-tag" data-tone="${st.tone}">${st.text}</span>
         `;
@@ -313,17 +313,17 @@ function renderInsight(profileKey, nodes) {
     }
 
     const base = {
-        overconfident: 'Tu confianza declarada suele superar tu dominio real. Reconocerlo es el primer paso para corregirlo.',
-        underconfident: 'Tu dominio real supera tu confianza declarada: tus bases son más sólidas de lo que indican tus respuestas.',
-        calibrated: 'Tu autoevaluación coincide con tu dominio real. Esa precisión favorece el aprendizaje.',
+        overconfident: 'Lo que cree saber suele superar lo que realmente sabe. Reconocerlo es el primer paso para corregirlo.',
+        underconfident: 'Lo que realmente sabe supera lo que cree saber: sus bases son más sólidas de lo que indican sus respuestas.',
+        calibrated: 'Tu autoevaluación coincide con lo que realmente sabe. Esa precisión favorece el aprendizaje.',
     }[profileKey] || '';
 
     const weakest = [...nodes].sort((a, b) => (a.p_mastery ?? 0) - (b.p_mastery ?? 0))[0];
     const wpct = Math.round((weakest.p_mastery ?? 0) * 100);
-    const wname = escapeHTML(weakest.name || weakest.node_name || 'el tema con menor dominio');
+    const wname = escapeHTML(weakest.name || weakest.node_name || 'el tema que menos domina');
 
     const action = wpct >= 80
-        ? ' Todos tus temas presentan un dominio sólido; conviene mantener el nivel.'
+        ? ' Todos tus temas presentan un nivel sólido; conviene mantenerlo.'
         : ` Conviene comenzar por <strong>${wname}</strong> (${wpct}%), el tema con mayor margen de mejora.`;
 
     $text.innerHTML = base + action;
@@ -345,8 +345,8 @@ function renderSummary(profile, nodes) {
         $pill.dataset.profile = profileKey;
     }
     const hints = {
-        overconfident: 'tu confianza supera tu dominio',
-        underconfident: 'tu dominio supera tu confianza',
+        overconfident: 'lo que cree saber supera lo que sabe',
+        underconfident: 'lo que sabe supera lo que cree saber',
         calibrated: 'tu autoevaluación es precisa',
     };
     set('nodes-hero-profile-hint', hints[profileKey] || '');
@@ -365,7 +365,7 @@ async function load() {
             location.replace('/app/');
             return;
         }
-        toast('No se pudieron cargar tus nodos.', { kind: 'error' });
+        toast('No se pudieron cargar tus temas.', { kind: 'error' });
         return;
     }
 

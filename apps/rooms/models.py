@@ -1,4 +1,4 @@
-import random
+import secrets
 import string
 
 from django.conf import settings
@@ -6,8 +6,9 @@ from django.db import models
 
 
 def _generate_access_code(length=8):
+    # secrets (no random): el código es el secreto de invitación a la sala.
     alphabet = string.ascii_uppercase + string.digits
-    return ''.join(random.choices(alphabet, k=length))
+    return ''.join(secrets.choice(alphabet) for _ in range(length))
 
 
 class Room(models.Model):

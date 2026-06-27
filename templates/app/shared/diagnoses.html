@@ -25,7 +25,7 @@
             <div class="room-meta">
                 <span><span id="diag-total">—</span> generados</span>
                 <span class="room-meta__sep">·</span>
-                <span>Cuando tu calibración se desvía, Claude prepara una nota personalizada</span>
+                <span>Cuando la diferencia entre lo que crees saber y lo que sabes crece, Claude prepara una nota personalizada</span>
             </div>
         </div>
 
@@ -46,7 +46,7 @@
                 <span class="diagnoses-stat__sub">monitoreo</span>
             </article>
             <article class="diagnoses-stat">
-                <span class="diagnoses-stat__k eyebrow">Perfil dominante</span>
+                <span class="diagnoses-stat__k eyebrow">Tendencia dominante</span>
                 <span class="diagnoses-stat__v" id="diag-profile-text">—</span>
                 <span class="diagnoses-stat__sub" id="diag-profile-sub">según tus diagnósticos</span>
             </article>
@@ -72,17 +72,17 @@
                 </div>
             </div>
 
-            <div class="diagnoses-toolbar__group" role="tablist" aria-label="Filtro por perfil">
-                <span class="diagnoses-toolbar__label">Perfil</span>
+            <div class="diagnoses-toolbar__group" role="tablist" aria-label="Filtro por tendencia">
+                <span class="diagnoses-toolbar__label">Tendencia</span>
                 <div class="diagnoses-chips">
                     <button type="button" class="diagnoses-chip" data-profile-filter="all" aria-pressed="true">Todos</button>
                     <button type="button" class="diagnoses-chip" data-profile-filter="overconfident" aria-pressed="false">
                         <span class="diagnoses-chip__dot" data-profile="overconfident" aria-hidden="true"></span>
-                        Sobreconfiado
+                        Confía de más
                     </button>
                     <button type="button" class="diagnoses-chip" data-profile-filter="underconfident" aria-pressed="false">
                         <span class="diagnoses-chip__dot" data-profile="underconfident" aria-hidden="true"></span>
-                        Subconfiado
+                        Confía de menos
                     </button>
                 </div>
             </div>
@@ -100,8 +100,8 @@
             </div>
             <h2 class="diagnoses-empty__title">Aún no hay diagnósticos.</h2>
             <p class="diagnoses-empty__body">
-                Cuando tu ICC baje de 0.5 en una pregunta, Claude prepara una nota personalizada
-                para ayudarte a entender qué pasó.
+                Cuando te conozcas poco en una pregunta (qué tan bien te conoces por debajo de 0.5),
+                Claude prepara una nota personalizada para ayudarte a entender qué pasó.
             </p>
             <a href="/app/my-rooms/" class="ds-btn ds-btn--ink diagnoses-empty__cta">
                 Empezar una evaluación

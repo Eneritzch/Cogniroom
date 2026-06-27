@@ -242,18 +242,18 @@ function renderQuestion(a, i) {
             <ul class="rq__options">
                 ${renderOptions(a)}
             </ul>
-            <div class="rq__metrics" aria-label="Confianza declarada vs. mastery">
+            <div class="rq__metrics" aria-label="Lo que cree saber vs. lo que sabe">
                 <div class="rq__metrics-head">
-                    <span>Confianza vs. mastery</span>
-                    <span class="rq__metrics-gap" data-tone="${gapT}">gap ${gap >= 0 ? '+' : ''}${gap} pts</span>
+                    <span>Lo que cree saber vs. lo que sabe</span>
+                    <span class="rq__metrics-gap" data-tone="${gapT}">diferencia ${gap >= 0 ? '+' : ''}${gap} pts</span>
                 </div>
                 <div class="rq__bar">
-                    <span class="rq__bar-label rq__bar-label--decl"><span class="rq__dot" aria-hidden="true"></span>Declaraste</span>
+                    <span class="rq__bar-label rq__bar-label--decl"><span class="rq__dot" aria-hidden="true"></span>Cree saber</span>
                     <div class="rq__bar-track"><div class="rq__bar-fill rq__bar-fill--decl" style="width:${conf}%;"></div></div>
                     <span class="rq__bar-num">${conf}</span>
                 </div>
                 <div class="rq__bar">
-                    <span class="rq__bar-label rq__bar-label--mast"><span class="rq__dot" aria-hidden="true"></span>Tu mastery</span>
+                    <span class="rq__bar-label rq__bar-label--mast"><span class="rq__dot" aria-hidden="true"></span>Lo que sabe</span>
                     <div class="rq__bar-track"><div class="rq__bar-fill rq__bar-fill--mast" style="width:${mast}%;"></div></div>
                     <span class="rq__bar-num">${mast}</span>
                 </div>
@@ -324,7 +324,7 @@ function renderUnavailable(session) {
         : 'Sesión no encontrada';
     $empty.querySelector('.review-empty__body').textContent = session
         ? 'Esta sesión existe en tu historial pero todavía no tiene respuestas registradas.'
-        : 'La sesión que buscás no existe o no es tuya. Volvé al historial y elegí otra.';
+        : 'La sesión que busca no existe o no es suya. Vuelva al historial y elija otra.';
 }
 
 

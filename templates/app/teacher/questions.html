@@ -38,7 +38,7 @@
                             <circle cx="12" cy="12" r="9"></circle>
                             <circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"></circle>
                         </svg>
-                        Nodos
+                        Temas
                     </button>
                     <button type="button" class="ds-btn ds-btn--secondary" data-bs-toggle="modal" data-bs-target="#manualQuestionModal">
                         <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
@@ -92,8 +92,8 @@
                 </div>
 
                 <div class="questions-controls__group">
-                    <span class="questions-controls__label">Nodo</span>
-                    <select class="form-select questions-node-filter" id="node-filter" aria-label="Filtrar por nodo">
+                    <span class="questions-controls__label">Tema</span>
+                    <select class="form-select questions-node-filter" id="node-filter" aria-label="Filtrar por tema">
                         <option value="all">Todos</option>
                     </select>
                 </div>
@@ -118,17 +118,17 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h2 class="modal-title h5" id="nodeModalLabel">Gestionar nodos</h2>
+                    <h2 class="modal-title h5" id="nodeModalLabel">Gestionar temas</h2>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
                 <div class="modal-body">
                     <form id="node-form" class="qnode-create">
                         <input class="form-control" type="text" id="node-name" maxlength="200" required
-                               placeholder="Nombre del nuevo nodo" autocomplete="off" aria-label="Nombre del nuevo nodo">
+                               placeholder="Nombre del nuevo tema" autocomplete="off" aria-label="Nombre del nuevo tema">
                         <button type="submit" class="ds-btn ds-btn--ink">Crear</button>
                     </form>
-                    <p class="qmodal__hint">Un nodo agrupa preguntas de un mismo tema. Solo se pueden borrar nodos sin preguntas.</p>
-                    <ul class="qnode-list" id="qnode-list" aria-label="Nodos de la sala"></ul>
+                    <p class="qmodal__hint">Un tema agrupa preguntas relacionadas. Solo se pueden borrar temas sin preguntas.</p>
+                    <ul class="qnode-list" id="qnode-list" aria-label="Temas de la sala"></ul>
                 </div>
             </div>
         </div>
@@ -146,7 +146,7 @@
                     <div class="modal-body">
                         <div class="qmodal__row">
                             <div class="qmodal__field">
-                                <label class="form-label" for="manual-node">Nodo</label>
+                                <label class="form-label" for="manual-node">Tema</label>
                                 <select class="form-select" id="manual-node" required></select>
                             </div>
                             <div class="qmodal__field">
@@ -169,10 +169,10 @@
 
                         <label class="form-label" for="manual-statement">Enunciado</label>
                         <textarea class="form-control" id="manual-statement" rows="3" required
-                                  placeholder="Escribí la pregunta…"></textarea>
+                                  placeholder="Escriba la pregunta…"></textarea>
 
                         <fieldset class="qmodal__options">
-                            <legend class="form-label">Opciones <span class="qmodal__hint-inline" id="manual-correct-hint">marcá la correcta</span></legend>
+                            <legend class="form-label">Opciones <span class="qmodal__hint-inline" id="manual-correct-hint">marque la correcta</span></legend>
                             <div id="manual-options"></div>
                             <button type="button" class="ds-btn ds-btn--ghost qmodal__add-option" id="manual-add-option">
                                 <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
@@ -204,7 +204,7 @@
                     <div class="modal-body">
                         <div class="qmodal__row">
                             <div class="qmodal__field">
-                                <label class="form-label" for="gen-node">Nodo</label>
+                                <label class="form-label" for="gen-node">Tema</label>
                                 <select class="form-select" id="gen-node" required></select>
                             </div>
                             <div class="qmodal__field">
@@ -237,7 +237,7 @@
 
                         <label class="form-label" for="gen-content">Contenido base</label>
                         <textarea class="form-control" id="gen-content" rows="5"
-                                  placeholder="Pegá el material sobre el que generar las preguntas (o elegí un PDF arriba)…"></textarea>
+                                  placeholder="Pegue el material sobre el que generar las preguntas (o elija un PDF arriba)…"></textarea>
                         <p class="qmodal__hint">En salas grupales, las preguntas generadas quedan <strong>por revisar</strong> hasta que las apruebes.</p>
                         <p class="qmodal__estimate" id="gen-estimate" aria-live="polite" hidden></p>
                     </div>

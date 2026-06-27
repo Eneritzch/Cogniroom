@@ -119,8 +119,7 @@
 }
 
 .student-hero__mini {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  display: flex;
   gap: 1px;
   width: 100%;
   background: var(--paper-border);
@@ -130,6 +129,8 @@
 }
 
 .student-hero__mini-cell {
+  flex: 1 1 0;
+  min-width: 0;
   padding: var(--s-3);
   background: var(--paper-elevated);
   text-align: center;
@@ -666,10 +667,12 @@
 
 @media (min-width: 768px) {
   .at-risk__header {
-    display: grid;
-    grid-template-columns: 2fr 1.4fr 0.8fr 1fr 1fr;
+    display: flex;
+    align-items: center;
     gap: var(--s-4);
   }
+  .at-risk__header > * { flex: 1 1 0; min-width: 0; }
+  .at-risk__header > :first-child { flex: 2 1 0; }
 }
 
 .at-risk__list {
@@ -690,11 +693,12 @@
 
 @media (min-width: 768px) {
   .at-risk__row {
-    display: grid;
-    grid-template-columns: 2fr 1.4fr 0.8fr 1fr 1fr;
+    flex-direction: row;
     align-items: center;
     gap: var(--s-4);
   }
+  .at-risk__row > * { flex: 1 1 0; min-width: 0; }
+  .at-risk__row > .at-risk__student { flex: 2 1 0; }
 }
 
 .at-risk__student {
@@ -2225,14 +2229,15 @@
 /* KPIs */
 
 .d-kpis {
-  display: grid;
-  grid-template-columns: 1fr;
+  display: flex;
+  flex-direction: column;
   gap: var(--s-3);
   margin-bottom: var(--s-5);
 }
 
 @media (min-width: 768px) {
-  .d-kpis { grid-template-columns: repeat(4, 1fr); }
+  .d-kpis { flex-direction: row; }
+  .d-kpis > .d-kpi { flex: 1 1 0; min-width: 0; }
 }
 
 .d-kpi {
@@ -2676,15 +2681,15 @@
 
 .d-row-a,
 .d-row-b {
-  display: grid;
-  grid-template-columns: 1fr;
+  display: flex;
+  flex-direction: column;
   gap: var(--s-4);
   margin-bottom: var(--s-4);
 }
 
 @media (min-width: 768px) {
-  .d-row-a { grid-template-columns: 1fr; }
-  .d-row-b { grid-template-columns: 1fr 1fr; }
+  .d-row-b { flex-direction: row; }
+  .d-row-b > .d-card { flex: 1 1 0; min-width: 0; }
 
   .d-card--rooms .d-rooms {
     flex-direction: row;

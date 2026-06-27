@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="CogniRoom — Plataforma de evaluación cognitiva adaptativa para universidades. BKT, ICC e IPC para detectar sobreconfianza antes de que afecte el rendimiento.">
+    <meta name="description" content="CogniRoom — Plataforma de evaluación cognitiva adaptativa para universidades. Compara lo que un estudiante cree saber con lo que de verdad sabe y detecta el exceso de confianza antes de que afecte el rendimiento.">
     <title>CogniRoom — Mide lo que tus estudiantes creen vs. lo que saben</title>
     {% include 'app/partials/_styles.html' %}
     <link rel="stylesheet" href="{% static 'css/landing.css' %}?v={% now "U" %}">
@@ -59,16 +59,16 @@
                 </div>
                 <dl class="landing-hero__stats">
                     <div class="landing-hero__stat">
-                        <dt class="landing-hero__stat-k num">BKT</dt>
-                        <dd class="landing-hero__stat-v">Bayesian Knowledge Tracing</dd>
+                        <dt class="landing-hero__stat-k">Lo que realmente sabe</dt>
+                        <dd class="landing-hero__stat-v">Estimado pregunta a pregunta</dd>
                     </div>
                     <div class="landing-hero__stat">
-                        <dt class="landing-hero__stat-k num">ICC</dt>
-                        <dd class="landing-hero__stat-v">Índice de Calibración Cognitiva</dd>
+                        <dt class="landing-hero__stat-k">Qué tan bien se conoce</dt>
+                        <dd class="landing-hero__stat-v">De 0 a 1 · mientras más alto, mejor</dd>
                     </div>
                     <div class="landing-hero__stat">
-                        <dt class="landing-hero__stat-k num">IPC</dt>
-                        <dd class="landing-hero__stat-v">Índice de Punto Ciego</dd>
+                        <dt class="landing-hero__stat-k">Punto ciego del grupo</dt>
+                        <dd class="landing-hero__stat-v">Temas donde todos confían de más</dd>
                     </div>
                 </dl>
             </div>
@@ -76,7 +76,7 @@
             <aside class="landing-hero__metric" aria-label="Vista en vivo de un estudiante">
                 <div class="landing-hero__metric-head">
                     <span class="landing-hero__metric-eyebrow eyebrow">Vista en vivo · Estudiante A.M.</span>
-                    <span class="pill" data-profile="overconfident">Sobreconfiado</span>
+                    <span class="pill" data-profile="overconfident">Confía de más</span>
                 </div>
                 <div class="landing-hero__metric-ring">
                     <div class="calibration-ring" data-profile="overconfident" style="width:180px;height:180px;">
@@ -87,8 +87,8 @@
                         </svg>
                         <div class="calibration-ring__center">
                             <span class="calibration-ring__value" style="font-size:46.8px;">0.42</span>
-                            <span class="calibration-ring__label eyebrow">ICC</span>
-                            <span class="calibration-ring__sublabel">Calibración</span>
+                            <span class="calibration-ring__label eyebrow">Autoconocimiento</span>
+                            <span class="calibration-ring__sublabel">de 0 a 1 · mientras más alto, mejor</span>
                         </div>
                     </div>
                 </div>
@@ -138,8 +138,8 @@
                     </div>
                 </div>
                 <p class="landing-hero__metric-note">
-                    La firma del producto: una <strong>barra dual</strong> que superpone lo declarado
-                    y lo inferido. Cada gap es una pregunta abierta.
+                    La firma del producto: una <strong>barra dual</strong> que superpone lo que el
+                    estudiante cree saber y lo que de verdad sabe. Cada diferencia es una pregunta abierta.
                 </p>
             </aside>
 
@@ -150,13 +150,13 @@
         <div class="landing-container landing-pillars__inner">
             <header class="landing-pillars__head">
                 <div class="eyebrow">Tres pilares</div>
-                <h2 class="landing-pillars__title display">La metodología, en sus tres letras.</h2>
+                <h2 class="landing-pillars__title display">La metodología, en tres ideas.</h2>
             </header>
             <div class="landing-pillars__list">
 
                 <article class="landing-pillar">
                     <header class="landing-pillar__head">
-                        <span class="landing-pillar__id">BKT</span>
+                        <span class="landing-pillar__id">Lo que sabe</span>
                         <svg class="landing-pillar__icon icon-svg" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
                             <path d="M12 2v4"></path>
                             <path d="M12 18v4"></path>
@@ -181,16 +181,16 @@
                             <text x="195" y="20" font-size="9" fill="var(--sage)" font-family="JetBrains Mono">P(L)↑</text>
                         </svg>
                     </div>
-                    <h3 class="landing-pillar__title">Bayesian Knowledge Tracing</h3>
+                    <h3 class="landing-pillar__title">Lo que realmente sabe</h3>
                     <p class="landing-pillar__body">
-                        Un modelo probabilístico actualiza, pregunta a pregunta, la creencia de que el
-                        estudiante domina un nodo. No promedios — inferencia.
+                        Un modelo probabilístico estima, pregunta a pregunta, qué tanto domina el
+                        estudiante cada tema. No promedios — inferencia.
                     </p>
                 </article>
 
                 <article class="landing-pillar">
                     <header class="landing-pillar__head">
-                        <span class="landing-pillar__id">ICC</span>
+                        <span class="landing-pillar__id">Cómo se conoce</span>
                         <svg class="landing-pillar__icon icon-svg" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
                             <circle cx="12" cy="12" r="10"></circle>
                             <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
@@ -207,19 +207,19 @@
                             <circle cx="150" cy="40" r="3.5" fill="var(--amber)"/>
                             <circle cx="180" cy="22" r="3.5" fill="var(--rust)"/>
                             <text x="22"  y="9"  font-size="8" fill="var(--ink-muted)">acierto</text>
-                            <text x="160" y="86" font-size="8" fill="var(--ink-muted)">confianza</text>
+                            <text x="120" y="86" font-size="8" fill="var(--ink-muted)">lo que cree saber</text>
                         </svg>
                     </div>
-                    <h3 class="landing-pillar__title">Índice de Calibración Cognitiva</h3>
+                    <h3 class="landing-pillar__title">Qué tan bien se conoce</h3>
                     <p class="landing-pillar__body">
-                        Compara confianza declarada con probabilidad real de acierto. Valores cerca de
-                        1 indican un estudiante que se conoce a sí mismo.
+                        Compara lo que el estudiante cree saber con su probabilidad real de acierto.
+                        Valores cerca de 1 indican un estudiante que se conoce a sí mismo.
                     </p>
                 </article>
 
                 <article class="landing-pillar">
                     <header class="landing-pillar__head">
-                        <span class="landing-pillar__id">IPC</span>
+                        <span class="landing-pillar__id">Punto ciego</span>
                         <svg class="landing-pillar__icon icon-svg" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
                             <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
                             <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
@@ -228,7 +228,7 @@
                     <div class="landing-pillar__diagram" style="padding-block:var(--s-4);">
                         <div style="display:flex;flex-direction:column;gap:6px;width:100%;padding-inline:var(--s-2);">
                             <div style="display:flex;align-items:center;gap:var(--s-2);">
-                                <span style="width:48px;font-size:9px;color:var(--ink-muted);">Nodo A</span>
+                                <span style="width:48px;font-size:9px;color:var(--ink-muted);">Tema A</span>
                                 <div style="position:relative;flex:1;height:8px;background:var(--paper-elevated);border-radius:var(--r-xs);overflow:hidden;">
                                     <div style="position:absolute;height:100%;width:30%;background:var(--sage);"></div>
                                     <div style="position:absolute;height:100%;left:30%;width:40%;background:var(--amber);opacity:0.4;"></div>
@@ -236,7 +236,7 @@
                                 <span class="num" style="width:32px;text-align:right;font-size:9px;color:var(--amber);">+40</span>
                             </div>
                             <div style="display:flex;align-items:center;gap:var(--s-2);">
-                                <span style="width:48px;font-size:9px;color:var(--ink-muted);">Nodo B</span>
+                                <span style="width:48px;font-size:9px;color:var(--ink-muted);">Tema B</span>
                                 <div style="position:relative;flex:1;height:8px;background:var(--paper-elevated);border-radius:var(--r-xs);overflow:hidden;">
                                     <div style="position:absolute;height:100%;width:35%;background:var(--sage);"></div>
                                     <div style="position:absolute;height:100%;left:35%;width:25%;background:var(--amber);opacity:0.4;"></div>
@@ -244,7 +244,7 @@
                                 <span class="num" style="width:32px;text-align:right;font-size:9px;color:var(--amber);">+25</span>
                             </div>
                             <div style="display:flex;align-items:center;gap:var(--s-2);">
-                                <span style="width:48px;font-size:9px;color:var(--ink-muted);">Nodo C</span>
+                                <span style="width:48px;font-size:9px;color:var(--ink-muted);">Tema C</span>
                                 <div style="position:relative;flex:1;height:8px;background:var(--paper-elevated);border-radius:var(--r-xs);overflow:hidden;">
                                     <div style="position:absolute;height:100%;width:38%;background:var(--sage);"></div>
                                     <div style="position:absolute;height:100%;left:38%;width:17%;background:var(--amber);opacity:0.4;"></div>
@@ -253,9 +253,9 @@
                             </div>
                         </div>
                     </div>
-                    <h3 class="landing-pillar__title">Índice de Punto Ciego</h3>
+                    <h3 class="landing-pillar__title">Punto ciego del grupo</h3>
                     <p class="landing-pillar__body">
-                        Nodos donde la confianza promedio del grupo supera al mastery promedio.
+                        Temas donde el grupo, en promedio, cree saber más de lo que realmente sabe.
                         La pista más confiable para rediseñar una clase.
                     </p>
                 </article>
@@ -280,7 +280,7 @@
                 <li class="landing-how__step">
                     <span class="landing-how__step-num">01</span>
                     <h3 class="landing-how__step-title">Subí material</h3>
-                    <p class="landing-how__step-body">El docente carga los PDFs del curso. CogniRoom extrae nodos de conocimiento y los organiza en un grafo.</p>
+                    <p class="landing-how__step-body">El docente carga los PDFs del curso. CogniRoom extrae los temas de conocimiento y los organiza en un mapa.</p>
                 </li>
                 <li class="landing-how__step">
                     <span class="landing-how__step-num">02</span>
@@ -290,12 +290,12 @@
                 <li class="landing-how__step">
                     <span class="landing-how__step-num">03</span>
                     <h3 class="landing-how__step-title">Estudiantes responden</h3>
-                    <p class="landing-how__step-body">Antes de cada respuesta, el estudiante declara su confianza (0–100). El gap es la materia prima del análisis.</p>
+                    <p class="landing-how__step-body">Antes de cada respuesta, el estudiante dice qué tan seguro está (0–100). Esa diferencia es la materia prima del análisis.</p>
                 </li>
                 <li class="landing-how__step">
                     <span class="landing-how__step-num">04</span>
                     <h3 class="landing-how__step-title">Intervení a tiempo</h3>
-                    <p class="landing-how__step-body">El docente ve puntos ciegos colectivos y casos individuales. El estudiante recibe una carta del tutor cuando se descalibra.</p>
+                    <p class="landing-how__step-body">El docente ve puntos ciegos del grupo y casos individuales. El estudiante recibe una carta del tutor cuando cree saber más de lo que sabe.</p>
                 </li>
             </ol>
 
@@ -356,7 +356,7 @@
                 <span>CogniRoom · Plataforma de evaluación cognitiva adaptativa</span>
             </div>
             <div class="landing-footer__meta">
-                <span>BKT · ICC · IPC</span>
+                <span>Comparamos lo que cree saber con lo que de verdad sabe.</span>
                 <span>© 2026</span>
             </div>
             <div class="landing-footer__credits">Jaione Cherres &amp; Dulce Villacis</div>
@@ -423,10 +423,10 @@
                             <div class="ds-swatches">
                                 <article class="ds-swatch"><div class="ds-swatch__color" style="background:#5B7A6E;"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">sage</div><div class="ds-swatch__hex">#5B7A6E</div><div class="ds-swatch__role">Marca</div></div></article>
                                 <article class="ds-swatch"><div class="ds-swatch__color" style="background:#9B6B3F;"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">terracotta</div><div class="ds-swatch__hex">#9B6B3F</div><div class="ds-swatch__role">Secundario</div></div></article>
-                                <article class="ds-swatch"><div class="ds-swatch__color" style="background:#4F7A4A;"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">moss</div><div class="ds-swatch__hex">#4F7A4A</div><div class="ds-swatch__role">Calibrado</div></div></article>
-                                <article class="ds-swatch"><div class="ds-swatch__color" style="background:#B8804A;"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">amber</div><div class="ds-swatch__hex">#B8804A</div><div class="ds-swatch__role">Sobreconfianza</div></div></article>
+                                <article class="ds-swatch"><div class="ds-swatch__color" style="background:#4F7A4A;"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">moss</div><div class="ds-swatch__hex">#4F7A4A</div><div class="ds-swatch__role">Confianza justa</div></div></article>
+                                <article class="ds-swatch"><div class="ds-swatch__color" style="background:#B8804A;"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">amber</div><div class="ds-swatch__hex">#B8804A</div><div class="ds-swatch__role">Confía de más</div></div></article>
                                 <article class="ds-swatch"><div class="ds-swatch__color" style="background:#A14B3D;"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">rust</div><div class="ds-swatch__hex">#A14B3D</div><div class="ds-swatch__role">Riesgo alto</div></div></article>
-                                <article class="ds-swatch"><div class="ds-swatch__color" style="background:#6B7A95;"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">stone</div><div class="ds-swatch__hex">#6B7A95</div><div class="ds-swatch__role">Subconfianza</div></div></article>
+                                <article class="ds-swatch"><div class="ds-swatch__color" style="background:#6B7A95;"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">stone</div><div class="ds-swatch__hex">#6B7A95</div><div class="ds-swatch__role">Confía de menos</div></div></article>
                             </div>
                         </div>
                     </section>
@@ -454,7 +454,7 @@
                             </div>
                             <div>
                                 <span class="eyebrow">JetBrains Mono · 500</span>
-                                <p class="ds-type-num">ICC 0.78 · BKT 0.62 · IPC 0.34</p>
+                                <p class="ds-type-num">Se conoce 0.78 · Sabe 0.62 · Punto ciego 0.34</p>
                             </div>
                         </div>
                     </section>
@@ -466,11 +466,11 @@
                         </header>
                         <div class="ds-card">
                             <div class="ds-row">
-                                <span class="ds-row__label">Perfil cognitivo</span>
+                                <span class="ds-row__label">Tendencia de confianza</span>
                                 <div class="ds-row__items">
-                                    <span class="pill" data-profile="calibrated">Calibrado</span>
-                                    <span class="pill" data-profile="overconfident">Sobreconfiado</span>
-                                    <span class="pill" data-profile="underconfident">Subconfiado</span>
+                                    <span class="pill" data-profile="calibrated">Confianza justa</span>
+                                    <span class="pill" data-profile="overconfident">Confía de más</span>
+                                    <span class="pill" data-profile="underconfident">Confía de menos</span>
                                 </div>
                             </div>
                             <div class="ds-row">
@@ -501,12 +501,12 @@
                     <section class="ds-section">
                         <header class="ds-section__head">
                             <span class="eyebrow">05 · Signature</span>
-                            <h3 class="ds-section__title">Barra dual de calibración</h3>
+                            <h3 class="ds-section__title">Barra dual de confianza</h3>
                         </header>
                         <div class="ds-card ds-stack">
                             <div class="dual-bar">
                                 <div class="dual-bar__header">
-                                    <span class="dual-bar__title">Sobreconfianza pronunciada</span>
+                                    <span class="dual-bar__title">Confía bastante de más</span>
                                     <span class="dual-bar__gap" data-tone="amber">+31 pts</span>
                                 </div>
                                 <div class="dual-bar__rows">
@@ -514,13 +514,13 @@
                                     <div class="dual-bar__row"><span class="dual-bar__num">51</span><div class="dual-bar__track"><div class="dual-bar__fill dual-bar__fill--mastery" style="width:51%;"></div><div class="dual-bar__gap-hatch" style="left:51%;width:31%;"></div></div></div>
                                 </div>
                                 <div class="dual-bar__legend">
-                                    <span class="dual-bar__legend-item"><span class="dual-bar__legend-swatch dual-bar__legend-swatch--declared"></span>Confianza declarada</span>
-                                    <span class="dual-bar__legend-item"><span class="dual-bar__legend-swatch dual-bar__legend-swatch--mastery"></span>Mastery real</span>
+                                    <span class="dual-bar__legend-item"><span class="dual-bar__legend-swatch dual-bar__legend-swatch--declared"></span>Lo que cree saber</span>
+                                    <span class="dual-bar__legend-item"><span class="dual-bar__legend-swatch dual-bar__legend-swatch--mastery"></span>Lo que realmente sabe</span>
                                 </div>
                             </div>
                             <div class="dual-bar">
                                 <div class="dual-bar__header">
-                                    <span class="dual-bar__title">Calibración cercana</span>
+                                    <span class="dual-bar__title">Confianza casi justa</span>
                                     <span class="dual-bar__gap" data-tone="moss">-4 pts</span>
                                 </div>
                                 <div class="dual-bar__rows">
@@ -530,7 +530,7 @@
                             </div>
                             <div class="dual-bar">
                                 <div class="dual-bar__header">
-                                    <span class="dual-bar__title">Subconfianza</span>
+                                    <span class="dual-bar__title">Confía de menos</span>
                                     <span class="dual-bar__gap" data-tone="stone">-30 pts</span>
                                 </div>
                                 <div class="dual-bar__rows">
@@ -544,20 +544,20 @@
                     <section class="ds-section">
                         <header class="ds-section__head">
                             <span class="eyebrow">06 · Signature</span>
-                            <h3 class="ds-section__title">Anillo de calibración</h3>
+                            <h3 class="ds-section__title">Anillo de autoconocimiento</h3>
                         </header>
                         <div class="ds-card ds-ring-row">
                             <div class="calibration-ring" data-profile="calibrated" style="width:140px;height:140px;">
                                 <svg class="calibration-ring__svg" width="140" height="140"><circle class="calibration-ring__track" cx="70" cy="70" r="65.1" stroke-width="9.8"/><circle class="calibration-ring__fill" cx="70" cy="70" r="65.1" stroke-width="9.8" stroke-dasharray="408.86" stroke-dashoffset="73.59"/></svg>
-                                <div class="calibration-ring__center"><span class="calibration-ring__value" style="font-size:36.4px;">0.82</span><span class="calibration-ring__label eyebrow">ICC</span></div>
+                                <div class="calibration-ring__center"><span class="calibration-ring__value" style="font-size:36.4px;">0.82</span><span class="calibration-ring__label eyebrow">Autoconocimiento</span></div>
                             </div>
                             <div class="calibration-ring" data-profile="overconfident" style="width:140px;height:140px;">
                                 <svg class="calibration-ring__svg" width="140" height="140"><circle class="calibration-ring__track" cx="70" cy="70" r="65.1" stroke-width="9.8"/><circle class="calibration-ring__fill" cx="70" cy="70" r="65.1" stroke-width="9.8" stroke-dasharray="408.86" stroke-dashoffset="220.78"/></svg>
-                                <div class="calibration-ring__center"><span class="calibration-ring__value" style="font-size:36.4px;">0.46</span><span class="calibration-ring__label eyebrow">ICC</span></div>
+                                <div class="calibration-ring__center"><span class="calibration-ring__value" style="font-size:36.4px;">0.46</span><span class="calibration-ring__label eyebrow">Autoconocimiento</span></div>
                             </div>
                             <div class="calibration-ring" data-profile="underconfident" style="width:140px;height:140px;">
                                 <svg class="calibration-ring__svg" width="140" height="140"><circle class="calibration-ring__track" cx="70" cy="70" r="65.1" stroke-width="9.8"/><circle class="calibration-ring__fill" cx="70" cy="70" r="65.1" stroke-width="9.8" stroke-dasharray="408.86" stroke-dashoffset="171.72"/></svg>
-                                <div class="calibration-ring__center"><span class="calibration-ring__value" style="font-size:36.4px;">0.58</span><span class="calibration-ring__label eyebrow">ICC</span></div>
+                                <div class="calibration-ring__center"><span class="calibration-ring__value" style="font-size:36.4px;">0.58</span><span class="calibration-ring__label eyebrow">Autoconocimiento</span></div>
                             </div>
                         </div>
                     </section>
@@ -565,7 +565,7 @@
                     <section class="ds-section">
                         <header class="ds-section__head">
                             <span class="eyebrow">07 · Signature</span>
-                            <h3 class="ds-section__title">Tarjeta de nodo</h3>
+                            <h3 class="ds-section__title">Tarjeta de tema</h3>
                         </header>
                         <div class="ds-row-cards">
                             <article class="node-card">
@@ -576,7 +576,7 @@
                                     </div>
                                     <div class="node-card__mastery">
                                         <span class="node-card__mastery-value num">47<span class="node-card__mastery-value-unit">%</span></span>
-                                        <span class="node-card__mastery-label eyebrow">mastery</span>
+                                        <span class="node-card__mastery-label eyebrow">sabe</span>
                                     </div>
                                 </header>
                                 <div class="dual-bar">
@@ -587,8 +587,8 @@
                                 </div>
                                 <footer class="node-card__meta">
                                     <span><span class="num">14</span> intentos</span>
-                                    <span>BKT <span class="num">0.47</span></span>
-                                    <span>gap <span class="num node-card__gap" data-tone="amber">+37</span></span>
+                                    <span>Sabe <span class="num">0.47</span></span>
+                                    <span>Diferencia <span class="num node-card__gap" data-tone="amber">+37</span></span>
                                 </footer>
                             </article>
                             <article class="node-card">
@@ -599,7 +599,7 @@
                                     </div>
                                     <div class="node-card__mastery">
                                         <span class="node-card__mastery-value num">74<span class="node-card__mastery-value-unit">%</span></span>
-                                        <span class="node-card__mastery-label eyebrow">mastery</span>
+                                        <span class="node-card__mastery-label eyebrow">sabe</span>
                                     </div>
                                 </header>
                                 <div class="dual-bar">
@@ -610,8 +610,8 @@
                                 </div>
                                 <footer class="node-card__meta">
                                     <span><span class="num">12</span> intentos</span>
-                                    <span>BKT <span class="num">0.72</span></span>
-                                    <span>gap <span class="num node-card__gap" data-tone="stone">-16</span></span>
+                                    <span>Sabe <span class="num">0.72</span></span>
+                                    <span>Diferencia <span class="num node-card__gap" data-tone="stone">-16</span></span>
                                 </footer>
                             </article>
                         </div>
@@ -631,7 +631,7 @@
                             </header>
                             <h4 class="ai-diagnosis__title">«Estás confundiendo familiaridad con dominio.»</h4>
                             <p class="ai-diagnosis__body">
-                                Reconocés los conceptos, pero al aplicarlos perdés terreno. Tu confianza promedio (78%)
+                                Reconoces los conceptos, pero al aplicarlos pierdes terreno. Lo que crees saber (78%)
                                 está sistemáticamente por encima de tu probabilidad real de acierto (47%).
                             </p>
                             <div class="ai-diagnosis__suggestion" role="note">
@@ -639,7 +639,7 @@
                                     <line x1="5" y1="12" x2="19" y2="12"></line>
                                     <polyline points="12 5 19 12 12 19"></polyline>
                                 </svg>
-                                <span>Probá explicar el ejercicio guiado #7 en voz alta antes de revisar la solución.</span>
+                                <span>Prueba explicar el ejercicio guiado #7 en voz alta antes de revisar la solución.</span>
                             </div>
                         </article>
                     </section>
@@ -654,14 +654,14 @@
                                 <span class="ds-toast-mock__dot" style="background:var(--moss);"></span>
                                 <div>
                                     <p class="ds-toast-mock__title">Respuesta guardada</p>
-                                    <p class="ds-toast-mock__body">Tu mastery sobre 1ª ley subió a 0.51.</p>
+                                    <p class="ds-toast-mock__body">Lo que sabes sobre 1ª ley subió a 0.51.</p>
                                 </div>
                             </div>
                             <div class="ds-toast-mock">
                                 <span class="ds-toast-mock__dot" style="background:var(--amber);"></span>
                                 <div>
-                                    <p class="ds-toast-mock__title">Descalibración detectada</p>
-                                    <p class="ds-toast-mock__body">Tu tutor cognitivo preparó una nota para vos.</p>
+                                    <p class="ds-toast-mock__title">Diferencia detectada</p>
+                                    <p class="ds-toast-mock__body">Tu tutor cognitivo preparó una nota para ti.</p>
                                 </div>
                             </div>
                             <div class="ds-toast-mock">

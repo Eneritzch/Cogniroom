@@ -501,12 +501,12 @@ class PDFUploadListView(APIView):
                     pdf.save(update_fields=['file_id'])
             except Exception:
                 pass
-        except Exception as e:
+        except Exception:
             pdf.status = PDFDocument.STATUS_FAILED
             pdf.save(update_fields=['status'])
             return Response(
                 {
-                    'detail': f'PDF uploaded but extraction failed: {e}',
+                    'detail': 'El PDF se subió pero no se pudo extraer su contenido.',
                     'pdf': PDFDocumentSerializer(pdf).data,
                 },
                 status=status.HTTP_201_CREATED,

@@ -18,9 +18,9 @@ function escapeHTML(s) {
 
 function profileLabel(p) {
     return ({
-        overconfident: 'Sobreconfiado',
-        underconfident: 'Subconfiado',
-        calibrated: 'Calibrado',
+        overconfident: 'Confía de más',
+        underconfident: 'Confía de menos',
+        calibrated: 'Confianza justa',
     })[p] || '—';
 }
 
@@ -63,18 +63,32 @@ function gapTone(gap) {
 }
 
 
-function actionLabel(profile) {
-    if (profile === 'overconfident') return 'Refuerzo';
-    if (profile === 'underconfident') return 'Nota';
-    return 'Detalle';
+// Lectura en lenguaje claro de la brecha entre confianza y dominio real.
+function calibrationReading(profile, gapPts) {
+    const abs = Math.abs(gapPts);
+    if (profile === 'overconfident')
+        return { headline: 'Sobreestima su nivel', detail: `Cree saber ${abs} pts más de lo que demuestra.` };
+    if (profile === 'underconfident')
+        return { headline: 'Subestima su nivel', detail: `Sabe ${abs} pts más de lo que cree saber.` };
+    return { headline: 'Bien calibrado', detail: 'Su confianza coincide con lo que realmente sabe.' };
 }
 
 
-function summaryShort(profile, gapPts) {
-    const abs = Math.abs(gapPts);
-    if (profile === 'overconfident') return `Cree saber ${abs} pts más de lo real.`;
-    if (profile === 'underconfident') return `Sabe ${abs} pts más de lo que cree.`;
-    return 'Bien calibrado · confianza alineada con su nivel.';
+// Par de barras comparativas "Cree saber" vs "Realmente sabe" (reutilizado en
+// la tarjeta y en el desglose por nodo del modal). `sm` para la variante compacta.
+function compareBars(confidence, mastery, { sm = false } = {}) {
+    const mod = sm ? ' cmpbar--sm' : '';
+    return `
+      <div class="cmpbar${mod}">
+        <span class="cmpbar__label"><span class="cmpbar__dot" data-kind="declared" aria-hidden="true"></span>Cree saber</span>
+        <div class="cmpbar__track"><div class="cmpbar__fill" data-kind="declared" style="width:${confidence}%"></div></div>
+        <span class="cmpbar__val num">${confidence}%</span>
+      </div>
+      <div class="cmpbar${mod}">
+        <span class="cmpbar__label"><span class="cmpbar__dot" data-kind="mastery" aria-hidden="true"></span>Realmente sabe</span>
+        <div class="cmpbar__track"><div class="cmpbar__fill" data-kind="mastery" style="width:${mastery}%"></div></div>
+        <span class="cmpbar__val num">${mastery}%</span>
+      </div>`;
 }
 
 
@@ -163,6 +177,7 @@ function renderList() {
         const gapText = gapPts > 0 ? `+${gapPts}` : `${gapPts}`;
         const sectionCode = s.membership?.section?.code || '';
         const name = fullName(s.user);
+        const reading = calibrationReading(s.profile, gapPts);
 
         return `
         <li class="student-card" data-profile="${s.profile}">
@@ -172,32 +187,23 @@ function renderList() {
                     <div class="student-card__name">${escapeHTML(name)}</div>
                     <div class="student-card__meta">
                         ${sectionCode ? `<span class="student-card__curso">${escapeHTML(sectionCode)}</span>` : ''}
+                        <span class="student-card__reading">${reading.headline}</span>
                     </div>
                 </div>
                 <span class="pill student-card__pill" data-profile="${s.profile}">${profileLabel(s.profile)}</span>
             </div>
 
             <div class="student-card__bars">
-                <div class="microbar" title="Cree saber ${confidence}%">
-                    <span class="microbar__label">Cree</span>
-                    <div class="microbar__track">
-                        <div class="microbar__fill microbar__fill--declared" style="width:${confidence}%"></div>
-                    </div>
-                    <span class="microbar__val num">${confidence}%</span>
-                </div>
-                <div class="microbar" title="Realmente sabe ${mastery}%">
-                    <span class="microbar__label">Sabe</span>
-                    <div class="microbar__track">
-                        <div class="microbar__fill microbar__fill--mastery" style="width:${mastery}%"></div>
-                    </div>
-                    <span class="microbar__val num">${mastery}%</span>
-                </div>
+                ${compareBars(confidence, mastery)}
             </div>
 
             <div class="student-card__foot">
-                <span class="student-card__diff" data-tone="${tone}" title="${summaryShort(s.profile, gapPts)}">${gapText} pts</span>
-                <button type="button" class="student-card__action" data-student-id="${s.user?.id ?? ''}">
-                    ${actionLabel(s.profile)}
+                <div class="student-card__gap" title="${escapeHTML(reading.detail)}">
+                    <span class="student-card__gap-val" data-tone="${tone}">${gapText}</span>
+                    <span class="student-card__gap-cap">diferencia (pts)</span>
+                </div>
+                <button type="button" class="student-card__action" data-student-id="${s.user?.id ?? ''}" aria-label="Ver detalle de ${escapeHTML(name)}">
+                    Ver detalle
                     <svg class="icon-svg" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true">
                         <line x1="5" y1="12" x2="19" y2="12"></line>
                         <polyline points="12 5 19 12 12 19"></polyline>
@@ -452,7 +458,6 @@ if ($more) {
 
 /* ---- Detalle de un estudiante (modal) ---- */
 
-function pct(v) { return v == null ? '—' : `${Math.round(v * 100)}%`; }
 function icc2(v) { return v == null ? '—' : Number(v).toFixed(2); }
 
 document.getElementById('students-rows').addEventListener('click', (e) => {
@@ -491,42 +496,64 @@ function renderStudentDetail(d) {
     const name = `${st.first_name || ''} ${st.last_name || ''}`.trim() || st.username || 'Estudiante';
 
     const sum = d.summary || {};
-    const gapPts = Math.round((sum.metacognitive_gap ?? 0) * 100);
+    const gapRaw = sum.metacognitive_gap ?? 0;
+    const gapPts = Math.round(gapRaw * 100);
     const gapText = gapPts > 0 ? `+${gapPts}` : `${gapPts}`;
+    const conf = Math.round((sum.avg_confidence ?? 0) * 100);
+    const mast = Math.round((sum.bkt_mastery ?? 0) * 100);
+    const reading = calibrationReading(sum.profile, gapPts);
     const sectionLine = d.section
-        ? `<span class="student-detail__section">${escapeHTML(`${d.section.code} · ${d.section.name}`)}</span>`
+        ? `<span class="sd-hero__section">${escapeHTML(`${d.section.code} · ${d.section.name}`)}</span>`
         : '';
 
     const summaryHTML = `
-      <header class="student-detail__head">
-        <div class="student-detail__id">
-          <span class="student-detail__name">${escapeHTML(name)}</span>
-          ${sectionLine}
+      <header class="sd-hero" data-profile="${sum.profile}">
+        <div class="sd-hero__top">
+          <span class="sd-hero__avatar" aria-hidden="true">${initials(st)}</span>
+          <div class="sd-hero__id">
+            <span class="sd-hero__name">${escapeHTML(name)}</span>
+            ${sectionLine}
+          </div>
+          <span class="pill" data-profile="${sum.profile}">${profileLabel(sum.profile)}</span>
         </div>
-        <span class="pill" data-profile="${sum.profile}">${profileLabel(sum.profile)}</span>
+        <p class="sd-hero__reading"><strong>${reading.headline}.</strong> ${reading.detail}</p>
+        <div class="sd-compare">${compareBars(conf, mast)}</div>
       </header>
-      <dl class="student-detail__stats">
-        <div><dt>Cree saber</dt><dd class="num">${pct(sum.avg_confidence)}</dd></div>
-        <div><dt>Realmente sabe</dt><dd class="num">${pct(sum.bkt_mastery)}</dd></div>
-        <div><dt>ICC</dt><dd class="num">${icc2(sum.icc_value)}</dd></div>
-        <div><dt>Brecha</dt><dd class="num" data-tone="${gapTone(sum.metacognitive_gap ?? 0)}">${gapText} pts</dd></div>
-        <div><dt>Respuestas</dt><dd class="num">${sum.answers_count ?? 0}</dd></div>
+
+      <dl class="sd-stats">
+        <div class="sd-stat">
+          <dt>Qué tan bien se conoce</dt>
+          <dd class="num">${icc2(sum.icc_value)}</dd>
+          <span class="sd-stat__cap">de 0 a 1 · mientras más alto, mejor</span>
+        </div>
+        <div class="sd-stat">
+          <dt>Diferencia</dt>
+          <dd class="num" data-tone="${gapTone(gapRaw)}">${gapText} pts</dd>
+          <span class="sd-stat__cap">lo que cree saber − lo que realmente sabe</span>
+        </div>
+        <div class="sd-stat">
+          <dt>Respuestas</dt>
+          <dd class="num">${sum.answers_count ?? 0}</dd>
+          <span class="sd-stat__cap">en esta sala</span>
+        </div>
       </dl>`;
 
     const nodes = d.nodes || [];
     const nodesHTML = nodes.length === 0
-        ? '<p class="student-detail__msg">Todavía no respondió en ningún nodo.</p>'
-        : `<table class="student-detail__nodes">
-             <thead><tr><th>Nodo</th><th>Cree</th><th>Sabe</th><th>ICC</th><th>Perfil</th></tr></thead>
-             <tbody>${nodes.map((n) => `
-               <tr>
-                 <td>${escapeHTML(n.node_name)}</td>
-                 <td class="num">${pct(n.avg_confidence)}</td>
-                 <td class="num">${pct(n.bkt_mastery)}</td>
-                 <td class="num">${icc2(n.icc_value)}</td>
-                 <td>${n.profile ? `<span class="pill pill--sm" data-profile="${n.profile}">${profileLabel(n.profile)}</span>` : '—'}</td>
-               </tr>`).join('')}</tbody>
-           </table>`;
+        ? '<p class="student-detail__msg">Todavía no respondió en ningún tema.</p>'
+        : `<ul class="sd-nodes">${nodes.map((n) => {
+              const nc = Math.round((n.avg_confidence ?? 0) * 100);
+              const nm = Math.round((n.bkt_mastery ?? 0) * 100);
+              return `
+               <li class="sd-node">
+                 <div class="sd-node__head">
+                   <span class="sd-node__name">${escapeHTML(n.node_name)}</span>
+                   ${n.profile ? `<span class="pill pill--sm" data-profile="${n.profile}">${profileLabel(n.profile)}</span>` : ''}
+                   <span class="sd-node__icc">Autoconocimiento <span class="num">${icc2(n.icc_value)}</span></span>
+                 </div>
+                 <div class="sd-node__bars">${compareBars(nc, nm, { sm: true })}</div>
+               </li>`;
+            }).join('')}</ul>`;
 
     const diags = d.diagnoses || [];
     const diagsHTML = diags.length === 0
@@ -545,12 +572,12 @@ function renderStudentDetail(d) {
 
     $body.innerHTML = `
       ${summaryHTML}
-      <section class="student-detail__block">
-        <h3 class="student-detail__subtitle">Desglose por nodo</h3>
+      <section class="sd-block">
+        <h3 class="sd-block__title">Desglose por tema</h3>
         ${nodesHTML}
       </section>
-      <section class="student-detail__block">
-        <h3 class="student-detail__subtitle">Diagnósticos de IA</h3>
+      <section class="sd-block">
+        <h3 class="sd-block__title">Diagnósticos de IA</h3>
         ${diagsHTML}
       </section>`;
 }

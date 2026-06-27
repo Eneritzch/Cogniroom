@@ -6,7 +6,6 @@ from django.db.models import Avg, Count, Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -22,6 +21,7 @@ from apps.notifications.services import notify
 from apps.questions.models import KnowledgeNode, Question
 from apps.questions.serializers import QuestionPublicSerializer
 from apps.rooms.models import Room, RoomMembership
+from apps.users.permissions import IsStudent
 from services.bkt_engine import BKTEngine
 from services.claude_service import CognitiveAnalysisService
 from services.icc_calculator import ICCCalculator
@@ -232,7 +232,7 @@ def _schedule_ai_analysis(answer_id, new_mastery):
 
 
 class SessionListCreateView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsStudent]
 
     def get(self, request):
         """Historial de sesiones del estudiante con aciertos y métricas del snapshot."""
@@ -303,7 +303,7 @@ class SessionListCreateView(APIView):
 
 
 class NextQuestionView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsStudent]
 
     def get(self, request, session_id):
         session = get_object_or_404(EvaluationSession, id=session_id)
@@ -353,7 +353,7 @@ class NextQuestionView(APIView):
 
 
 class SubmitAnswerView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsStudent]
 
     def post(self, request, session_id):
         session = get_object_or_404(EvaluationSession, id=session_id)
@@ -468,7 +468,7 @@ class SubmitAnswerView(APIView):
 
 
 class SessionReviewView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsStudent]
 
     def get(self, request, session_id):
         session = get_object_or_404(
@@ -513,7 +513,7 @@ class SessionReviewView(APIView):
 
 
 class CompleteSessionView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsStudent]
 
     def post(self, request, session_id):
         session = get_object_or_404(EvaluationSession, id=session_id)

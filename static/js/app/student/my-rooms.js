@@ -120,7 +120,7 @@ function renderCard(r) {
         </header>
 
         <div class="rcard__stats">
-            <div class="rcard__stat" title="Nodos activos">
+            <div class="rcard__stat" title="Temas activos">
                 <svg class="icon-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <circle cx="12" cy="12" r="3"></circle>
                     <circle cx="4" cy="4" r="2"></circle>
@@ -128,7 +128,7 @@ function renderCard(r) {
                     <circle cx="4" cy="20" r="2"></circle>
                 </svg>
                 <span class="num">${r.activeNodes ?? 0}</span>
-                <span class="rcard__stat-label">nodos</span>
+                <span class="rcard__stat-label">temas</span>
             </div>
             <div class="rcard__stat" title="Sesiones completadas">
                 <svg class="icon-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -224,7 +224,7 @@ function render() {
     if (filtered.length === 0) {
         $list.innerHTML = `
           <li class="my-rooms-empty" style="margin:var(--s-4) 0;">
-            <p class="my-rooms-empty__body">No tenés salas en este filtro. Probá con otro.</p>
+            <p class="my-rooms-empty__body">No tiene salas en este filtro. Pruebe con otro.</p>
           </li>`;
         return;
     }
@@ -275,7 +275,7 @@ async function openStartEvalModal(roomId) {
     const $all = document.getElementById('start-eval-all');
     if (!$body) return;
 
-    $body.innerHTML = '<p class="start-eval__msg">Cargando nodos…</p>';
+    $body.innerHTML = '<p class="start-eval__msg">Cargando temas…</p>';
     if ($confirm) $confirm.disabled = true;
     if ($all) { $all.checked = true; $all.disabled = true; }
 
@@ -289,7 +289,7 @@ async function openStartEvalModal(roomId) {
         const nodes = await questionsApi.listNodes(roomId);
         const usable = (nodes || []).filter((n) => (n.approved_count ?? 0) > 0);
         if (usable.length === 0) {
-            $body.innerHTML = '<p class="start-eval__msg">Esta sala todavía no tiene preguntas disponibles para evaluar.</p>';
+            $body.innerHTML = '<p class="start-eval__msg">Esta sala todavía no tiene preguntas disponibles para evaluarse.</p>';
             return;
         }
         $body.innerHTML = usable.map((n) => `
@@ -307,7 +307,7 @@ async function openStartEvalModal(roomId) {
             location.replace('/app/');
             return;
         }
-        $body.innerHTML = '<p class="start-eval__msg">No se pudieron cargar los nodos.</p>';
+        $body.innerHTML = '<p class="start-eval__msg">No se pudieron cargar los temas.</p>';
     }
 }
 
@@ -340,7 +340,7 @@ function bindStartEvalModal() {
             const checked = Array.from(document.querySelectorAll('.start-eval__check:checked'))
                 .map((c) => Number(c.value));
             if (checked.length === 0) {
-                toast('Elegí al menos un nodo para evaluarte.', { kind: 'error' });
+                toast('Elija al menos un tema para evaluarse.', { kind: 'error' });
                 return;
             }
             $confirm.disabled = true;

@@ -84,7 +84,7 @@ function questionText(q) {
 function applyFilters(bank) {
     const q = currentSearch.trim().toLowerCase();
     return bank.filter((qst) => {
-        if (currentNode !== 'all' && (qst.node_name || nodeName(qst.node) || 'Sin nodo') !== currentNode) return false;
+        if (currentNode !== 'all' && (qst.node_name || nodeName(qst.node) || 'Sin tema') !== currentNode) return false;
         if (currentStatus !== 'all' && qst.status !== currentStatus) return false;
         if (currentSource !== 'all' && qst.source !== currentSource) return false;
         if (currentType !== 'all' && (qst.question_type || 'single') !== currentType) return false;
@@ -140,7 +140,7 @@ function renderList() {
     // Agrupar por nodo (sección); dentro de cada nodo, separar por tipo.
     const byNode = new Map();
     filtered.forEach((q) => {
-        const node = q.node_name || nodeName(q.node) || 'Sin nodo';
+        const node = q.node_name || nodeName(q.node) || 'Sin tema';
         if (!byNode.has(node)) byNode.set(node, []);
         byNode.get(node).push(q);
     });
@@ -197,7 +197,7 @@ function fillNodeFilter() {
 
     const counts = new Map();
     BANK.forEach((q) => {
-        const n = q.node_name || nodeName(q.node) || 'Sin nodo';
+        const n = q.node_name || nodeName(q.node) || 'Sin tema';
         counts.set(n, (counts.get(n) || 0) + 1);
     });
 
@@ -209,7 +209,7 @@ function fillNodeFilter() {
     if (currentNode !== 'all' && !ordered.some(([n]) => n === currentNode)) currentNode = 'all';
 
     const qLabel = (c) => (c === 0 ? 'sin preguntas' : `${c} ${c === 1 ? 'pregunta' : 'preguntas'}`);
-    $sel.innerHTML = `<option value="all" ${currentNode === 'all' ? 'selected' : ''}>Todos los nodos</option>`
+    $sel.innerHTML = `<option value="all" ${currentNode === 'all' ? 'selected' : ''}>Todos los temas</option>`
         + ordered.map(([name, c]) =>
             `<option value="${escapeHTML(name)}" ${name === currentNode ? 'selected' : ''}>${escapeHTML(name)} · ${qLabel(c)}</option>`
         ).join('');
@@ -406,7 +406,7 @@ function fillNodeSelects() {
     const selects = [document.getElementById('manual-node'), document.getElementById('gen-node')];
     const opts = NODES.length
         ? NODES.map((n) => `<option value="${n.id}">${escapeHTML(n.name)}</option>`).join('')
-        : '<option value="" disabled selected>Creá un nodo primero</option>';
+        : '<option value="" disabled selected>Cree un tema primero</option>';
     selects.forEach(($s) => { if ($s) $s.innerHTML = opts; });
 }
 
@@ -452,13 +452,13 @@ document.getElementById('node-form').addEventListener('submit', async (e) => {
     if (!name) return;
     try {
         await questionsApi.createNode(ROOM_ID, name);
-        toast('Nodo creado.', { kind: 'success' });
+        toast('Tema creado.', { kind: 'success' });
         $name.value = '';
         await refreshNodes();   // actualiza NODES + el selector "Nodo"
         renderNodeManager();    // refresca la lista (el modal queda abierto)
         $name.focus();
     } catch (err) {
-        const msg = apiErrorMessage(err, 'No se pudo crear el nodo.');
+        const msg = apiErrorMessage(err, 'No se pudo crear el tema.');
         if (msg) toast(msg, { kind: 'error' });
     }
 });
@@ -470,11 +470,11 @@ function renderNodeManager() {
     if (!$list) return;
     const counts = new Map();
     BANK.forEach((q) => {
-        const n = q.node_name || nodeName(q.node) || 'Sin nodo';
+        const n = q.node_name || nodeName(q.node) || 'Sin tema';
         counts.set(n, (counts.get(n) || 0) + 1);
     });
     if (!NODES.length) {
-        $list.innerHTML = '<li class="qnode qnode--empty">Todavía no hay nodos. Creá el primero arriba.</li>';
+        $list.innerHTML = '<li class="qnode qnode--empty">Todavía no hay temas. Cree el primero arriba.</li>';
         return;
     }
     const sorted = [...NODES].sort((a, b) => a.name.localeCompare(b.name));
@@ -487,7 +487,7 @@ function renderNodeManager() {
             <span class="qnode__count num">${label}</span>
             <div class="qnode__actions">
                 <button type="button" class="qnode__btn" data-qnode="rename" aria-label="Renombrar ${escapeHTML(n.name)}">${SVG_PENCIL}</button>
-                <button type="button" class="qnode__btn qnode__btn--danger" data-qnode="delete" ${c > 0 ? 'disabled' : ''} title="${c > 0 ? 'Tiene preguntas: no se puede borrar' : 'Borrar nodo'}" aria-label="Borrar ${escapeHTML(n.name)}">${SVG_TRASH}</button>
+                <button type="button" class="qnode__btn qnode__btn--danger" data-qnode="delete" ${c > 0 ? 'disabled' : ''} title="${c > 0 ? 'Tiene preguntas: no se puede borrar' : 'Borrar tema'}" aria-label="Borrar ${escapeHTML(n.name)}">${SVG_TRASH}</button>
             </div>
         </li>`;
     }).join('');
@@ -496,7 +496,7 @@ function renderNodeManager() {
 function startNodeRename(li) {
     const name = li.dataset.nodeName || '';
     li.innerHTML = `
-        <input class="form-control qnode__input" type="text" value="${escapeHTML(name)}" maxlength="200" aria-label="Nuevo nombre del nodo">
+        <input class="form-control qnode__input" type="text" value="${escapeHTML(name)}" maxlength="200" aria-label="Nuevo nombre del tema">
         <div class="qnode__actions">
             <button type="button" class="qnode__btn" data-qnode="save" aria-label="Guardar">${SVG_CHECK}</button>
             <button type="button" class="qnode__btn" data-qnode="cancel" aria-label="Cancelar">${SVG_X}</button>
@@ -514,12 +514,12 @@ async function saveNodeRename(li, nodeId) {
     if (!val) { toast('El nombre no puede estar vacío.', { kind: 'error' }); return; }
     try {
         await questionsApi.updateNode(ROOM_ID, nodeId, val);
-        toast('Nodo renombrado.', { kind: 'success' });
+        toast('Tema renombrado.', { kind: 'success' });
         await refreshNodes();
         await reloadBank();   // las preguntas traen el node_name actualizado
         renderNodeManager();
     } catch (err) {
-        const msg = apiErrorMessage(err, 'No se pudo renombrar el nodo.');
+        const msg = apiErrorMessage(err, 'No se pudo renombrar el tema.');
         if (msg) toast(msg, { kind: 'error' });
     }
 }
@@ -536,12 +536,12 @@ function confirmNodeDelete(li) {
 async function doNodeDelete(nodeId) {
     try {
         await questionsApi.deleteNode(ROOM_ID, nodeId);
-        toast('Nodo borrado.', { kind: 'success' });
+        toast('Tema borrado.', { kind: 'success' });
         await refreshNodes();
         renderNodeManager();
         renderList();
     } catch (err) {
-        const msg = apiErrorMessage(err, 'No se pudo borrar el nodo.');
+        const msg = apiErrorMessage(err, 'No se pudo borrar el tema.');
         if (msg) toast(msg, { kind: 'error' });
         renderNodeManager();
     }
@@ -622,7 +622,7 @@ function renderManualOptions(values, correct) {
         </div>
     `).join('');
 
-    if ($hint) $hint.textContent = type === 'multiple' ? 'marcá todas las correctas' : 'marcá la correcta';
+    if ($hint) $hint.textContent = type === 'multiple' ? 'marque todas las correctas' : 'marque la correcta';
     if ($add) $add.hidden = fixed || opts.length >= MANUAL_MAX_OPTS;
 }
 
@@ -697,13 +697,13 @@ document.getElementById('manual-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!ROOM_ID) return;
     const nodeId = Number(document.getElementById('manual-node').value);
-    if (!nodeId) { toast('Elegí un nodo (creá uno si no hay).', { kind: 'error' }); return; }
+    if (!nodeId) { toast('Elija un tema (cree uno si no hay).', { kind: 'error' }); return; }
 
     const type = manualType();
     const options = readManualOptionValues().map((o) => o.trim());
-    if (options.some((o) => !o)) { toast('Completá todas las opciones.', { kind: 'error' }); return; }
+    if (options.some((o) => !o)) { toast('Complete todas las opciones.', { kind: 'error' }); return; }
     const correct = readManualCorrect();
-    if (!correct.length) { toast('Marcá al menos una opción correcta.', { kind: 'error' }); return; }
+    if (!correct.length) { toast('Marque al menos una opción correcta.', { kind: 'error' }); return; }
     if (type === 'multiple' && correct.length < 2) {
         toast('Opción múltiple requiere al menos 2 correctas.', { kind: 'error' }); return;
     }
@@ -743,11 +743,11 @@ document.getElementById('generate-form').addEventListener('submit', async (e) =>
     e.preventDefault();
     if (!ROOM_ID) return;
     const nodeId = Number(document.getElementById('gen-node').value);
-    if (!nodeId) { toast('Elegí un nodo (creá uno si no hay).', { kind: 'error' }); return; }
+    if (!nodeId) { toast('Elija un tema (cree uno si no hay).', { kind: 'error' }); return; }
     const pdfId = document.getElementById('gen-pdf').value;
     const content = document.getElementById('gen-content').value.trim();
     if (!pdfId && !content) {
-        toast('Pegá contenido o elegí un PDF como fuente.', { kind: 'error' });
+        toast('Pegue contenido o elija un PDF como fuente.', { kind: 'error' });
         return;
     }
 
@@ -768,7 +768,7 @@ document.getElementById('generate-form').addEventListener('submit', async (e) =>
     try {
         const res = await questionsApi.generate(ROOM_ID, payload);
         const n = res?.created_count ?? 0;
-        toast(n ? `${n} pregunta${n === 1 ? '' : 's'} generada${n === 1 ? '' : 's'}.` : 'La IA no devolvió preguntas. Probá con más contenido.', {
+        toast(n ? `${n} pregunta${n === 1 ? '' : 's'} generada${n === 1 ? '' : 's'}.` : 'La IA no devolvió preguntas. Pruebe con más contenido.', {
             kind: n ? 'success' : 'error',
         });
         if (n) {
@@ -853,7 +853,7 @@ async function load() {
     ROOM_INFO = owned.find((r) => r.id === stored) || owned[0];
     if (!ROOM_INFO) {
         const $list = document.getElementById('questions-list');
-        if ($list) $list.innerHTML = `<li class="questions-empty">Creá una sala de estudio para gestionar su banco de preguntas.</li>`;
+        if ($list) $list.innerHTML = `<li class="questions-empty">Cree una sala de estudio para gestionar su banco de preguntas.</li>`;
         return;
     }
     ROOM_ID = ROOM_INFO.id;
