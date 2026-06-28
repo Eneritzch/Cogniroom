@@ -86,6 +86,20 @@
                     </button>
                 </div>
             </div>
+
+            <div class="diagnoses-toolbar__group">
+                <span class="diagnoses-toolbar__label">Sala</span>
+                <select class="form-select diagnoses-select" id="diag-room-filter" aria-label="Filtrar por sala">
+                    <option value="all">Todas</option>
+                </select>
+            </div>
+
+            <div class="diagnoses-toolbar__group">
+                <span class="diagnoses-toolbar__label">Tema</span>
+                <select class="form-select diagnoses-select" id="diag-node-filter" aria-label="Filtrar por tema">
+                    <option value="all">Todos</option>
+                </select>
+            </div>
         </header>
 
         <div class="rooms-meta" id="diag-meta"></div>
@@ -117,6 +131,7 @@
 
     {% include 'app/partials/_bootstrap-bundle.html' %}
     <script type="module" src="{% static 'js/app/nav-auth.js' %}?v={% now "U" %}"></script>
+    <script type="module" src="{% static 'js/app/custom-select.js' %}?v={% now "U" %}"></script>
     <script type="module" src="{% static 'js/app/shared/diagnoses.js' %}?v={% now "U" %}"></script>
 </body>
 </html>

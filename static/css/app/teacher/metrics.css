@@ -269,9 +269,24 @@
 
 .heatmap__row-name--header,
 .heatmap__row-name--footer {
-  width: 180px;
+  width: 230px;
   flex-shrink: 0;
   padding-left: var(--s-2);
+}
+
+/* Nombre + etiqueta de perfil apilados, para que el nombre completo quepa */
+.heatmap__row-id {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.heatmap__row-id .pill {
+  align-self: flex-start;
+  margin: 0;
+  padding: 2px 7px;
+  font-size: 10px;
 }
 
 .heatmap__row-name--header .eyebrow {
@@ -314,13 +329,56 @@
   border-radius: var(--r-sm);
 }
 
-.heatmap__cell--avg {
-  border-color: var(--paper-border-strong);
+/* Celda-medidor: número + mini-barra de progreso, con tono por nivel.
+   Reemplaza el bloque de color sólido (más limpio y escala a cualquier tamaño). */
+.hm-cell {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 46px;
+  padding: 7px 10px;
+  background: var(--paper-surface);
+  border: 1px solid var(--paper-border);
+  border-radius: var(--r-sm);
 }
 
-.heatmap__cell--avg .heatmap__cell-value {
-  color: var(--ink);
+.hm-cell__pct {
+  font-family: var(--font-mono);
+  font-size: 13px;
   font-weight: var(--fw-semibold);
+  line-height: 1;
+}
+
+.hm-cell__bar {
+  width: 100%;
+  height: 4px;
+  background: var(--paper-border-strong);
+  border-radius: var(--r-pill);
+  overflow: hidden;
+}
+
+.hm-cell__fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--r-pill);
+  transition: width var(--dur-base) var(--ease-out);
+}
+
+.hm-cell[data-tone='strong'] .hm-cell__fill { background: var(--moss); }
+.hm-cell[data-tone='mid']    .hm-cell__fill { background: var(--amber); }
+.hm-cell[data-tone='weak']   .hm-cell__fill { background: var(--rust); }
+
+.hm-cell[data-tone='strong'] .hm-cell__pct { color: var(--moss); }
+.hm-cell[data-tone='mid']    .hm-cell__pct { color: var(--amber); }
+.hm-cell[data-tone='weak']   .hm-cell__pct { color: var(--rust); }
+
+.hm-cell--avg {
+  background: var(--paper-elevated);
+  border-color: var(--paper-border-strong);
 }
 
 

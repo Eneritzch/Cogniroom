@@ -57,7 +57,7 @@ function renderCard(r, isActive) {
     const tone = healthTone(d.icc || 0);
 
     return `
-    <li class="rcard ${isActive ? 'rcard--active' : ''}">
+    <li class="rcard ${isActive ? 'rcard--active' : ''}" data-open="${r.id}">
         ${isActive ? '<span class="rcard__activedot" aria-label="Sala activa"></span>' : ''}
         <header class="rcard__head">
             <div class="rcard__id">
@@ -169,8 +169,8 @@ function renderCard(r, isActive) {
                 ? '<span class="rcard__activelabel">Activa</span>'
                 : `<button type="button" class="rcard__link" data-activate="${r.id}">Hacer activa</button>`
             }
-            <a class="rcard__cta" href="/app/students/" data-activate="${r.id}">
-                Ver detalle
+            <a class="rcard__cta" href="/app/questions/" data-activate="${r.id}">
+                Ver preguntas
                 <svg class="icon-svg" width="11" height="11" viewBox="0 0 24 24" aria-hidden="true">
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                     <polyline points="12 5 19 12 12 19"></polyline>
@@ -277,6 +277,15 @@ function bindActions() {
         el.addEventListener('click', () => {
             localStorage.setItem('cogniroom.activeRoomId', String(Number(el.dataset.activate)));
             if (el.tagName !== 'A') render();
+        });
+    });
+
+    // Clic en la tarjeta (fuera de botones/enlaces) → abre las preguntas de esa sala.
+    document.querySelectorAll('.rcard[data-open]').forEach((card) => {
+        card.addEventListener('click', (e) => {
+            if (e.target.closest('button, a, [data-copy], [data-share], [data-rename], [data-activate]')) return;
+            localStorage.setItem('cogniroom.activeRoomId', String(Number(card.dataset.open)));
+            location.href = '/app/questions/';
         });
     });
 

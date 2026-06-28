@@ -102,6 +102,9 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='CogniRoom <no-reply@cogniroom.com>')
 
+# URL base para construir enlaces absolutos en los correos (CTA de notificaciones).
+SITE_URL = config('SITE_URL', default='http://127.0.0.1:8000')
+
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {

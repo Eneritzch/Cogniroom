@@ -43,6 +43,8 @@ const DIAG_TITLES = {
 let DIAGNOSES = [];
 let currentRisk = 'all';
 let currentProfile = 'all';
+let currentRoom = 'all';
+let currentNode = 'all';
 
 
 function riskLabel(r) {
@@ -132,7 +134,40 @@ function applyFilters(all) {
     return all
         .filter((d) => currentRisk === 'all' || d.risk_level === currentRisk)
         .filter((d) => currentProfile === 'all' || d.classification === currentProfile)
+        .filter((d) => currentRoom === 'all' || (d.room && d.room.name) === currentRoom)
+        .filter((d) => currentNode === 'all' || d.node_name === currentNode)
         .sort((a, b) => new Date(b.generated_at) - new Date(a.generated_at));
+}
+
+
+function fillSelect($sel, values, current, allLabel) {
+    const list = [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b));
+    if ($sel) {
+        $sel.innerHTML = `<option value="all">${allLabel}</option>`
+            + list.map((v) => `<option value="${escapeHTML(v)}">${escapeHTML(v)}</option>`).join('');
+        $sel.value = list.includes(current) ? current : 'all';
+    }
+    return list;
+}
+
+function populateRoomFilter(all) {
+    fillSelect(document.getElementById('diag-room-filter'),
+        all.map((d) => d.room && d.room.name), currentRoom, 'Todas');
+}
+
+// Los temas dependen de la sala elegida: con una sala activa, solo sus temas.
+function populateNodeFilter(all) {
+    const scoped = currentRoom === 'all'
+        ? all
+        : all.filter((d) => (d.room && d.room.name) === currentRoom);
+    const list = fillSelect(document.getElementById('diag-node-filter'),
+        scoped.map((d) => d.node_name), currentNode, 'Todos');
+    if (!list.includes(currentNode)) currentNode = 'all';
+}
+
+function populateFilters(all) {
+    populateRoomFilter(all);
+    populateNodeFilter(all);
 }
 
 
@@ -214,11 +249,27 @@ document.querySelectorAll('[data-profile-filter]').forEach((btn) => {
     });
 });
 
+const $roomFilter = document.getElementById('diag-room-filter');
+if ($roomFilter) {
+    $roomFilter.addEventListener('change', () => {
+        currentRoom = $roomFilter.value;
+        // Cascada: al cambiar de sala, re-filtra los temas a los de esa sala.
+        populateNodeFilter(DIAGNOSES);
+        render();
+    });
+}
+
+const $nodeFilter = document.getElementById('diag-node-filter');
+if ($nodeFilter) {
+    $nodeFilter.addEventListener('change', () => { currentNode = $nodeFilter.value; render(); });
+}
+
 
 async function loadDiagnoses() {
     try {
         const data = await me.diagnoses();
         DIAGNOSES = data || [];
+        populateFilters(DIAGNOSES);
         render();
     } catch (err) {
         if (err instanceof ApiError && err.status === 401) {

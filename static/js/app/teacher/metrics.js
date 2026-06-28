@@ -39,17 +39,10 @@ let currentSearch = '';
 let currentPage = 1;
 
 
-function cellColor(v) {
-    if (v >= 0.7) return `color-mix(in oklab, var(--sage) ${v * 70}%, var(--paper-surface))`;
-    if (v >= 0.5) return `color-mix(in oklab, var(--amber) ${v * 50}%, var(--paper-surface))`;
-    return `color-mix(in oklab, var(--rust) ${(1 - v) * 60}%, var(--paper-surface))`;
-}
-
-
-function cellColorBold(v) {
-    if (v >= 0.7) return `color-mix(in oklab, var(--sage) 78%, var(--paper-surface))`;
-    if (v >= 0.5) return `color-mix(in oklab, var(--amber) 72%, var(--paper-surface))`;
-    return `color-mix(in oklab, var(--rust) 72%, var(--paper-surface))`;
+function cellTone(v) {
+    if (v >= 0.7) return 'strong';
+    if (v >= 0.5) return 'mid';
+    return 'weak';
 }
 
 
@@ -211,7 +204,7 @@ function renderHeatmap() {
     if ($meta) {
         $meta.textContent = filtered.length === 0
             ? 'Sin estudiantes para este filtro'
-            : `${startIdx + 1}–${startIdx + visible.length} de ${filtered.length} estudiantes`;
+            : `${startIdx + 1}–${startIdx + visible.length} de ${filtered.length} estudiante${filtered.length === 1 ? '' : 's'}`;
     }
 
     if (filtered.length === 0) {
@@ -240,15 +233,20 @@ function renderHeatmap() {
         <div class="heatmap__row">
             <div class="heatmap__row-name">
                 <span class="heatmap__row-avatar" aria-hidden="true">${initials(displayName)}</span>
-                <span class="heatmap__row-name-text">${escapeHTML(displayName)}</span>
-                <span class="pill" data-profile="${row.profile}">${profileShort(row.profile)}</span>
+                <span class="heatmap__row-id">
+                    <span class="heatmap__row-name-text" title="${escapeHTML(displayName)}">${escapeHTML(displayName)}</span>
+                    <span class="pill" data-profile="${row.profile}">${profileShort(row.profile)}</span>
+                </span>
             </div>
-            ${row.cells.map((v, i) => `
-                <div class="heatmap__cell" style="background:${cellColor(v)};"
-                     title="${escapeHTML(displayName)} · ${escapeHTML(nodeName(data.nodes[i]))} · ${Math.round(v * 100)}%">
-                    <span class="heatmap__cell-value">${Math.round(v * 100)}</span>
-                </div>
-            `).join('')}
+            ${row.cells.map((v, i) => {
+                const pct = Math.round(v * 100);
+                return `
+                <div class="hm-cell" data-tone="${cellTone(v)}"
+                     title="${escapeHTML(displayName)} · ${escapeHTML(nodeName(data.nodes[i]))} · ${pct}%">
+                    <span class="hm-cell__pct num">${pct}%</span>
+                    <span class="hm-cell__bar"><span class="hm-cell__fill" style="width:${pct}%;"></span></span>
+                </div>`;
+            }).join('')}
             <div class="heatmap__summary">${Math.round(rAvg * 100)}%</div>
         </div>
         `;
@@ -260,8 +258,10 @@ function renderHeatmap() {
         </div>
         ${data.nodes.map((_, i) => {
             const v = nodeAvg(data.roster, i);
-            return `<div class="heatmap__cell heatmap__cell--avg" style="background:${cellColorBold(v)};">
-                <span class="heatmap__cell-value">${Math.round(v * 100)}</span>
+            const pct = Math.round(v * 100);
+            return `<div class="hm-cell hm-cell--avg" data-tone="${cellTone(v)}">
+                <span class="hm-cell__pct num">${pct}%</span>
+                <span class="hm-cell__bar"><span class="hm-cell__fill" style="width:${pct}%;"></span></span>
             </div>`;
         }).join('')}
         <div class="heatmap__summary heatmap__summary--total">${Math.round(avg(data.roster.map(rowAvg)) * 100)}%</div>

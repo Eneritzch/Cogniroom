@@ -94,6 +94,14 @@
   letter-spacing: 0.04em;
 }
 
+/* El <select> se reemplaza por el dropdown del sistema (.cselect). */
+.diagnoses-toolbar__group .cselect {
+  min-width: 200px;
+  max-width: 260px;
+}
+
+.diagnoses-toolbar__group .cselect__button { min-height: 38px; }
+
 .diagnoses-chips {
   display: flex;
   flex-wrap: wrap;

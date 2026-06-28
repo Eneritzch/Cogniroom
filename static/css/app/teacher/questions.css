@@ -38,14 +38,14 @@
 }
 
 
-/* Selector de nodo en la barra de filtros (compacto). */
-.questions-controls__group .cselect { min-width: 150px; }
+/* Selector de tema en la barra de filtros. */
+.questions-controls__group .cselect { min-width: 190px; }
 
 
 .questions-controls {
   display: flex;
   flex-direction: column;
-  gap: var(--s-3);
+  gap: var(--s-4);
   margin-top: var(--s-4);
   padding: var(--s-4) var(--s-5);
   background: var(--paper-elevated);
@@ -53,13 +53,40 @@
   border-radius: var(--r-md);
 }
 
+/* Fila superior: buscar + contador de resultados */
+.questions-controls__bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
 @media (min-width: 768px) {
-  .questions-controls {
+  .questions-controls__bar {
     flex-direction: row;
     align-items: center;
+    gap: var(--s-4);
+  }
+}
+
+.questions-controls__group--tema { flex-shrink: 0; }
+
+/* Fila inferior: filtros rápidos + tema, separados por un divisor */
+.questions-controls__filters {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--paper-border);
+}
+
+@media (min-width: 768px) {
+  .questions-controls__filters {
+    flex-direction: row;
     flex-wrap: wrap;
+    align-items: center;
     gap: var(--s-5);
   }
+  .questions-controls__filters .questions-controls__group--tema { margin-left: auto; }
 }
 
 .questions-controls__group {
@@ -149,7 +176,7 @@
 }
 
 @media (min-width: 768px) {
-  .questions-search { width: 260px; margin-left: auto; }
+  .questions-search { flex: 0 1 340px; width: auto; height: 36px; }
 }
 
 .questions-search:focus-within {
@@ -172,17 +199,21 @@
 
 
 .questions-meta {
-  margin-top: var(--s-3);
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.04em;
   color: var(--ink-muted);
+  white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+  .questions-meta { margin-left: auto; }
 }
 
 
 .questions-list {
   list-style: none;
-  margin: var(--s-3) 0 0;
+  margin: var(--s-5) 0 0;
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -246,12 +277,13 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--s-2);
+  gap: var(--s-3);
 }
 
-/* Sub-encabezado por tipo dentro de un nodo */
+/* Sub-encabezado por tipo dentro de un tema (solo si mezcla tipos) */
 .qsection__type {
-  margin-top: var(--s-2);
+  margin-top: var(--s-3);
+  padding-left: 2px;
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: var(--tracking-caps);

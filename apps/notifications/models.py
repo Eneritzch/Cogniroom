@@ -7,11 +7,15 @@ class Notification(models.Model):
     KIND_STUDENT_AT_RISK = 'student_at_risk'
     KIND_DIAGNOSIS_READY = 'diagnosis_ready'
     KIND_ROOM_JOINED = 'room_joined'
+    KIND_QUESTIONS_ADDED = 'questions_added'
+    KIND_PRACTICE_REMINDER = 'practice_reminder'
     KIND_CHOICES = [
         (KIND_QUESTION_PENDING, 'Preguntas por aprobar'),
         (KIND_STUDENT_AT_RISK, 'Estudiante en riesgo'),
         (KIND_DIAGNOSIS_READY, 'Diagnóstico listo'),
         (KIND_ROOM_JOINED, 'Te uniste a una sala'),
+        (KIND_QUESTIONS_ADDED, 'Preguntas nuevas en tu sala'),
+        (KIND_PRACTICE_REMINDER, 'Tienes práctica pendiente'),
     ]
 
     recipient = models.ForeignKey(

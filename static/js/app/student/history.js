@@ -25,6 +25,9 @@ let currentMode = 'all';
 let currentSearch = '';
 let currentPage = 1;
 
+// Filtro por sala vía ?room=<id> (enlace "Ver historial" de una sala concreta).
+const ROOM_FILTER = Number(new URL(location.href).searchParams.get('room')) || null;
+
 
 function fmtDate(iso) {
     const d = new Date(iso);
@@ -82,8 +85,15 @@ function statusLabel(status) {
 }
 
 
+function roomFilterName() {
+    const s = SESSIONS.find((x) => x.room.id === ROOM_FILTER);
+    return s ? s.room.name : '';
+}
+
+
 function filtered() {
     const list = SESSIONS.filter((s) => {
+        if (ROOM_FILTER && s.room.id !== ROOM_FILTER) return false;
         if (currentStatus !== 'all' && s.status !== currentStatus) return false;
         if (currentMode !== 'all' && s.room.mode !== currentMode) return false;
         if (currentSearch && !s.room.name.toLowerCase().includes(currentSearch)) return false;
@@ -98,6 +108,10 @@ function renderRow(s) {
     const accTone = accuracyTone(pct);
     const durationMin = durationMinFromIso(s.started_at, s.finished_at);
     const modeDotClass = s.room.mode === 'individual' ? 'history-cell__mode--individual' : '';
+
+    const icc = s.avg_icc;
+    const iccTone = icc == null ? '' : (icc >= 0.7 ? 'moss' : icc >= 0.5 ? 'amber' : 'rust');
+    const iccText = icc == null ? '—' : Number(icc).toFixed(2);
 
     const actionBtn = s.status === 'completed'
         ? `<a class="history-action" href="/app/session/${s.id}/review/" data-session-id="${s.id}">
@@ -137,6 +151,10 @@ function renderRow(s) {
             <span class="history-mobile-label">Aciertos</span>
             <span class="history-cell__accuracy-pct" data-tone="${accTone}">${pct}%</span>
             <span class="history-cell__accuracy-sub">${s.correct}/${s.answered}</span>
+        </div>
+        <div class="history-cell history-cell--icc" role="cell">
+            <span class="history-mobile-label">Autoconocimiento</span>
+            <span class="history-cell__icc num"${iccTone ? ` data-tone="${iccTone}"` : ''}>${iccText}</span>
         </div>
         <div class="history-cell history-cell--status" role="cell">
             <span class="history-mobile-label">Estado</span>
@@ -185,7 +203,10 @@ function renderPager(total) {
 
 
 function renderStats() {
-    const all = SESSIONS;
+    // Si se filtró por una sala (?room=), las tarjetas resumen solo esa sala.
+    const all = ROOM_FILTER
+        ? SESSIONS.filter((s) => s.room.id === ROOM_FILTER)
+        : SESSIONS;
     const completed = all.filter((s) => s.status === 'completed');
     const totalAns = completed.reduce((sum, s) => sum + s.answered, 0);
     const totalCor = completed.reduce((sum, s) => sum + s.correct, 0);
@@ -212,9 +233,17 @@ function render() {
 
     const $meta = document.getElementById('history-meta');
     if ($meta) {
-        $meta.textContent = list.length === 0
-            ? ''
-            : `Mostrando ${list.length} sesión${list.length === 1 ? '' : 'es'}`;
+        if (ROOM_FILTER) {
+            const name = roomFilterName();
+            const count = list.length
+                ? `${list.length} sesión${list.length === 1 ? '' : 'es'} · `
+                : '';
+            $meta.innerHTML = `${count}Sala: <strong>${escapeHTML(name || 'seleccionada')}</strong> · <a class="history-meta__clear" href="/app/history/">Ver todas</a>`;
+        } else {
+            $meta.textContent = list.length === 0
+                ? ''
+                : `Mostrando ${list.length} sesión${list.length === 1 ? '' : 'es'}`;
+        }
     }
 
     if (list.length === 0) {

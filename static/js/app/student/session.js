@@ -62,6 +62,7 @@ const $stages = {
 const $confSlider = document.getElementById('confidence-slider');
 const $confValue = document.getElementById('confidence-value');
 const $confHint = document.getElementById('hint-confidence');
+const $confLabel = document.getElementById('confidence-label');
 const $optionsList = document.getElementById('options-list');
 const $submit = document.getElementById('submit-answer');
 const $questionEyebrow = document.getElementById('question-eyebrow');
@@ -69,18 +70,32 @@ const $questionText = document.getElementById('question-text');
 const $current = document.getElementById('session-current');
 const $total = document.getElementById('session-total');
 const $progress = document.getElementById('session-progress-fill');
+const $progressCurrent = document.getElementById('progress-current');
+const $progressTotal = document.getElementById('progress-total');
+const $progressCardFill = document.getElementById('progress-card-fill');
 
 // La sesión termina cuando el backend responde `completed` (no se conoce el
 // total de preguntas de antemano).
 $total.textContent = '—';
 
 
-$confSlider.addEventListener('input', (e) => {
-    const sliderValue = Number(e.target.value);
-    confidenceDeclared = sliderValue / 100;
-    $confValue.textContent = String(sliderValue);
-    $confHint.textContent = String(sliderValue);
-});
+function confidenceWord(v) {
+    if (v < 25) return 'Adivinando';
+    if (v < 50) return 'Poco seguro';
+    if (v < 75) return 'Algo seguro';
+    if (v < 95) return 'Muy seguro';
+    return 'Totalmente seguro';
+}
+
+function updateConfidence(v) {
+    confidenceDeclared = v / 100;
+    if ($confValue) $confValue.textContent = String(v);
+    if ($confHint) $confHint.textContent = String(v);
+    if ($confLabel) $confLabel.textContent = confidenceWord(v);
+}
+
+$confSlider.addEventListener('input', (e) => updateConfidence(Number(e.target.value)));
+updateConfidence(Number($confSlider.value));
 
 
 function showStage(name) {
@@ -98,12 +113,27 @@ function renderQuestion(q) {
 
     const isMultiple = q.question_type === 'multiple';
 
-    $current.textContent = String(currentIndex + 1);
-    // progreso asintótico (el total no se conoce de antemano)
-    const pct = (1 - 1 / (currentIndex + 2)) * 100;
-    $progress.style.width = `${pct}%`;
+    // El backend informa cuántas van respondidas y el total de la evaluación.
+    if (typeof q.answered === 'number') currentIndex = q.answered;
+    const num = currentIndex + 1;
+    const total = typeof q.total === 'number' ? q.total : null;
+
+    $current.textContent = String(num);
+    if ($progressCurrent) $progressCurrent.textContent = String(num);
+
+    if (total != null) {
+        $total.textContent = String(total);
+        if ($progressTotal) $progressTotal.textContent = String(total);
+        const pct = Math.min(100, (currentIndex / total) * 100);
+        $progress.style.width = `${pct}%`;
+        if ($progressCardFill) $progressCardFill.style.width = `${pct}%`;
+    } else {
+        const pct = (1 - 1 / (num + 1)) * 100;
+        $progress.style.width = `${pct}%`;
+    }
+
     const nodeName = q.node_name || q.node?.name || 'Sin tema';
-    $questionEyebrow.textContent = `Pregunta ${currentIndex + 1} · ${nodeName}`
+    $questionEyebrow.textContent = `Pregunta ${num} · ${nodeName}`
         + (isMultiple ? ' · marque todas las correctas' : '');
     $questionText.textContent = q.statement || '—';
 

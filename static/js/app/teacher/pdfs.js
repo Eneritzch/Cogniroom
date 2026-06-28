@@ -53,9 +53,7 @@ function render() {
     if (!$list) return;
 
     if (FILES.length === 0) {
-        $list.innerHTML = `<li class="pdf-item" style="opacity:0.6;cursor:default;">
-            <div class="pdf-item__main"><div class="pdf-item__name">Todavía no subiste material de origen.</div></div>
-        </li>`;
+        $list.innerHTML = `<li class="pdfs-empty">Todavía no subió material de origen. Use “Subir PDF” para añadir el primero.</li>`;
         return;
     }
 
@@ -66,32 +64,41 @@ function render() {
         const processed = typeof p.processed === 'boolean'
             ? p.processed
             : (p.status === 'processed');
+        const statusKey = processed ? 'processed' : (p.status === 'failed' ? 'failed' : 'pending');
+        const statusLabel = processed ? 'Procesado' : (p.status === 'failed' ? 'Falló' : 'Pendiente');
         const fileUrl = p.file_path ?? '';
         return `
-        <li class="pdf-item" data-file="${escapeHTML(fileUrl)}" data-name="${escapeHTML(originalName)}">
-            <span class="pdf-item__icon" aria-hidden="true">
-                <svg class="icon-svg" width="20" height="20" viewBox="0 0 24 24">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <polyline points="14 2 14 8 20 8"></polyline>
-                </svg>
-            </span>
-            <div class="pdf-item__main">
-                <div class="pdf-item__name">${escapeHTML(originalName)}</div>
-                <div class="pdf-item__meta">
-                    <span>${escapeHTML(sizeBytes !== null ? formatBytes(sizeBytes) : (p.size ?? ''))}</span>
-                    <span class="pdf-item__meta-sep">·</span>
-                    <span>${escapeHTML(formatDate(createdAt))}</span>
-                </div>
+        <li class="pdf-item" data-file="${escapeHTML(fileUrl)}" data-name="${escapeHTML(originalName)}" role="button" tabindex="0" aria-label="Abrir ${escapeHTML(originalName)}">
+            <div class="pdf-item__top">
+                <span class="pdf-item__icon" aria-hidden="true">
+                    <svg class="icon-svg" width="20" height="20" viewBox="0 0 24 24">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                    </svg>
+                </span>
+                <span class="pdf-item__status" data-status="${statusKey}">${statusLabel}</span>
             </div>
-            <span class="pdf-item__status" data-status="${processed ? 'processed' : 'pending'}">
-                ${processed ? 'Procesado' : (p.status === 'failed' ? 'Falló' : 'Pendiente')}
-            </span>
-            <button type="button" class="pdf-item__del" data-pdf-id="${p.id}" aria-label="Eliminar PDF">
-                <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24">
-                    <polyline points="3 6 5 6 21 6"></polyline>
-                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
-                </svg>
-            </button>
+            <div class="pdf-item__name" title="${escapeHTML(originalName)}">${escapeHTML(originalName)}</div>
+            <div class="pdf-item__meta">
+                <span>${escapeHTML(sizeBytes !== null ? formatBytes(sizeBytes) : (p.size ?? ''))}</span>
+                <span class="pdf-item__meta-sep">·</span>
+                <span>${escapeHTML(formatDate(createdAt))}</span>
+            </div>
+            <div class="pdf-item__foot">
+                <span class="pdf-item__open">
+                    <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    Ver documento
+                </span>
+                <button type="button" class="pdf-item__del" data-pdf-id="${p.id}" aria-label="Eliminar documento">
+                    <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                    </svg>
+                </button>
+            </div>
         </li>
     `;
     }).join('');
@@ -160,6 +167,15 @@ document.getElementById('pdfs-list').addEventListener('click', (e) => {
     openPdfViewer(item.dataset.file, item.dataset.name);
 });
 
+document.getElementById('pdfs-list').addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    if (e.target.closest('.pdf-item__del')) return;
+    const item = e.target.closest('.pdf-item');
+    if (!item || !item.dataset.file) return;
+    e.preventDefault();
+    openPdfViewer(item.dataset.file, item.dataset.name);
+});
+
 document.getElementById('pdfview-close')?.addEventListener('click', closePdfViewer);
 $pdfView?.addEventListener('click', (e) => { if (e.target === $pdfView) closePdfViewer(); });
 document.addEventListener('keydown', (e) => {
@@ -222,7 +238,7 @@ async function load() {
     ROOM_INFO = owned.find((r) => r.id === stored) || owned[0];
     if (!ROOM_INFO) {
         const $list = document.getElementById('pdfs-list');
-        if ($list) $list.innerHTML = `<li class="pdf-item" style="opacity:0.6;"><div class="pdf-item__main"><div class="pdf-item__name">Creá una sala de estudio para subir material.</div></div></li>`;
+        if ($list) $list.innerHTML = `<li class="pdfs-empty">Cree una sala de estudio para subir material.</li>`;
         return;
     }
     ROOM_ID = ROOM_INFO.id;

@@ -242,6 +242,18 @@
     align-items: center;
     gap: var(--s-3);
   }
+
+  /* Columnas cortas centradas bajo su encabezado (Sala y Cuándo quedan a la izquierda). */
+  .history-col--duration,
+  .history-col--accuracy,
+  .history-col--icc,
+  .history-col--status { text-align: center; }
+
+  .history-cell--duration,
+  .history-cell--icc,
+  .history-cell--status { text-align: center; }
+
+  .history-cell--accuracy { align-items: center; text-align: center; }
 }
 
 
@@ -528,3 +540,11 @@
   line-height: 1.5;
   color: var(--ink-muted);
 }
+
+.history-meta__clear {
+  color: var(--sage);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.history-meta__clear:hover { color: var(--sage-strong); }

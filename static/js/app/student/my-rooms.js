@@ -60,6 +60,7 @@ function modeBadge(mode) {
 
 
 function renderCard(r) {
+    const rid = r.id_room ?? r.id;
     const isGroup = r.mode === 'group';
     const dateRaw = isGroup
         ? (r.membership?.joined_at || r.joined_at || r.created_at)
@@ -100,8 +101,8 @@ function renderCard(r) {
     const needsContent = !isGroup && qCount === 0;
     const arrowSvg = `<svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
     const primaryCta = needsContent
-        ? `<a class="rcard__cta" href="/app/questions/" data-action="manage-questions" data-room-id="${r.id_room}">Generar preguntas ${arrowSvg}</a>`
-        : `<a class="rcard__cta" href="#" data-action="start" data-room-id="${r.id_room}">Empezar evaluación ${arrowSvg}</a>`;
+        ? `<a class="rcard__cta" href="/app/questions/" data-action="manage-questions" data-room-id="${rid}">Generar preguntas ${arrowSvg}</a>`
+        : `<a class="rcard__cta" href="#" data-action="start" data-room-id="${rid}">Empezar evaluación ${arrowSvg}</a>`;
 
     return `
     <li class="rcard" data-mode="${r.mode}">
@@ -160,13 +161,13 @@ function renderCard(r) {
         </div>
 
         <footer class="rcard__foot">
-            <a class="rcard__link" href="/app/history/?room=${r.id_room}" data-action="history" data-room-id="${r.id_room}">
+            <a class="rcard__link" href="/app/history/?room=${rid}" data-action="history" data-room-id="${rid}">
                 Ver historial
             </a>
             <div class="rcard__foot-actions">
                 ${!isGroup ? `
-                    <a class="rcard__link" href="/app/questions/" data-action="manage-questions" data-room-id="${r.id_room}" title="Gestionar preguntas">Preguntas</a>
-                    <a class="rcard__link" href="/app/pdfs/" data-action="manage-pdfs" data-room-id="${r.id_room}" title="Gestionar PDFs">PDFs</a>
+                    <a class="rcard__link" href="/app/questions/" data-action="manage-questions" data-room-id="${rid}" title="Gestionar preguntas">Preguntas</a>
+                    <a class="rcard__link" href="/app/pdfs/" data-action="manage-pdfs" data-room-id="${rid}" title="Gestionar PDFs">PDFs</a>
                 ` : ''}
                 ${primaryCta}
             </div>

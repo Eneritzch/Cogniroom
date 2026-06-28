@@ -314,21 +314,23 @@ class NextQuestionView(APIView):
         if session.status != EvaluationSession.STATUS_ACTIVE:
             return Response({'completed': True})
 
-        answered_ids = Answer.objects.filter(session=session).values_list(
-            'question_id', flat=True
+        answered_ids = list(
+            Answer.objects.filter(session=session).values_list('question_id', flat=True)
         )
 
-        candidates = Question.objects.filter(
+        # Conjunto total: aprobadas de la sala, dentro de los nodos elegidos.
+        base = Question.objects.filter(
             node__room=session.room,
             status=Question.STATUS_APPROVED,
-        ).exclude(id__in=answered_ids)
-
-        # El estudiante eligió nodos al iniciar: la evaluación se restringe a
-        # ellos (la selección adaptativa por mastery opera dentro del subconjunto).
+        )
         selected_node_ids = session.selected_node_ids or []
         if selected_node_ids:
-            candidates = candidates.filter(node_id__in=selected_node_ids)
+            base = base.filter(node_id__in=selected_node_ids)
 
+        total = base.count()
+        answered = base.filter(id__in=answered_ids).count()
+
+        candidates = base.exclude(id__in=answered_ids)
         if not candidates.exists():
             return Response({'completed': True})
 
@@ -349,6 +351,8 @@ class NextQuestionView(APIView):
 
         data = QuestionPublicSerializer(question).data
         data['completed'] = False
+        data['total'] = total
+        data['answered'] = answered
         return Response(data)
 
 

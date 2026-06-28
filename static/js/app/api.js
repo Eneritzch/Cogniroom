@@ -118,6 +118,14 @@ export const rooms = {
         body: section_id != null ? { access_code, section_id } : { access_code },
     }),
     members:     (roomId) => request(`/rooms/${roomId}/members/`),
+    assignSection: (roomId, studentId, sectionId) => request(`/rooms/${roomId}/members/${studentId}/section/`, {
+        method: 'PATCH', body: { section_id: sectionId },
+    }),
+    enrollSearch: (roomId, q) => request(`/rooms/${roomId}/enroll/${q ? `?q=${encodeURIComponent(q)}` : ''}`),
+    enroll:       (roomId, studentId) => request(`/rooms/${roomId}/enroll/`, {
+        method: 'POST', body: { student_id: studentId },
+    }),
+    unenroll:     (roomId, studentId) => request(`/rooms/${roomId}/members/${studentId}/`, { method: 'DELETE' }),
     studentDetail: (roomId, studentId) => request(`/rooms/${roomId}/students/${studentId}/`),
     blindSpots:  (roomId) => request(`/rooms/${roomId}/metrics/blind-spots/`),
     atRisk:      (roomId) => request(`/rooms/${roomId}/metrics/at-risk/`),

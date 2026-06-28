@@ -140,6 +140,28 @@ function applyFilters(roster) {
 }
 
 
+// Selector para asignar la sección de un estudiante (solo si la sala tiene
+// secciones). El cambio dispara el PATCH de membresía.
+function sectionSelectHTML(student, sections) {
+    if (!sections || sections.length === 0) return '';
+    const currentId = student.membership?.section?.id_section ?? '';
+    const opts = ['<option value="">Sin sección</option>'].concat(
+        sections.map((c) => {
+            const label = c.name ? `${c.code} · ${c.name}` : c.code;
+            return `<option value="${c.id_section}" ${c.id_section === currentId ? 'selected' : ''}>${escapeHTML(label)}</option>`;
+        }),
+    );
+    return `
+        <label class="student-card__section">
+            <span class="student-card__section-label">Sección</span>
+            <select class="student-card__section-select" data-assign-section="${student.user?.id ?? ''}"
+                    aria-label="Asignar sección a ${escapeHTML(fullName(student.user))}">
+                ${opts.join('')}
+            </select>
+        </label>`;
+}
+
+
 function renderList() {
     const data = DATA;
     if (!data) return;
@@ -175,7 +197,6 @@ function renderList() {
         const confidence = Math.round((s.avg_confidence ?? 0) * 100);
         const tone = gapTone(gap);
         const gapText = gapPts > 0 ? `+${gapPts}` : `${gapPts}`;
-        const sectionCode = s.membership?.section?.code || '';
         const name = fullName(s.user);
         const reading = calibrationReading(s.profile, gapPts);
 
@@ -186,7 +207,6 @@ function renderList() {
                 <div class="student-card__id">
                     <div class="student-card__name">${escapeHTML(name)}</div>
                     <div class="student-card__meta">
-                        ${sectionCode ? `<span class="student-card__curso">${escapeHTML(sectionCode)}</span>` : ''}
                         <span class="student-card__reading">${reading.headline}</span>
                     </div>
                 </div>
@@ -198,6 +218,7 @@ function renderList() {
             </div>
 
             <div class="student-card__foot">
+                ${sectionSelectHTML(s, data.sections)}
                 <div class="student-card__gap" title="${escapeHTML(reading.detail)}">
                     <span class="student-card__gap-val" data-tone="${tone}">${gapText}</span>
                     <span class="student-card__gap-cap">diferencia (pts)</span>
@@ -467,6 +488,24 @@ document.getElementById('students-rows').addEventListener('click', (e) => {
     if (studentId) openStudentDetail(studentId);
 });
 
+
+document.getElementById('students-rows').addEventListener('change', async (e) => {
+    const sel = e.target.closest('[data-assign-section]');
+    if (!sel || !ROOM_ID) return;
+    const studentId = Number(sel.dataset.assignSection);
+    const sectionId = sel.value ? Number(sel.value) : null;
+    sel.disabled = true;
+    try {
+        await roomsApi.assignSection(ROOM_ID, studentId, sectionId);
+        toast('Sección actualizada.', { kind: 'success' });
+        await reloadRoom();
+    } catch (err) {
+        if (err instanceof ApiError && err.status === 401) { tokens.clear(); location.replace('/app/'); return; }
+        toast(err?.body?.detail || 'No se pudo asignar la sección.', { kind: 'error' });
+        sel.disabled = false;
+    }
+});
+
 async function openStudentDetail(studentId) {
     const $modal = document.getElementById('studentDetailModal');
     const $body = document.getElementById('student-detail-body');
@@ -518,6 +557,15 @@ function renderStudentDetail(d) {
         </div>
         <p class="sd-hero__reading"><strong>${reading.headline}.</strong> ${reading.detail}</p>
         <div class="sd-compare">${compareBars(conf, mast)}</div>
+        <div class="sd-hero__actions">
+          <button type="button" class="sd-remove" data-remove-student="${st.id}">
+            <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+            </svg>
+            Quitar de la sala
+          </button>
+        </div>
       </header>
 
       <dl class="sd-stats">
@@ -581,6 +629,103 @@ function renderStudentDetail(d) {
         ${diagsHTML}
       </section>`;
 }
+
+
+/* ---- Agregar estudiante (buscar por institución) ---- */
+const $enrollSearch = document.getElementById('enroll-search');
+const $enrollResults = document.getElementById('enroll-results');
+const $enrollModal = document.getElementById('enrollModal');
+let enrollTimer = null;
+
+function renderEnrollResults(items) {
+    if (!$enrollResults) return;
+    if (!items || items.length === 0) {
+        $enrollResults.innerHTML = '<li class="enroll__empty">Sin estudiantes para mostrar.</li>';
+        return;
+    }
+    $enrollResults.innerHTML = items.map((u) => {
+        const name = `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.username || '';
+        const ini = (name.split(/\s+/).map((p) => p[0]).join('') || '?').slice(0, 2).toUpperCase();
+        return `
+        <li class="enroll__row">
+            <span class="enroll__avatar" aria-hidden="true">${escapeHTML(ini)}</span>
+            <div class="enroll__id">
+                <span class="enroll__name">${escapeHTML(name)}</span>
+                <span class="enroll__email">${escapeHTML(u.email || '')}</span>
+            </div>
+            <button type="button" class="enroll__add" data-enroll="${u.id}">Agregar</button>
+        </li>`;
+    }).join('');
+}
+
+async function loadEnrollCandidates(q = '') {
+    if (!ROOM_ID || !$enrollResults) return;
+    $enrollResults.innerHTML = '<li class="enroll__empty">Buscando…</li>';
+    try {
+        const items = await roomsApi.enrollSearch(ROOM_ID, q);
+        renderEnrollResults(items);
+    } catch (err) {
+        if (err instanceof ApiError && err.status === 401) { tokens.clear(); location.replace('/app/'); return; }
+        $enrollResults.innerHTML = `<li class="enroll__empty">${escapeHTML(err?.body?.detail || 'No se pudo buscar.')}</li>`;
+    }
+}
+
+if ($enrollSearch) {
+    $enrollSearch.addEventListener('input', () => {
+        clearTimeout(enrollTimer);
+        enrollTimer = setTimeout(() => loadEnrollCandidates($enrollSearch.value.trim()), 250);
+    });
+}
+
+if ($enrollModal) {
+    $enrollModal.addEventListener('shown.bs.modal', () => {
+        if ($enrollSearch) $enrollSearch.value = '';
+        loadEnrollCandidates('');
+        $enrollSearch?.focus();
+    });
+}
+
+if ($enrollResults) {
+    $enrollResults.addEventListener('click', async (e) => {
+        const btn = e.target.closest('[data-enroll]');
+        if (!btn || !ROOM_ID) return;
+        btn.disabled = true;
+        try {
+            await roomsApi.enroll(ROOM_ID, Number(btn.dataset.enroll));
+            toast('Estudiante agregado a la sala.', { kind: 'success' });
+            btn.closest('.enroll__row')?.remove();
+            await reloadRoom();
+        } catch (err) {
+            if (err instanceof ApiError && err.status === 401) { tokens.clear(); location.replace('/app/'); return; }
+            toast(err?.body?.detail || 'No se pudo agregar al estudiante.', { kind: 'error' });
+            btn.disabled = false;
+        }
+    });
+}
+
+
+/* ---- Quitar estudiante de la sala (desde el modal de detalle) ---- */
+document.getElementById('student-detail-body')?.addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-remove-student]');
+    if (!btn || !ROOM_ID) return;
+    const studentId = Number(btn.dataset.removeStudent);
+    if (!studentId) return;
+    if (!window.confirm('¿Quitar a este estudiante de la sala? Perderá el acceso a las evaluaciones de esta sala; sus datos históricos se conservan.')) return;
+    btn.disabled = true;
+    try {
+        await roomsApi.unenroll(ROOM_ID, studentId);
+        toast('Estudiante quitado de la sala.', { kind: 'success' });
+        const $modal = document.getElementById('studentDetailModal');
+        if (window.bootstrap && $modal) {
+            (window.bootstrap.Modal.getInstance($modal) || new window.bootstrap.Modal($modal)).hide();
+        }
+        await reloadRoom();
+    } catch (err) {
+        if (err instanceof ApiError && err.status === 401) { tokens.clear(); location.replace('/app/'); return; }
+        toast(err?.body?.detail || 'No se pudo quitar al estudiante.', { kind: 'error' });
+        btn.disabled = false;
+    }
+});
 
 
 window.addEventListener('cogniroom:roomchange', load);

@@ -350,9 +350,23 @@ class ApproveQuestionsView(APIView):
         serializer.is_valid(raise_exception=True)
         ids = serializer.validated_data['question_ids']
 
-        updated = Question.objects.filter(
-            id__in=ids, node__room=room
-        ).update(status=Question.STATUS_APPROVED)
+        scoped = Question.objects.filter(id__in=ids, node__room=room)
+        # Solo cuentan las que pasan de no-aprobada a aprobada (evita avisar de más).
+        new_count = scoped.exclude(status=Question.STATUS_APPROVED).count()
+        updated = scoped.update(status=Question.STATUS_APPROVED)
+
+        if new_count > 0:
+            from apps.rooms.models import RoomMembership
+            plural = 'preguntas nuevas' if new_count != 1 else 'pregunta nueva'
+            for m in RoomMembership.objects.filter(room=room).select_related('student'):
+                notify(
+                    m.student,
+                    kind=Notification.KIND_QUESTIONS_ADDED,
+                    title=f'{new_count} {plural} en {room.name}',
+                    body=f'Tu docente agregó {new_count} {plural} en "{room.name}". '
+                         'Practícalas cuando quieras desde tus salas.',
+                    link='/app/my-rooms/',
+                )
 
         return Response({'approved_count': updated})
 

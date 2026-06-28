@@ -10,6 +10,7 @@ from apps.notifications.services import notify
 
 from .models import Room, RoomMembership, Section
 from .serializers import (
+    AssignSectionSerializer,
     JoinRoomSerializer,
     RoomCreateSerializer,
     RoomSerializer,
@@ -306,7 +307,9 @@ class RoomMembersView(APIView):
         sections = [{
             'id_section': s.id,
             'code': s.code,
+            'name': s.name,
             'schedule': s.schedule,
+            'capacity': s.capacity,
             'total_student': RoomMembership.objects.filter(section=s).count(),
         } for s in room.sections.all()]
 
@@ -316,3 +319,161 @@ class RoomMembersView(APIView):
             'sections': sections,
             'roster': roster,
         })
+
+
+class MemberSectionView(APIView):
+    """El docente asigna (o quita) la sección de un estudiante de su sala."""
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, room_id, student_id):
+        room = get_object_or_404(Room, id=room_id)
+        if room.teacher_id != request.user.id:
+            return Response(
+                {'detail': 'Only the owner can assign sections.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        membership = get_object_or_404(
+            RoomMembership, room=room, student_id=student_id
+        )
+
+        serializer = AssignSectionSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        section_id = serializer.validated_data.get('section_id')
+
+        if section_id is None:
+            membership.section = None
+            membership.save(update_fields=['section'])
+            return Response({'section': None})
+
+        try:
+            section = Section.objects.get(id=section_id, room=room)
+        except Section.DoesNotExist:
+            return Response(
+                {'detail': 'Section not found in this room.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Cupo: si está lleno y el estudiante no está ya en esa sección, rechazar.
+        if section.capacity is not None and membership.section_id != section.id:
+            current = RoomMembership.objects.filter(section=section).count()
+            if current >= section.capacity:
+                return Response(
+                    {'detail': f'La sección {section.code} alcanzó su cupo ({section.capacity}).'},
+                    status=status.HTTP_409_CONFLICT,
+                )
+
+        membership.section = section
+        membership.save(update_fields=['section'])
+        return Response({'section': {
+            'id_section': section.id,
+            'code': section.code,
+            'name': section.name,
+            'schedule': section.schedule,
+        }})
+
+
+class RoomEnrollView(APIView):
+    """El docente busca (GET) y agrega (POST) estudiantes de su institución."""
+    permission_classes = [IsAuthenticated]
+
+    def _owner_room(self, request, room_id):
+        room = get_object_or_404(Room, id=room_id)
+        if room.teacher_id != request.user.id:
+            return None, Response(
+                {'detail': 'Only the owner can enroll students.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        return room, None
+
+    def get(self, request, room_id):
+        from django.contrib.auth import get_user_model
+        from apps.users.serializers import UserSerializer
+
+        room, err = self._owner_room(request, room_id)
+        if err:
+            return err
+        if request.user.institution_id is None:
+            return Response([])
+
+        User = get_user_model()
+        existing = RoomMembership.objects.filter(room=room).values_list('student_id', flat=True)
+        qs = (
+            User.objects.filter(role=User.ROLE_STUDENT, institution_id=request.user.institution_id)
+            .exclude(id__in=existing)
+        )
+        q = (request.query_params.get('q') or '').strip()
+        if q:
+            qs = qs.filter(
+                Q(first_name__icontains=q) | Q(last_name__icontains=q) | Q(email__icontains=q)
+            )
+        qs = qs.order_by('first_name', 'last_name')[:20]
+        return Response(UserSerializer(qs, many=True).data)
+
+    def post(self, request, room_id):
+        from django.contrib.auth import get_user_model
+        from apps.users.serializers import UserSerializer
+
+        room, err = self._owner_room(request, room_id)
+        if err:
+            return err
+        if room.mode != 'group':
+            return Response(
+                {'detail': 'Solo las salas grupales aceptan estudiantes.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if request.user.institution_id is None:
+            return Response(
+                {'detail': 'Su cuenta no tiene una institución asignada.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        User = get_user_model()
+        try:
+            student = User.objects.get(
+                id=request.data.get('student_id'),
+                role=User.ROLE_STUDENT,
+                institution_id=request.user.institution_id,
+            )
+        except (User.DoesNotExist, ValueError, TypeError):
+            return Response(
+                {'detail': 'Estudiante no encontrado en su institución.'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        _, created = RoomMembership.objects.get_or_create(room=room, student=student)
+        if not created:
+            return Response(
+                {'detail': 'El estudiante ya está en la sala.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        notify(
+            student,
+            kind=Notification.KIND_ROOM_JOINED,
+            title=f'Te agregaron a {room.name}',
+            body=f'El docente te agregó a "{room.name}". Cuando active una '
+                 'evaluación, podrá rendirla desde sus salas.',
+            link='/app/my-rooms/',
+        )
+        return Response(
+            {'detail': 'Estudiante agregado.', 'student': UserSerializer(student).data},
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class RoomMemberView(APIView):
+    """El docente quita a un estudiante de la sala (no borra sus datos históricos)."""
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, room_id, student_id):
+        room = get_object_or_404(Room, id=room_id)
+        if room.teacher_id != request.user.id:
+            return Response(
+                {'detail': 'Only the owner can remove members.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        membership = get_object_or_404(
+            RoomMembership, room=room, student_id=student_id
+        )
+        membership.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

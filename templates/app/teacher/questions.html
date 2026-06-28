@@ -57,57 +57,60 @@
             </header>
 
             <div class="questions-controls">
-                <div class="questions-controls__group">
-                    <span class="questions-controls__label">Estado</span>
-                    <div class="questions-controls__chips">
-                        <button type="button" class="questions-chip" data-status-filter="all" aria-pressed="true">Todas</button>
-                        <button type="button" class="questions-chip" data-status-filter="pending" aria-pressed="false">
-                            <span class="questions-chip__dot" data-tone="amber"></span>
-                            Por revisar
-                        </button>
-                        <button type="button" class="questions-chip" data-status-filter="approved" aria-pressed="false">
-                            <span class="questions-chip__dot" data-tone="moss"></span>
-                            Activas
-                        </button>
+                <div class="questions-controls__bar">
+                    <label class="questions-search" aria-label="Buscar pregunta">
+                        <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="11" cy="11" r="7"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <input type="search" id="questions-search" placeholder="Buscar en el banco…">
+                    </label>
+                    <span class="questions-meta num" id="questions-meta"></span>
+                </div>
+
+                <div class="questions-controls__filters">
+                    <div class="questions-controls__group">
+                        <span class="questions-controls__label">Estado</span>
+                        <div class="questions-controls__chips">
+                            <button type="button" class="questions-chip" data-status-filter="all" aria-pressed="true">Todas</button>
+                            <button type="button" class="questions-chip" data-status-filter="pending" aria-pressed="false">
+                                <span class="questions-chip__dot" data-tone="amber"></span>
+                                Por revisar
+                            </button>
+                            <button type="button" class="questions-chip" data-status-filter="approved" aria-pressed="false">
+                                <span class="questions-chip__dot" data-tone="moss"></span>
+                                Activas
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="questions-controls__group">
+                        <span class="questions-controls__label">Origen</span>
+                        <div class="questions-controls__chips">
+                            <button type="button" class="questions-chip" data-source-filter="all" aria-pressed="true">Todas</button>
+                            <button type="button" class="questions-chip" data-source-filter="ai" aria-pressed="false">IA</button>
+                            <button type="button" class="questions-chip" data-source-filter="manual" aria-pressed="false">Manuales</button>
+                        </div>
+                    </div>
+
+                    <div class="questions-controls__group">
+                        <span class="questions-controls__label">Tipo</span>
+                        <div class="questions-controls__chips">
+                            <button type="button" class="questions-chip" data-type-filter="all" aria-pressed="true">Todas</button>
+                            <button type="button" class="questions-chip" data-type-filter="single" aria-pressed="false">Única</button>
+                            <button type="button" class="questions-chip" data-type-filter="true_false" aria-pressed="false">V/F</button>
+                            <button type="button" class="questions-chip" data-type-filter="multiple" aria-pressed="false">Múltiple</button>
+                        </div>
+                    </div>
+
+                    <div class="questions-controls__group questions-controls__group--tema">
+                        <span class="questions-controls__label">Tema</span>
+                        <select class="form-select questions-node-filter" id="node-filter" aria-label="Filtrar por tema">
+                            <option value="all">Todos</option>
+                        </select>
                     </div>
                 </div>
-
-                <div class="questions-controls__group">
-                    <span class="questions-controls__label">Origen</span>
-                    <div class="questions-controls__chips">
-                        <button type="button" class="questions-chip" data-source-filter="all" aria-pressed="true">Todas</button>
-                        <button type="button" class="questions-chip" data-source-filter="ai" aria-pressed="false">IA</button>
-                        <button type="button" class="questions-chip" data-source-filter="manual" aria-pressed="false">Manuales</button>
-                    </div>
-                </div>
-
-                <div class="questions-controls__group">
-                    <span class="questions-controls__label">Tipo</span>
-                    <div class="questions-controls__chips">
-                        <button type="button" class="questions-chip" data-type-filter="all" aria-pressed="true">Todas</button>
-                        <button type="button" class="questions-chip" data-type-filter="single" aria-pressed="false">Única</button>
-                        <button type="button" class="questions-chip" data-type-filter="true_false" aria-pressed="false">V/F</button>
-                        <button type="button" class="questions-chip" data-type-filter="multiple" aria-pressed="false">Múltiple</button>
-                    </div>
-                </div>
-
-                <div class="questions-controls__group">
-                    <span class="questions-controls__label">Tema</span>
-                    <select class="form-select questions-node-filter" id="node-filter" aria-label="Filtrar por tema">
-                        <option value="all">Todos</option>
-                    </select>
-                </div>
-
-                <label class="questions-search" aria-label="Buscar pregunta">
-                    <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
-                        <circle cx="11" cy="11" r="7"></circle>
-                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                    </svg>
-                    <input type="search" id="questions-search" placeholder="Buscar en el banco…">
-                </label>
             </div>
-
-            <div class="questions-meta" id="questions-meta"></div>
 
             <ul class="questions-list" id="questions-list" aria-label="Banco de preguntas"></ul>
         </section>

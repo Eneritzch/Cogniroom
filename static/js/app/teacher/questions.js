@@ -154,15 +154,18 @@ function renderList() {
             .map((t) => `${counts[t]} ${TYPE_LABEL[t]}`)
             .join(' · ');
 
+        // El sub-encabezado por tipo solo aporta cuando el tema mezcla tipos;
+        // con un solo tipo es ruido (el encabezado del tema ya lo indica).
+        const multiType = Object.keys(counts).length > 1;
         const sorted = qs.slice().sort((a, b) => TYPE_ORDER[qType(a)] - TYPE_ORDER[qType(b)]);
         let lastType = null;
         const cards = sorted.map((q) => {
             const t = qType(q);
             let divider = '';
-            if (t !== lastType) {
-                lastType = t;
+            if (multiType && t !== lastType) {
                 divider = `<li class="qsection__type">${TYPE_LABEL[t]}</li>`;
             }
+            lastType = t;
             return divider + cardHTML(q);
         }).join('');
 
@@ -189,29 +192,21 @@ function renderList() {
 }
 
 
-// Selector "Nodo": lista TODOS los nodos de la sala (incluidos los vacíos) con su
-// conteo; al elegir uno, filtra el banco a ese nodo.
+// Selector "Tema": lista TODOS los temas de la sala (incluidos los vacíos);
+// al elegir uno, filtra el banco a ese tema.
 function fillNodeFilter() {
     const $sel = document.getElementById('node-filter');
     if (!$sel) return;
 
-    const counts = new Map();
-    BANK.forEach((q) => {
-        const n = q.node_name || nodeName(q.node) || 'Sin tema';
-        counts.set(n, (counts.get(n) || 0) + 1);
-    });
+    const names = new Set(NODES.map((n) => n.name));
+    BANK.forEach((q) => names.add(q.node_name || nodeName(q.node) || 'Sin tema'));
 
-    const names = new Map();
-    NODES.forEach((n) => names.set(n.name, counts.get(n.name) || 0));
-    counts.forEach((c, n) => { if (!names.has(n)) names.set(n, c); });
+    const ordered = Array.from(names).sort((a, b) => a.localeCompare(b));
+    if (currentNode !== 'all' && !ordered.includes(currentNode)) currentNode = 'all';
 
-    const ordered = Array.from(names.entries()).sort((a, b) => a[0].localeCompare(b[0]));
-    if (currentNode !== 'all' && !ordered.some(([n]) => n === currentNode)) currentNode = 'all';
-
-    const qLabel = (c) => (c === 0 ? 'sin preguntas' : `${c} ${c === 1 ? 'pregunta' : 'preguntas'}`);
     $sel.innerHTML = `<option value="all" ${currentNode === 'all' ? 'selected' : ''}>Todos los temas</option>`
-        + ordered.map(([name, c]) =>
-            `<option value="${escapeHTML(name)}" ${name === currentNode ? 'selected' : ''}>${escapeHTML(name)} · ${qLabel(c)}</option>`
+        + ordered.map((name) =>
+            `<option value="${escapeHTML(name)}" ${name === currentNode ? 'selected' : ''}>${escapeHTML(name)}</option>`
         ).join('');
 }
 
@@ -790,41 +785,28 @@ document.getElementById('generate-form').addEventListener('submit', async (e) =>
 });
 
 
-/* Estimación de costo (tokens) antes de generar — se actualiza al tipear/cambiar. */
+/* Resumen simple antes de generar (sin tokens/costo). */
 let genEstTimer = null;
 
 function scheduleGenEstimate() {
     clearTimeout(genEstTimer);
-    genEstTimer = setTimeout(updateGenEstimate, 400);
+    genEstTimer = setTimeout(updateGenEstimate, 300);
 }
 
-async function updateGenEstimate() {
+function updateGenEstimate() {
     const $est = document.getElementById('gen-estimate');
-    if (!$est || !ROOM_ID) return;
-    const pdfId = document.getElementById('gen-pdf')?.value;
+    if (!$est) return;
+    const $pdf = document.getElementById('gen-pdf');
+    const pdfId = $pdf?.value;
     const content = document.getElementById('gen-content')?.value.trim() || '';
     // Hace falta una fuente: texto pegado o un PDF elegido.
     if (!content && !pdfId) { $est.hidden = true; return; }
-    const payload = {
-        node_id: Number(document.getElementById('gen-node')?.value) || undefined,
-        difficulty: document.getElementById('gen-difficulty')?.value || 'medium',
-        count: Number(document.getElementById('gen-count')?.value) || 5,
-    };
-    // El texto pegado tiene prioridad (igual que al generar); si no, el PDF.
-    if (content) payload.content = content;
-    else payload.pdf_id = Number(pdfId);
-    try {
-        const r = await questionsApi.estimate(ROOM_ID, payload);
-        if (r?.available) {
-            $est.hidden = false;
-            const aprox = r.source === 'pdf' ? ' · aprox. por PDF' : '';
-            $est.textContent = `≈ ${r.input_tokens.toLocaleString('es')} tokens de entrada · ~$${r.approx_cost_usd.toFixed(4)} estimado${aprox}`;
-        } else {
-            $est.hidden = true;
-        }
-    } catch (_) {
-        $est.hidden = true;
-    }
+    const count = Number(document.getElementById('gen-count')?.value) || 5;
+    const source = pdfId
+        ? (($pdf.options[$pdf.selectedIndex]?.text || '').trim() || 'el PDF seleccionado')
+        : 'el contenido pegado';
+    $est.hidden = false;
+    $est.textContent = `Generará ${count} pregunta${count === 1 ? '' : 's'} a partir de ${source}.`;
 }
 
 document.getElementById('gen-content')?.addEventListener('input', scheduleGenEstimate);

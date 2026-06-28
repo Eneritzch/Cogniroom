@@ -3,9 +3,12 @@ from django.urls import include, path
 from apps.cognitive.urls import room_urlpatterns as cognitive_room_urls
 from .views import (
     JoinRoomView,
+    MemberSectionView,
     RoomDetailView,
+    RoomEnrollView,
     RoomListCreateView,
     RoomMembersView,
+    RoomMemberView,
     SectionDetailView,
     SectionListCreateView,
 )
@@ -15,6 +18,9 @@ urlpatterns = [
     path('join/',                         JoinRoomView.as_view(),       name='room-join'),
     path('<int:room_id>/',                RoomDetailView.as_view(),     name='room-detail'),
     path('<int:room_id>/members/',        RoomMembersView.as_view(),    name='room-members'),
+    path('<int:room_id>/members/<int:student_id>/section/', MemberSectionView.as_view(), name='room-member-section'),
+    path('<int:room_id>/members/<int:student_id>/', RoomMemberView.as_view(), name='room-member'),
+    path('<int:room_id>/enroll/',         RoomEnrollView.as_view(),     name='room-enroll'),
 
     path('<int:room_id>/sections/',                    SectionListCreateView.as_view(), name='room-sections'),
     path('<int:room_id>/sections/<int:section_id>/',   SectionDetailView.as_view(),     name='room-section-detail'),

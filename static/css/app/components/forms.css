@@ -3,7 +3,7 @@
   background-color: var(--paper-surface);
   border-color: var(--paper-border-strong);
   color: var(--ink);
-  border-radius: 0;
+  border-radius: var(--r-sm);
 }
 
 .form-control::placeholder { color: var(--ink-faint); }

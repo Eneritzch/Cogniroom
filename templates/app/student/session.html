@@ -43,43 +43,67 @@
     <main class="session-main">
 
         <section class="session-stage" data-stage="question">
-            <article>
-                <div class="session-question__eyebrow eyebrow" id="question-eyebrow">Pregunta · —</div>
-                <h1 class="session-question__title" id="question-text">Cargando pregunta…</h1>
-            </article>
+            <div class="session-cols">
 
-            <section class="session-confidence">
-                <div class="session-confidence__head">
-                    <div>
-                        <div class="eyebrow">Paso 1</div>
-                        <h2 class="session-confidence__title">¿Qué tan seguro está?</h2>
-                        <p class="session-confidence__lead">
-                            Antes de ver las opciones a fondo, declare su confianza inicial.
-                        </p>
-                    </div>
-                    <div class="session-confidence__value" id="confidence-value">75</div>
-                </div>
-                <input
-                    type="range" min="0" max="100" value="75"
-                    class="session-confidence__slider" id="confidence-slider"
-                    aria-label="Confianza"
-                >
-                <div class="session-confidence__scale">
-                    <span>0 · Adivinando</span>
-                    <span>50 · Algo seguro</span>
-                    <span>100 · Totalmente seguro</span>
-                </div>
-            </section>
+                <div class="session-cols__main">
+                    <article>
+                        <div class="session-question__eyebrow eyebrow" id="question-eyebrow">Pregunta · —</div>
+                        <h1 class="session-question__title" id="question-text">Cargando pregunta…</h1>
+                    </article>
 
-            <section>
-                <div class="session-options-head eyebrow">Paso 2 · Tu respuesta</div>
-                <div class="session-options" id="options-list" role="radiogroup" aria-label="Opciones"></div>
-            </section>
+                    <section class="session-step">
+                        <header class="session-step__head">
+                            <span class="session-step__num" aria-hidden="true">2</span>
+                            <div class="session-step__titles">
+                                <h2 class="session-step__title">Elige tu respuesta</h2>
+                                <p class="session-step__lead">Toca la opción que crees correcta.</p>
+                            </div>
+                        </header>
+                        <div class="session-options" id="options-list" role="radiogroup" aria-label="Opciones"></div>
+                    </section>
+                </div>
+
+                <aside class="session-cols__side">
+                    <section class="session-step session-confidence">
+                        <header class="session-step__head">
+                            <span class="session-step__num" aria-hidden="true">1</span>
+                            <div class="session-step__titles">
+                                <h2 class="session-step__title">¿Qué tan seguro estás?</h2>
+                                <p class="session-step__lead">Antes de responder, dinos qué tan seguro te sientes.</p>
+                            </div>
+                        </header>
+                        <div class="session-confidence__value">
+                            <span class="session-confidence__num"><span id="confidence-value">75</span>%</span>
+                            <span class="session-confidence__label" id="confidence-label">Algo seguro</span>
+                        </div>
+                        <input
+                            type="range" min="0" max="100" value="75"
+                            class="session-confidence__slider" id="confidence-slider"
+                            aria-label="Confianza"
+                        >
+                        <div class="session-confidence__scale">
+                            <span>Adivinando</span>
+                            <span>Totalmente seguro</span>
+                        </div>
+                    </section>
+
+                    <section class="session-progress-card">
+                        <div class="eyebrow">Tu progreso</div>
+                        <div class="session-progress-card__count">
+                            <span class="num" id="progress-current">1</span>
+                            <span class="session-progress-card__sep">de</span>
+                            <span class="num" id="progress-total">—</span>
+                        </div>
+                        <div class="session-progress-card__bar" aria-hidden="true">
+                            <div class="session-progress-card__fill" id="progress-card-fill" style="width:0%;"></div>
+                        </div>
+                        <p class="session-progress-card__hint">preguntas de esta evaluación</p>
+                    </section>
+                </aside>
+
+            </div>
 
             <div class="session-actions">
-                <span class="session-actions__hint">
-                    Lo que cree saber: <span class="num" id="hint-confidence">75</span>
-                </span>
                 <button type="button" class="session-submit" id="submit-answer" disabled>
                     Enviar respuesta
                     <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
