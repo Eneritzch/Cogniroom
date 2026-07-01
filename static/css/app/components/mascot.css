@@ -1,0 +1,48 @@
+/* Mascota flotante. Imágenes en static/img/mascot/: idle.png, happy.png, sad.png */
+.mascot-float {
+  position: fixed;
+  right: clamp(12px, 3vw, 28px);
+  bottom: clamp(12px, 3vw, 28px);
+  width: 96px;
+  height: 96px;
+  z-index: 40;
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  background-size: contain;
+  pointer-events: none;
+  animation: mascot-in var(--dur-slow) var(--ease-out) both;
+}
+
+@media (min-width: 768px) {
+  .mascot-float { width: 124px; height: 124px; }
+}
+
+.mascot-float[data-state='idle']  { background-image: url("/static/img/mascot/idle.png"); }
+.mascot-float[data-state='happy'] { background-image: url("/static/img/mascot/happy.png"); }
+.mascot-float[data-state='sad']   { background-image: url("/static/img/mascot/sad.png"); }
+
+@keyframes mascot-in {
+  from { opacity: 0; transform: translateY(14px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* PLACEHOLDER — recuadro guía hasta que agregues las imágenes. Borrá este bloque. */
+.mascot-float {
+  border: 2px dashed var(--paper-border-strong);
+  border-radius: 50%;
+  background-color: var(--paper-elevated);
+}
+.mascot-float::after {
+  content: 'mascota';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+/* FIN PLACEHOLDER */

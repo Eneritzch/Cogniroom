@@ -420,6 +420,41 @@
   color: var(--ink);
 }
 
+/* Las opciones se identifican solo por letra (A, B, C…); el <ol> no debe
+   añadir su propia numeración. */
+.qcard__options {
+  list-style: none;
+  margin: var(--s-3) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.qcard__option {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-3);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+.qcard__option-letter {
+  flex: 0 0 auto;
+  min-width: 18px;
+  color: var(--ink-muted);
+  font-weight: var(--fw-medium);
+}
+
+.qcard__option-text { flex: 1; min-width: 0; }
+
+.qcard__option--correct .qcard__option-letter,
+.qcard__option--correct .qcard__option-text {
+  color: var(--moss);
+  font-weight: var(--fw-medium);
+}
+
 
 .qcard__foot {
   display: flex;
