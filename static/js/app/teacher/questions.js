@@ -441,7 +441,10 @@ function apiErrorMessage(err, fallback) {
 /* Nuevo nodo */
 document.getElementById('node-form').addEventListener('submit', async (e) => {
     e.preventDefault();
-    if (!ROOM_ID) return;
+    if (!ROOM_ID) {
+        toast('Necesitas una sala para crear temas. Crea o selecciona una sala primero.', { kind: 'error' });
+        return;
+    }
     const $name = document.getElementById('node-name');
     const name = $name.value.trim();
     if (!name) return;
@@ -463,6 +466,19 @@ document.getElementById('node-form').addEventListener('submit', async (e) => {
 function renderNodeManager() {
     const $list = document.getElementById('qnode-list');
     if (!$list) return;
+
+    // Los temas se asocian a una sala: sin sala activa no se puede crear ni gestionar.
+    const $nodeName = document.getElementById('node-name');
+    const $nodeSubmit = document.querySelector('#node-form button[type="submit"]');
+    if (!ROOM_ID) {
+        if ($nodeName) $nodeName.disabled = true;
+        if ($nodeSubmit) $nodeSubmit.disabled = true;
+        $list.innerHTML = '<li class="qnode qnode--empty">Necesitas una sala para gestionar temas. Crea o selecciona una sala primero.</li>';
+        return;
+    }
+    if ($nodeName) $nodeName.disabled = false;
+    if ($nodeSubmit) $nodeSubmit.disabled = false;
+
     const counts = new Map();
     BANK.forEach((q) => {
         const n = q.node_name || nodeName(q.node) || 'Sin tema';
