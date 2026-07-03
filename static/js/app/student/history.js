@@ -19,6 +19,7 @@ function escapeHTML(s) {
 
 const PAGE_SIZE = 10;
 let SESSIONS = [];
+let LOADED = false;
 
 let currentStatus = 'all';
 let currentMode = 'all';
@@ -227,6 +228,15 @@ function renderStats() {
 function render() {
     const $rows = document.getElementById('history-rows');
     const $empty = document.getElementById('history-empty');
+
+    // No pintar el estado vacío hasta que la primera carga termine (evita el flash).
+    if (!LOADED) {
+        if ($empty) $empty.hidden = true;
+        if ($rows) $rows.innerHTML = '';
+        renderPager(0);
+        return;
+    }
+
     const list = filtered();
 
     document.getElementById('history-count').textContent = list.length;
@@ -302,6 +312,7 @@ async function loadHistory() {
     try {
         const data = await me.sessions();
         SESSIONS = data || [];
+        LOADED = true;
         renderStats();
         render();
     } catch (err) {
@@ -314,6 +325,5 @@ async function loadHistory() {
     }
 }
 
-renderStats();
 render();
 loadHistory();

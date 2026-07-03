@@ -27,6 +27,7 @@ function hideModal(id) {
 
 let currentMode = 'all';
 let rooms = [];
+let LOADED = false;
 
 
 function teacherDisplayName(t) {
@@ -209,6 +210,14 @@ function paintMeta(filtered) {
 function render() {
     const $list = document.getElementById('my-rooms-list');
     const $empty = document.getElementById('my-rooms-empty');
+
+    // No pintar el estado vacío hasta que la primera carga termine (evita el flash).
+    if (!LOADED) {
+        if ($empty) $empty.hidden = true;
+        if ($list) $list.innerHTML = '';
+        return;
+    }
+
     const filtered = applyFilter();
 
     paintCounts();
@@ -428,6 +437,7 @@ async function loadRooms() {
     try {
         const data = await roomsApi.list();
         rooms = (data || []).map((r) => ({ ...r, id_room: r.id }));
+        LOADED = true;
         render();
     } catch (err) {
         if (err instanceof ApiError && err.status === 401) {

@@ -24,6 +24,7 @@ function activeRoomId() {
 const PAGE_SIZE = 6;
 let currentPage = 1;
 let ROOMS = [];
+let LOADED = false;
 let RENAME_ID = null;
 
 function modalInstance(id) {
@@ -182,6 +183,26 @@ function renderCard(r, isActive) {
 }
 
 
+function emptyStateHTML() {
+    return `
+    <li class="rooms-empty">
+        <span class="rooms-empty__art" aria-hidden="true">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"></path>
+                <path d="M9 21v-6h6v6"></path>
+            </svg>
+        </span>
+        <h2 class="rooms-empty__title">Crea tu primera sala</h2>
+        <p class="rooms-empty__text">Una sala agrupa a tus estudiantes y su banco de preguntas. Al crearla obtienes un código único que ellos usan para unirse y empezar a responder.</p>
+
+        <button type="button" class="ds-btn ds-btn--ink rooms-empty__cta" data-bs-toggle="modal" data-bs-target="#createRoomModal">
+            <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Crear sala
+        </button>
+    </li>`;
+}
+
+
 function render() {
     const $list = document.getElementById('rooms-list');
     const $count = document.getElementById('rooms-count');
@@ -190,7 +211,24 @@ function render() {
 
     const activeId = activeRoomId();
 
+    // Hasta que la primera carga termine no se pinta nada en la lista: así el
+    // estado vacío no parpadea cuando el usuario sí tiene salas (FOUC).
+    if (!LOADED) {
+        if ($count) $count.textContent = '—';
+        if ($meta) $meta.textContent = '';
+        $list.innerHTML = '';
+        renderPager(0, 1);
+        return;
+    }
+
     if ($count) $count.textContent = String(ROOMS.length);
+
+    if (ROOMS.length === 0) {
+        if ($meta) $meta.textContent = '';
+        $list.innerHTML = emptyStateHTML();
+        renderPager(0, 1);
+        return;
+    }
 
     const totalPages = Math.max(1, Math.ceil(ROOMS.length / PAGE_SIZE));
     if (currentPage > totalPages) currentPage = totalPages;
@@ -307,6 +345,7 @@ window.addEventListener('cogniroom:roomchange', render);
 async function loadRooms() {
     try {
         ROOMS = (await roomsApi.list()) || [];
+        LOADED = true;
         render();
     } catch (err) {
         if (err instanceof ApiError && err.status === 401) {

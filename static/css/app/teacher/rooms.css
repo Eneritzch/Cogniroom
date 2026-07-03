@@ -57,6 +57,56 @@
   flex: 0 0 auto;
 }
 
+
+/* ---- Estado vacío: guía en 3 pasos + CTA ---- */
+.rooms-empty {
+  box-sizing: border-box;
+  flex: 1 1 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--s-5);
+  padding: var(--s-12) var(--s-5);
+  background:
+    radial-gradient(circle at 50% 0%, var(--sage-soft), transparent 62%),
+    var(--paper-elevated);
+  border: 1px solid var(--paper-border);
+  border-radius: var(--r-xl);
+}
+
+.rooms-empty__art {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: var(--r-pill);
+  background: var(--gradient-brand);
+  color: var(--color-text-on-accent);
+  box-shadow: var(--shadow-glow);
+}
+
+.rooms-empty__title {
+  margin: 0;
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-bold);
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.rooms-empty__text {
+  margin: 0;
+  max-width: 46ch;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink-muted);
+}
+
+.rooms-empty__cta {
+  margin-top: var(--s-2);
+}
+
 @media (min-width: 768px) {
   .rooms-page .rooms-list > .rcard {
     width: calc((100% - 32px) / 3);
