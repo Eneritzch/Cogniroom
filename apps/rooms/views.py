@@ -23,7 +23,7 @@ def _teacher_room_data(room):
     """Datos de sala enriquecidos para el panel docente (conteos + calibración)."""
     from apps.cognitive.models import AIDiagnosis, CognitiveIndex
     from apps.questions.models import PDFDocument, Question
-    from apps.sessions.models import Answer
+    from apps.sessions.models import EvaluationSession
 
     data = RoomSerializer(room).data
     ci = CognitiveIndex.objects.filter(node__room=room)
@@ -33,7 +33,8 @@ def _teacher_room_data(room):
         'pending_ai_count': Question.objects.filter(node__room=room, status='pending', source='ai').count(),
         'pdf_count': PDFDocument.objects.filter(room=room).count(),
         'section_count': room.sections.count(),
-        'answer_count': Answer.objects.filter(session__room=room).count(),
+        # Cuestionarios respondidos = sesiones de evaluación completadas (no preguntas sueltas).
+        'session_count': EvaluationSession.objects.filter(room=room, status=EvaluationSession.STATUS_COMPLETED).count(),
         'diagnosis_count': AIDiagnosis.objects.filter(session__room=room).count(),
         'icc': round(float(ci.aggregate(avg=Avg('icc_value'))['avg'] or 0.0), 4),
         'at_risk_count': ci.filter(metacognitive_gap__gt=0.2).values('student').distinct().count(),

@@ -448,7 +448,7 @@ function renderStudentRooms(items) {
     const $count = document.getElementById('student-rooms-count');
 
     if (!items || items.length === 0) {
-        $list.innerHTML = `<p class="empty">No estás inscrito en ninguna sala todavía. Pídale al docente el código de acceso.</p>`;
+        $list.innerHTML = `<p class="empty">No estás inscrito en ninguna sala todavía</p>`;
         $count.textContent = '0 salas';
         return;
     }
@@ -486,6 +486,13 @@ const DIAG_TITLES = {
     calibrated: 'Confianza justa: lo que cree y lo que sabe coinciden',
 };
 
+const STUDENT_NOTE = {
+    overconfident: 'Lo que crees saber supera lo que realmente sabes en la mayoría de los temas. No es un problema de estudio — es un problema de autoconocimiento.',
+    underconfident: 'Sabes más de lo que crees. Ganar confianza en lo que ya dominas es parte del trabajo.',
+    calibrated: 'Lo que crees saber y lo que realmente sabes están bien alineados. Ese es un buen autoconocimiento.',
+};
+const STUDENT_NOTE_EMPTY = 'Aún no tienes datos. Responde una evaluación para descubrir qué tan bien te conoces.';
+
 
 async function bootstrapStudent(user) {
     $studentView.hidden = false;
@@ -511,9 +518,12 @@ async function bootstrapStudent(user) {
 
     renderStudentRooms(roomList || []);
 
+    // Sin respuestas todavía no hay métricas: mostrar estado neutro, no valores
+    // fabricados (icc=0 daría un "gap" de +100 y un relato de sobreconfianza falso).
+    const hasData = (profile.total_answers ?? 0) > 0;
     const iccAvg = profile.icc_avg ?? 0;
     const masteryAvg = profile.avg_mastery ?? 0;
-    const profileKey = profile.predominant_profile || 'calibrated';
+    const profileKey = hasData ? (profile.predominant_profile || 'calibrated') : 'calibrated';
     // gap aproximado desde ICC (ICC = 1 − |gap|), con el signo del perfil.
     const gapAbs = Math.round(Math.abs(1 - iccAvg) * 100);
     const gap = profileKey === 'underconfident' ? -gapAbs : gapAbs;
@@ -526,14 +536,17 @@ async function bootstrapStudent(user) {
     );
 
     const $pill = document.getElementById('student-pill');
-    $pill.textContent = profileLabel(profileKey);
-    $pill.dataset.profile = profileKey;
+    $pill.textContent = hasData ? profileLabel(profileKey) : 'Sin datos aún';
+    $pill.dataset.profile = hasData ? profileKey : '';
 
-    document.getElementById('student-mini-icc').textContent = fmt(iccAvg);
-    document.getElementById('student-mini-icc').dataset.tone = profileKey === 'overconfident' ? 'amber' : '';
-    document.getElementById('student-mini-mastery').textContent = fmt(masteryAvg);
-    document.getElementById('student-mini-gap').textContent = `${gap >= 0 ? '+' : ''}${gap}`;
-    document.getElementById('student-mini-gap').dataset.tone = gapTone(gap);
+    const $note = document.getElementById('student-note');
+    if ($note) $note.textContent = hasData ? STUDENT_NOTE[profileKey] : STUDENT_NOTE_EMPTY;
+
+    const $mast = document.getElementById('student-mini-mastery');
+    const $gap = document.getElementById('student-mini-gap');
+    $mast.textContent = hasData ? fmt(masteryAvg) : '—';
+    $gap.textContent = hasData ? `${gap >= 0 ? '+' : ''}${gap}` : '—';
+    $gap.dataset.tone = hasData ? gapTone(gap) : '';
 
     const latestDiag = (diagnoses || [])[0];
     if (latestDiag) {
@@ -623,7 +636,7 @@ function renderKpis(list) {
     const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = String(v); };
     set('rooms-value', list.filter((r) => r.is_active !== false).length);
     set('students-value', list.reduce((s, r) => s + (r.member_count || 0), 0));
-    set('answers-value', list.reduce((s, r) => s + (r.answer_count || 0), 0));
+    set('answers-value', list.reduce((s, r) => s + (r.session_count || 0), 0));
     set('diags-value', list.reduce((s, r) => s + (r.diagnosis_count || 0), 0));
 }
 
