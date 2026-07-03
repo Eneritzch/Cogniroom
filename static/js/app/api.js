@@ -148,8 +148,8 @@ export const questions = {
     createNode: (roomId, name) => request(`/rooms/${roomId}/nodes/`, {
         method: 'POST', body: { name },
     }),
-    updateNode: (roomId, nodeId, name) => request(`/rooms/${roomId}/nodes/${nodeId}/`, {
-        method: 'PATCH', body: { name },
+    updateNode: (roomId, nodeId, payload) => request(`/rooms/${roomId}/nodes/${nodeId}/`, {
+        method: 'PATCH', body: payload,
     }),
     deleteNode: (roomId, nodeId) => request(`/rooms/${roomId}/nodes/${nodeId}/`, {
         method: 'DELETE',

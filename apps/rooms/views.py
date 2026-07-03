@@ -263,6 +263,7 @@ class RoomMembersView(APIView):
     def get(self, request, room_id):
         from apps.cognitive.models import CognitiveIndex
         from apps.users.serializers import UserSerializer
+        from services.cognitive_quadrant import classify_quadrant
 
         room = get_object_or_404(Room, id=room_id)
         if room.teacher_id != request.user.id:
@@ -290,6 +291,11 @@ class RoomMembersView(APIView):
                 profile = 'underconfident'
             else:
                 profile = 'calibrated'
+            # Cuadrante 2x2; None si el estudiante aún no tiene datos cognitivos.
+            if aggs['mast'] is None or aggs['conf'] is None:
+                quadrant = None
+            else:
+                quadrant = classify_quadrant(aggs['mast'], aggs['conf'])
 
             section = None
             if m.section_id:
@@ -298,6 +304,7 @@ class RoomMembersView(APIView):
             roster.append({
                 'user': UserSerializer(m.student).data,
                 'profile': profile,
+                'quadrant': quadrant,
                 'avg_confidence': round(float(aggs['conf'] or 0.0), 4),
                 'bkt_mastery': round(float(aggs['mast'] or 0.0), 4),
                 'metacognitive_gap': round(float(gap), 4),

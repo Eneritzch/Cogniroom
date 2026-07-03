@@ -322,6 +322,72 @@
 .qcard[data-status='approved'] { border-left-color: var(--moss); }
 
 
+.qcard__select {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  accent-color: var(--sage);
+  cursor: pointer;
+}
+
+
+/* Barra de revisión masiva: visible solo cuando hay selección */
+.qbulk-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3) var(--s-4);
+  margin-top: var(--s-4);
+  padding: var(--s-3) var(--s-4);
+  background: var(--paper-elevated);
+  border: 1px solid var(--paper-border);
+  border-radius: var(--r-md);
+}
+
+.qbulk-bar__all {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: 44px;
+  font-size: 13px;
+  color: var(--ink-muted);
+  cursor: pointer;
+}
+
+.qbulk-bar__all input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--sage);
+  cursor: pointer;
+}
+
+.qbulk-bar__count {
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.qbulk-bar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+  margin-left: auto;
+}
+
+.qbulk-bar__clear {
+  min-height: 44px;
+  padding: 0 var(--s-3);
+  background: transparent;
+  border: 0;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--ink-muted);
+  cursor: pointer;
+}
+
+.qbulk-bar__clear:hover { color: var(--ink); }
+
+
 .qcard__head {
   display: flex;
   flex-wrap: wrap;
@@ -729,12 +795,36 @@
 
 .qnode {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--s-3);
+  gap: var(--s-2) var(--s-3);
   padding: var(--s-2) var(--s-3);
   background: var(--paper-surface);
   border: 1px solid var(--paper-border);
   border-radius: var(--r-md);
+}
+
+.qnode__quota {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.qnode__quota-label {
+  font-size: var(--fs-xs);
+  color: var(--ink-muted);
+}
+
+.qnode__quota-input {
+  width: 56px;
+  min-height: 34px;
+  padding: 2px var(--s-2);
+  text-align: center;
+  background: var(--paper-elevated);
+  border: 1px solid var(--paper-border-strong);
+  border-radius: var(--r-sm);
+  color: var(--ink);
 }
 
 .qnode--empty {

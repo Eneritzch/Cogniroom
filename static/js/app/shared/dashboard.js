@@ -406,14 +406,15 @@ function renderAtRisk(items) {
         const gapPts = Math.round(gapValue * 100);
         const risk = s.risk_level || 'medium';
         const profile = s.profile || 'overconfident';
+        const label = s.quadrant_label || profileLabel(profile);
         const tone = gapPts >= 0 ? 'amber' : 'stone';
         return `
-          <li class="at-risk__row">
+          <li class="at-risk__row"${s.critical ? ' data-critical="true"' : ''}>
             <div class="at-risk__student">
               <span class="at-risk__avatar" aria-hidden="true">${escapeHTML(initials)}</span>
               <span class="at-risk__name">${escapeHTML(fullName)}</span>
             </div>
-            <div><span class="pill" data-profile="${profile}">${profileLabel(profile)}</span></div>
+            <div><span class="pill" data-quadrant="${profile}">${escapeHTML(label)}</span></div>
             <div class="at-risk__gap" data-tone="${tone}">${gapPts > 0 ? '+' : ''}${gapPts} pts</div>
             <div><span class="pill" data-risk="${risk}">Riesgo ${risk === 'high' ? 'alto' : risk === 'medium' ? 'medio' : 'bajo'}</span></div>
           </li>

@@ -63,6 +63,17 @@ function gapTone(gap) {
 }
 
 
+// Cuadrante 2x2 (dominio real × confianza), en lenguaje claro.
+function quadrantLabel(q) {
+    return ({
+        calibrated: 'Sabe y confía',
+        underconfident: 'Sabe pero no confía',
+        overconfident: 'No sabe y confía',
+        aware_gap: 'No sabe y lo reconoce',
+    })[q] || 'Sin datos';
+}
+
+
 // Lectura en lenguaje claro de la brecha entre confianza y dominio real.
 function calibrationReading(profile, gapPts) {
     const abs = Math.abs(gapPts);
@@ -210,7 +221,7 @@ function renderList() {
                         <span class="student-card__reading">${reading.headline}</span>
                     </div>
                 </div>
-                <span class="pill student-card__pill" data-profile="${s.profile}">${profileLabel(s.profile)}</span>
+                <span class="pill student-card__pill" data-quadrant="${s.quadrant || ''}">${escapeHTML(quadrantLabel(s.quadrant))}</span>
             </div>
 
             <div class="student-card__bars">
@@ -553,7 +564,7 @@ function renderStudentDetail(d) {
             <span class="sd-hero__name">${escapeHTML(name)}</span>
             ${sectionLine}
           </div>
-          <span class="pill" data-profile="${sum.profile}">${profileLabel(sum.profile)}</span>
+          <span class="pill" data-quadrant="${sum.quadrant || ''}">${escapeHTML(sum.quadrant_label || quadrantLabel(sum.quadrant))}</span>
         </div>
         <p class="sd-hero__reading"><strong>${reading.headline}.</strong> ${reading.detail}</p>
         <div class="sd-compare">${compareBars(conf, mast)}</div>

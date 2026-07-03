@@ -96,16 +96,44 @@ class NodeDetailView(APIView):
         node, error = self._owned_node(request, room_id, node_id)
         if error:
             return error
-        name = (request.data.get('name') or '').strip()
-        if not name:
-            return Response({'detail': 'name is required.'}, status=status.HTTP_400_BAD_REQUEST)
-        if KnowledgeNode.objects.filter(room_id=node.room_id, name=name).exclude(id=node.id).exists():
+
+        update_fields = []
+
+        if 'name' in request.data:
+            name = (request.data.get('name') or '').strip()
+            if not name:
+                return Response({'detail': 'name is required.'}, status=status.HTTP_400_BAD_REQUEST)
+            if KnowledgeNode.objects.filter(room_id=node.room_id, name=name).exclude(id=node.id).exists():
+                return Response(
+                    {'detail': 'Ya existe un nodo con ese nombre en la sala.'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            node.name = name
+            update_fields.append('name')
+
+        if 'questions_per_session' in request.data:
+            try:
+                qps = int(request.data.get('questions_per_session'))
+            except (TypeError, ValueError):
+                return Response(
+                    {'detail': 'questions_per_session debe ser un entero.'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if qps < 0:
+                return Response(
+                    {'detail': 'questions_per_session no puede ser negativo.'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            node.questions_per_session = qps
+            update_fields.append('questions_per_session')
+
+        if not update_fields:
             return Response(
-                {'detail': 'Ya existe un nodo con ese nombre en la sala.'},
+                {'detail': 'Nada que actualizar.'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        node.name = name
-        node.save(update_fields=['name'])
+
+        node.save(update_fields=update_fields)
         return Response(KnowledgeNodeSerializer(node).data)
 
     def delete(self, request, room_id, node_id):

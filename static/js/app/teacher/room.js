@@ -34,9 +34,16 @@ function escapeHTML(s) {
         .replaceAll('"', '&quot;');
 }
 
-function profileLabel(p) {
-    return ({ calibrated: 'Confianza justa', overconfident: 'Confía de más', underconfident: 'Confía de menos' })[p] || '—';
-}
+// Cuadrante 2x2 (lo que realmente sabe × lo que cree saber). El crítico es
+// "no sabe y está confiado".
+const QUAD_TH = 0.6;
+const QUAD_META = {
+    overconfident:  { label: 'No sabe y confía',       tone: 'rust',  critical: true },
+    calibrated:     { label: 'Sabe y confía',          tone: 'moss',  critical: false },
+    underconfident: { label: 'Sabe pero no confía',    tone: 'stone', critical: false },
+    aware_gap:      { label: 'No sabe y lo reconoce',  tone: 'amber', critical: false },
+};
+function quadrantLabel(q) { return (QUAD_META[q] || {}).label || 'Sin datos'; }
 
 function fullName(user) {
     return `${user?.first_name ?? ''} ${user?.last_name ?? ''}`.trim() || '—';
@@ -105,7 +112,7 @@ function renderHeatmap(data) {
       <div class="heatmap__row">
         <div class="heatmap__row-name">
           <span class="heatmap__row-name-text">${escapeHTML(name)}</span>
-          <span class="pill" data-profile="${row.profile}">${profileLabel(row.profile)}</span>
+          <span class="pill" data-quadrant="${row.quadrant || ''}">${escapeHTML(quadrantLabel(row.quadrant))}</span>
         </div>
         ${cells.map((v, i) => `
           <div class="heatmap__cell" style="background:${cellColor(v)};"
@@ -121,8 +128,9 @@ function renderHeatmap(data) {
 function renderMetricsStats(heatmap, blindSpots) {
     const roster = heatmap.roster || [];
     const total = roster.length || 1;
-    const over = roster.filter((r) => r.profile === 'overconfident').length;
-    const cal = roster.filter((r) => r.profile === 'calibrated').length;
+    // Cuadrante crítico (no sabe y confía) vs. bien calibrado (sabe y confía).
+    const critical = roster.filter((r) => r.quadrant === 'overconfident').length;
+    const good = roster.filter((r) => r.quadrant === 'calibrated').length;
 
     const blind = (blindSpots || []).filter((b) => b.alert).length;
     document.getElementById('stat-blind-nodes').textContent = String(blind);
@@ -133,10 +141,78 @@ function renderMetricsStats(heatmap, blindSpots) {
     document.getElementById('stat-evaluated-detail').textContent =
         `${roster.length} de ${heatmap.students ?? roster.length} inscritos`;
 
-    document.getElementById('stat-over').textContent = `${Math.round((over / total) * 100)}%`;
-    document.getElementById('stat-over-detail').textContent = `${over} de ${roster.length}`;
-    document.getElementById('stat-cal').textContent = `${Math.round((cal / total) * 100)}%`;
-    document.getElementById('stat-cal-detail').textContent = `${cal} de ${roster.length}`;
+    document.getElementById('stat-over').textContent = `${Math.round((critical / total) * 100)}%`;
+    document.getElementById('stat-over-detail').textContent = `${critical} de ${roster.length}`;
+    document.getElementById('stat-cal').textContent = `${Math.round((good / total) * 100)}%`;
+    document.getElementById('stat-cal-detail').textContent = `${good} de ${roster.length}`;
+}
+
+
+// Mapa de calibración: ubica a cada estudiante por lo que realmente sabe (X) y
+// lo que cree saber (Y); resalta la zona crítica y lista a los que están en alerta.
+function renderAlertQuadrant(members) {
+    const $plot = document.getElementById('quadrant-plot');
+    const $list = document.getElementById('alert-list');
+    if (!$plot || !$list) return;
+
+    const roster = (members.roster || []).filter((r) => r.quadrant);
+    const th = QUAD_TH * 100;
+
+    if (roster.length === 0) {
+        $plot.innerHTML = '';
+        $list.innerHTML = `<li class="alertq__empty">Aún no hay estudiantes evaluados en esta sala.</li>`;
+        return;
+    }
+
+    const clamp01 = (v) => Math.max(0, Math.min(1, v ?? 0));
+    const dots = roster.map((r) => {
+        const meta = QUAD_META[r.quadrant] || {};
+        return {
+            name: fullName(r.user),
+            tone: meta.tone || 'stone',
+            critical: !!meta.critical,
+            cx: +(clamp01(r.bkt_mastery) * 100).toFixed(2),
+            cy: +((1 - clamp01(r.avg_confidence)) * 100).toFixed(2),
+        };
+    }).map((d) => `
+        <circle class="qdot${d.critical ? ' qdot--critical' : ''}" data-tone="${d.tone}"
+                cx="${d.cx}" cy="${d.cy}" r="${d.critical ? 3.4 : 2.6}">
+          <title>${escapeHTML(d.name)}</title>
+        </circle>`).join('');
+
+    $plot.innerHTML = `
+      <svg class="qplot" viewBox="-4 -4 108 108" role="img"
+           aria-label="Mapa de calibración: cada punto es un estudiante ubicado por lo que realmente sabe y lo que cree saber.">
+        <rect class="qzone qzone--critical" x="0" y="0" width="${th}" height="${th}"></rect>
+        <rect class="qzone qzone--good"     x="${th}" y="0" width="${100 - th}" height="${th}"></rect>
+        <rect class="qzone qzone--aware"    x="0" y="${th}" width="${th}" height="${100 - th}"></rect>
+        <rect class="qzone qzone--under"    x="${th}" y="${th}" width="${100 - th}" height="${100 - th}"></rect>
+        <line class="qgrid" x1="${th}" y1="0" x2="${th}" y2="100"></line>
+        <line class="qgrid" x1="0" y1="${th}" x2="100" y2="${th}"></line>
+        ${dots}
+      </svg>`;
+
+    // Lista de alerta: crítico primero, luego "sabe pero no confía".
+    const alert = roster
+        .filter((r) => r.quadrant === 'overconfident' || r.quadrant === 'underconfident')
+        .sort((a, b) => Number(QUAD_META[b.quadrant].critical) - Number(QUAD_META[a.quadrant].critical));
+
+    if (alert.length === 0) {
+        $list.innerHTML = `<li class="alertq__empty">Ningún estudiante en alerta por ahora.</li>`;
+        return;
+    }
+
+    $list.innerHTML = alert.map((r) => {
+        const gap = Math.round((r.metacognitive_gap ?? 0) * 100);
+        const meta = QUAD_META[r.quadrant];
+        return `
+        <li class="alertq__item${meta.critical ? ' alertq__item--critical' : ''}">
+          <span class="alertq__dot" data-tone="${meta.tone}" aria-hidden="true"></span>
+          <span class="alertq__name">${escapeHTML(fullName(r.user))}</span>
+          <span class="pill" data-quadrant="${r.quadrant}">${escapeHTML(quadrantLabel(r.quadrant))}</span>
+          <span class="alertq__gap num" data-tone="${gap >= 0 ? 'amber' : 'stone'}">${gap > 0 ? '+' : ''}${gap}</span>
+        </li>`;
+    }).join('');
 }
 
 
@@ -161,7 +237,7 @@ function renderStudents(members) {
             </div>
             <div class="room-list__aside">
                 ${section ? `<span class="room-list__tag">${escapeHTML(section.code)}</span>` : ''}
-                <span class="pill" data-profile="${r.profile}">${profileLabel(r.profile)}</span>
+                <span class="pill" data-quadrant="${r.quadrant || ''}">${escapeHTML(quadrantLabel(r.quadrant))}</span>
                 <span class="room-list__metric num" title="Diferencia entre lo que cree saber y lo que realmente sabe">${sign}${Math.round(gap * 100)}</span>
             </div>
         </li>`;
@@ -277,6 +353,7 @@ async function bootstrap() {
         renderHeader(current, members.students);
         renderHeatmap(heatmap);
         renderMetricsStats(heatmap, blindSpots);
+        renderAlertQuadrant(members);
         renderStudents(members);
         renderQuestions(bank);
         renderPdfs(pdfList);

@@ -244,43 +244,37 @@
   color: var(--ink-muted);
 }
 
-.session-confidence__value {
+.session-confidence__levels {
   display: flex;
-  align-items: baseline;
+  flex-direction: column;
   gap: var(--s-2);
   margin-top: var(--s-4);
 }
 
-.session-confidence__num {
-  font-family: var(--font-mono);
-  font-size: 32px;
-  font-weight: var(--fw-medium);
-  line-height: 1;
-  color: var(--ink);
-}
-
-.session-confidence__label {
-  font-size: 12px;
-  font-weight: var(--fw-medium);
-  color: var(--sage);
-}
-
-.session-confidence__slider {
-  width: 100%;
-  margin-top: var(--s-5);
-  accent-color: var(--sage);
-  cursor: pointer;
-}
-
-.session-confidence__scale {
+.confidence-level {
   display: flex;
-  justify-content: space-between;
-  margin-top: var(--s-2);
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink-faint);
+  align-items: center;
+  min-height: 44px;
+  padding: var(--s-3) var(--s-4);
+  background: var(--paper-surface);
+  border: 1px solid var(--paper-border);
+  border-radius: var(--r-md);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: var(--fw-medium);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out),
+              background-color var(--dur-fast) var(--ease-out);
+}
+
+.confidence-level:hover { border-color: var(--paper-border-strong); }
+
+.confidence-level[aria-checked='true'] {
+  border-color: var(--sage);
+  background: color-mix(in srgb, var(--sage-soft) 40%, transparent);
+  color: var(--sage-strong);
 }
 
 
@@ -341,6 +335,23 @@
   line-height: var(--lh-base);
   color: var(--ink);
 }
+
+/* Paso 2 bloqueado hasta que el estudiante declara su confianza */
+.session-answer[data-locked='true'] .session-options {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.session-answer__lock {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin: var(--s-4) 0 0;
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+
+.session-answer[data-locked='false'] .session-answer__lock { display: none; }
 
 
 .session-actions {

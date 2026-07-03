@@ -10,7 +10,7 @@ class KnowledgeNodeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = KnowledgeNode
-        fields = ['id', 'room', 'name', 'created_at', 'approved_count']
+        fields = ['id', 'room', 'name', 'questions_per_session', 'created_at', 'approved_count']
         read_only_fields = ['id', 'room', 'created_at']
 
     def get_approved_count(self, obj):

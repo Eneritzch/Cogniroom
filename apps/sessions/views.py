@@ -1,5 +1,6 @@
 import random
 import threading
+from datetime import timedelta
 
 from django.db import connection, transaction
 from django.db.models import Avg, Count, Q
@@ -24,6 +25,7 @@ from apps.rooms.models import Room, RoomMembership
 from apps.users.permissions import IsStudent
 from services.bkt_engine import BKTEngine
 from services.claude_service import CognitiveAnalysisService
+from services.cognitive_quadrant import classify_quadrant, is_critical
 from services.icc_calculator import ICCCalculator
 
 from .models import Answer, EvaluationSession
@@ -231,6 +233,48 @@ def _schedule_ai_analysis(answer_id, new_mastery):
     ).start()
 
 
+def _maybe_alert_teacher_critical(session):
+    """Aviso in-app al docente si el estudiante cae en el cuadrante crítico
+    (no sabe y está confiado), cruzando su dominio real con su confianza en toda
+    la sala. Desacoplado de Claude, con cooldown para no repetir. El correo va
+    por el resumen periódico (comando notify_at_risk); aquí solo in-app."""
+    try:
+        room = session.room
+        student = session.student
+        agg = (
+            CognitiveIndex.objects.filter(node__room=room, student=student)
+            .aggregate(conf=Avg('avg_confidence'), mastery=Avg('bkt_mastery'))
+        )
+        if agg['mastery'] is None or agg['conf'] is None:
+            return
+        if not is_critical(classify_quadrant(agg['mastery'], agg['conf'])):
+            return
+
+        student_name = student.get_full_name() or student.username
+        cooldown = timezone.now() - timedelta(hours=12)
+        already = Notification.objects.filter(
+            recipient=room.teacher,
+            kind=Notification.KIND_STUDENT_AT_RISK,
+            created_at__gte=cooldown,
+            body__icontains=student_name,
+        ).exists()
+        if already:
+            return
+
+        notify(
+            room.teacher,
+            kind=Notification.KIND_STUDENT_AT_RISK,
+            title=f'Alerta cognitiva: {student_name}',
+            body=f'{student_name} está en el cuadrante crítico (no sabe y está confiado) '
+                 f'en "{room.name}". Revisa sus métricas para intervenir a tiempo.',
+            link=f'/app/room/{room.id}/',
+            email=False,
+        )
+    except Exception:
+        # Alerta best-effort: nunca debe romper el flujo del estudiante.
+        pass
+
+
 class SessionListCreateView(APIView):
     permission_classes = [IsStudent]
 
@@ -294,8 +338,25 @@ class SessionListCreateView(APIView):
                 )
             node_ids = valid_ids
 
+        # Congelar el cupo por nodo: cuántas preguntas de cada tema verá el
+        # estudiante en esta sesión. 0 en el tema = todas las aprobadas. Se
+        # acota al pool real y se omiten nodos sin preguntas aprobadas.
+        effective_nodes = KnowledgeNode.objects.filter(room=room)
+        if node_ids:
+            effective_nodes = effective_nodes.filter(id__in=node_ids)
+        effective_nodes = effective_nodes.annotate(
+            approved=Count('questions', filter=Q(questions__status=Question.STATUS_APPROVED))
+        )
+        node_quotas = {}
+        for node in effective_nodes:
+            if node.approved == 0:
+                continue
+            quota = node.questions_per_session or node.approved
+            node_quotas[str(node.id)] = min(quota, node.approved)
+
         session = EvaluationSession.objects.create(
             student=request.user, room=room, selected_node_ids=node_ids,
+            node_quotas=node_quotas,
         )
         return Response(
             EvaluationSessionSerializer(session).data, status=status.HTTP_201_CREATED
@@ -327,24 +388,47 @@ class NextQuestionView(APIView):
         if selected_node_ids:
             base = base.filter(node_id__in=selected_node_ids)
 
-        total = base.count()
-        answered = base.filter(id__in=answered_ids).count()
+        # Cupo congelado por nodo. Sesiones antiguas sin snapshot caen al
+        # comportamiento previo (drenar todo el pool).
+        quotas = session.node_quotas or {}
+        if quotas:
+            total = sum(int(v) for v in quotas.values())
+        else:
+            total = base.count()
+        answered = min(len(answered_ids), total)
+
+        # Respondidas por nodo dentro de esta sesión (para respetar el cupo).
+        answered_by_node = {}
+        for node_id in Answer.objects.filter(session=session).values_list(
+            'question__node_id', flat=True
+        ):
+            answered_by_node[node_id] = answered_by_node.get(node_id, 0) + 1
 
         candidates = base.exclude(id__in=answered_ids)
-        if not candidates.exists():
+
+        def has_quota(node_id):
+            if not quotas:
+                return True
+            quota = int(quotas.get(str(node_id), 0))
+            return answered_by_node.get(node_id, 0) < quota
+
+        # Nodos con preguntas sin responder Y cupo disponible.
+        open_node_ids = [
+            nid for nid in candidates.values_list('node_id', flat=True).distinct()
+            if has_quota(nid)
+        ]
+        if not open_node_ids:
             return Response({'completed': True})
 
-        node_ids = candidates.values_list('node_id', flat=True).distinct()
         bkt_states = BKTState.objects.filter(
-            student=request.user, node_id__in=node_ids
+            student=request.user, node_id__in=open_node_ids
         )
         mastery_by_node = {b.node_id: b.p_mastery for b in bkt_states}
 
         def node_priority(node_id):
             return mastery_by_node.get(node_id, 0.3)
 
-        sorted_node_ids = sorted(node_ids, key=node_priority)
-        target_node_id = sorted_node_ids[0]
+        target_node_id = sorted(open_node_ids, key=node_priority)[0]
 
         node_questions = list(candidates.filter(node_id=target_node_id))
         question = random.choice(node_questions)
@@ -448,6 +532,8 @@ class SubmitAnswerView(APIView):
         # El recálculo del punto ciego grupal va fuera de la transacción.
         if session.room.mode == 'group':
             _recalc_blind_spot(question.node, session.room)
+            # Alerta in-app al docente si el estudiante quedó en el cuadrante crítico.
+            _maybe_alert_teacher_critical(session)
 
         # Diagnóstico con IA fuera del request: no bloquea al estudiante. Se
         # dispara en desalineación (icc < 0.6); el feedback y el AIDiagnosis se

@@ -36,7 +36,7 @@ if ($closeBtn) {
 let currentIndex = 0;
 let currentQuestion = null;
 let selectedIndices = [];
-let confidenceDeclared = 0.75;
+let confidenceDeclared = null;
 
 
 function escapeHTML(s) {
@@ -59,10 +59,8 @@ const $stages = {
     feedback: document.querySelector('[data-stage="feedback"]'),
 };
 
-const $confSlider = document.getElementById('confidence-slider');
-const $confValue = document.getElementById('confidence-value');
-const $confHint = document.getElementById('hint-confidence');
-const $confLabel = document.getElementById('confidence-label');
+const $confLevels = document.getElementById('confidence-levels');
+const $answerStep = document.getElementById('answer-step');
 const $optionsList = document.getElementById('options-list');
 const $submit = document.getElementById('submit-answer');
 const $questionEyebrow = document.getElementById('question-eyebrow');
@@ -82,23 +80,42 @@ function setMascot(state) { if ($mascot) $mascot.dataset.state = state; }
 $total.textContent = '—';
 
 
-function confidenceWord(v) {
-    if (v < 25) return 'Adivinando';
-    if (v < 50) return 'Poco seguro';
-    if (v < 75) return 'Algo seguro';
-    if (v < 95) return 'Muy seguro';
-    return 'Totalmente seguro';
+// El estudiante DEBE declarar su confianza antes de que se desbloqueen las
+// opciones: es el dato que sostiene toda la medición de brecha metacognitiva.
+function setAnswerLocked(locked) {
+    if ($answerStep) $answerStep.dataset.locked = locked ? 'true' : 'false';
 }
 
-function updateConfidence(v) {
-    confidenceDeclared = v / 100;
-    if ($confValue) $confValue.textContent = String(v);
-    if ($confHint) $confHint.textContent = String(v);
-    if ($confLabel) $confLabel.textContent = confidenceWord(v);
+function updateSubmitState() {
+    $submit.disabled = confidenceDeclared === null || selectedIndices.length === 0;
 }
 
-$confSlider.addEventListener('input', (e) => updateConfidence(Number(e.target.value)));
-updateConfidence(Number($confSlider.value));
+function selectConfidence(btn) {
+    confidenceDeclared = Number(btn.dataset.confidence);
+    $confLevels.querySelectorAll('.confidence-level').forEach((b) => {
+        const on = b === btn;
+        b.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+    setAnswerLocked(false);
+    updateSubmitState();
+}
+
+function resetConfidence() {
+    confidenceDeclared = null;
+    if ($confLevels) {
+        $confLevels.querySelectorAll('.confidence-level').forEach((b) => {
+            b.setAttribute('aria-checked', 'false');
+        });
+    }
+    setAnswerLocked(true);
+}
+
+if ($confLevels) {
+    $confLevels.addEventListener('click', (e) => {
+        const btn = e.target.closest('.confidence-level');
+        if (btn) selectConfidence(btn);
+    });
+}
 
 
 function showStage(name) {
@@ -112,6 +129,7 @@ function showStage(name) {
 function renderQuestion(q) {
     currentQuestion = q;
     selectedIndices = [];
+    resetConfidence();
     $submit.disabled = true;
     setMascot('idle');
 
@@ -166,7 +184,7 @@ function renderQuestion(q) {
             }
             selectedIndices = Array.from($optionsList.querySelectorAll('.session-option[aria-pressed="true"]'))
                 .map((b) => Number(b.dataset.optionIndex));
-            $submit.disabled = selectedIndices.length === 0;
+            updateSubmitState();
         });
     });
 
@@ -262,7 +280,7 @@ function renderFeedback(result) {
 
 
 $submit.addEventListener('click', async () => {
-    if (selectedIndices.length === 0 || !currentQuestion) return;
+    if (confidenceDeclared === null || selectedIndices.length === 0 || !currentQuestion) return;
     $submit.disabled = true;
     $submit.textContent = 'Enviando…';
 

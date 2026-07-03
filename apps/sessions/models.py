@@ -29,6 +29,11 @@ class EvaluationSession(models.Model):
     # sala (modo adaptativo completo). NextQuestionView restringe la selección
     # de preguntas a estos nodos cuando hay alguno.
     selected_node_ids = models.JSONField(default=list, blank=True)
+    # Cupo de preguntas por nodo, congelado al crear la sesión: {node_id: n}.
+    # Se calcula desde KnowledgeNode.questions_per_session (0 = todas las
+    # aprobadas del nodo), acotado al pool real. Snapshot para que cambiar la
+    # config del tema a mitad de curso no altere sesiones ya iniciadas.
+    node_quotas = models.JSONField(default=dict, blank=True)
     started_at = models.DateTimeField(auto_now_add=True)
     finished_at = models.DateTimeField(null=True, blank=True)
 

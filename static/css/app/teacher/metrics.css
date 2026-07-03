@@ -180,6 +180,11 @@
 .metrics-chip__dot[data-profile='calibrated']     { background: var(--moss); }
 .metrics-chip__dot[data-profile='underconfident'] { background: var(--stone); }
 
+.metrics-chip__dot[data-quadrant='overconfident']  { background: var(--rust); }
+.metrics-chip__dot[data-quadrant='underconfident'] { background: var(--stone); }
+.metrics-chip__dot[data-quadrant='aware_gap']      { background: var(--amber); }
+.metrics-chip__dot[data-quadrant='calibrated']     { background: var(--moss); }
+
 .metrics-chip__count {
   padding: 1px 6px;
   background: color-mix(in srgb, var(--ink) 8%, transparent);

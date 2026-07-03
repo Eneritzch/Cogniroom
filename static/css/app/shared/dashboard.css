@@ -691,6 +691,13 @@
 
 .at-risk__row:first-child { border-top: 0; }
 
+/* Cuadrante crítico "no sabe y está confiado": la alerta clave del sistema. */
+.at-risk__row[data-critical='true'] {
+  border-left: 3px solid var(--rust);
+  padding-left: var(--s-4);
+  background: var(--rust-soft);
+}
+
 @media (min-width: 768px) {
   .at-risk__row {
     flex-direction: row;

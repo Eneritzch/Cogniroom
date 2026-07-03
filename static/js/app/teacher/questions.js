@@ -48,6 +48,7 @@ let currentType = 'all';
 let currentSearch = '';
 let currentNode = 'all';
 let EDIT_ID = null;
+const selected = new Set();
 
 const SVG_CHECK = '<svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>';
 const SVG_X = '<svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
@@ -245,6 +246,7 @@ function cardHTML(q) {
         return `
         <li class="qcard" data-status="${status}">
             <header class="qcard__head">
+                <input type="checkbox" class="qcard__select" data-q-id="${q.id}" aria-label="Seleccionar pregunta"${selected.has(q.id) ? ' checked' : ''}>
                 <span class="qcard__source" data-source="${q.source}">${q.source === 'ai' ? 'IA' : 'Manual'}</span>
                 <span class="qcard__type" data-type="${qtype}">${typeLabel}</span>
                 ${q.cognitive_level ? `<span class="qcard__bloom" data-bloom="${q.cognitive_level}">${bloomLabel(q.cognitive_level)}</span>` : ''}
@@ -328,6 +330,26 @@ function render() {
 
     fillNodeFilter();
     renderList();
+
+    // Descartar de la selección preguntas que ya no están en el banco.
+    const ids = new Set(BANK.map((q) => q.id));
+    for (const id of [...selected]) if (!ids.has(id)) selected.delete(id);
+    updateBulkBar();
+}
+
+
+function updateBulkBar() {
+    const $bar = document.getElementById('qbulk-bar');
+    if (!$bar) return;
+    const $count = document.getElementById('qbulk-count');
+    const $all = document.getElementById('qbulk-all');
+    const n = selected.size;
+    $bar.hidden = n === 0;
+    if ($count) $count.textContent = `${n} seleccionada${n === 1 ? '' : 's'}`;
+    if ($all) {
+        const visible = applyFilters(BANK);
+        $all.checked = visible.length > 0 && visible.every((q) => selected.has(q.id));
+    }
 }
 
 
@@ -356,6 +378,61 @@ document.getElementById('questions-list').addEventListener('click', async (e) =>
         toast(err?.body?.detail || err?.message || 'No se pudo actualizar la pregunta.', { kind: 'error' });
         btn.disabled = false;
     }
+});
+
+
+/* Selección múltiple para revisión masiva. */
+document.getElementById('questions-list').addEventListener('change', (e) => {
+    const cb = e.target.closest('.qcard__select');
+    if (!cb) return;
+    const id = Number(cb.dataset.qId);
+    if (!id) return;
+    if (cb.checked) selected.add(id); else selected.delete(id);
+    updateBulkBar();
+});
+
+
+async function bulkAction(action) {
+    const ids = [...selected];
+    if (!ids.length || !ROOM_ID) return;
+    const $approve = document.getElementById('qbulk-approve');
+    const $reject = document.getElementById('qbulk-reject');
+    if ($approve) $approve.disabled = true;
+    if ($reject) $reject.disabled = true;
+    try {
+        if (action === 'approve') await questionsApi.approve(ROOM_ID, ids);
+        else await questionsApi.reject(ROOM_ID, ids);
+        const verb = action === 'approve' ? 'aprobada' : 'rechazada';
+        toast(`${ids.length} pregunta${ids.length === 1 ? '' : 's'} ${verb}${ids.length === 1 ? '' : 's'}.`, { kind: 'success' });
+        selected.clear();
+        await reloadBank();
+    } catch (err) {
+        if (err instanceof ApiError && err.status === 401) { tokens.clear(); location.replace('/app/'); return; }
+        toast(err?.body?.detail || err?.message || 'No se pudo actualizar la selección.', { kind: 'error' });
+    } finally {
+        if ($approve) $approve.disabled = false;
+        if ($reject) $reject.disabled = false;
+        updateBulkBar();
+    }
+}
+
+document.getElementById('qbulk-approve')?.addEventListener('click', () => bulkAction('approve'));
+document.getElementById('qbulk-reject')?.addEventListener('click', () => bulkAction('reject'));
+
+document.getElementById('qbulk-clear')?.addEventListener('click', () => {
+    selected.clear();
+    document.querySelectorAll('.qcard__select').forEach((c) => { c.checked = false; });
+    updateBulkBar();
+});
+
+document.getElementById('qbulk-all')?.addEventListener('change', (e) => {
+    const visible = applyFilters(BANK);
+    if (e.target.checked) visible.forEach((q) => selected.add(q.id));
+    else visible.forEach((q) => selected.delete(q.id));
+    document.querySelectorAll('.qcard__select').forEach((c) => {
+        c.checked = selected.has(Number(c.dataset.qId));
+    });
+    updateBulkBar();
 });
 
 
@@ -492,10 +569,18 @@ function renderNodeManager() {
     $list.innerHTML = sorted.map((n) => {
         const c = counts.get(n.name) || 0;
         const label = c === 0 ? 'sin preguntas' : `${c} ${c === 1 ? 'pregunta' : 'preguntas'}`;
+        const approved = n.approved_count ?? 0;
+        const qps = n.questions_per_session ?? 0;
         return `
         <li class="qnode" data-node-id="${n.id}" data-node-name="${escapeHTML(n.name)}">
             <span class="qnode__name">${escapeHTML(n.name)}</span>
             <span class="qnode__count num">${label}</span>
+            <label class="qnode__quota" title="Cuántas preguntas de este tema recibe el estudiante por evaluación. 0 = todas.">
+                <span class="qnode__quota-label">Por evaluación</span>
+                <input type="number" class="qnode__quota-input num" min="0" ${approved > 0 ? `max="${approved}"` : ''} step="1"
+                       value="${qps}" data-qnode-quota
+                       aria-label="Preguntas por evaluación de ${escapeHTML(n.name)}">
+            </label>
             <div class="qnode__actions">
                 <button type="button" class="qnode__btn" data-qnode="rename" aria-label="Renombrar ${escapeHTML(n.name)}">${SVG_PENCIL}</button>
                 <button type="button" class="qnode__btn qnode__btn--danger" data-qnode="delete" ${c > 0 ? 'disabled' : ''} title="${c > 0 ? 'Tiene preguntas: no se puede borrar' : 'Borrar tema'}" aria-label="Borrar ${escapeHTML(n.name)}">${SVG_TRASH}</button>
@@ -524,7 +609,7 @@ async function saveNodeRename(li, nodeId) {
     const val = (li.querySelector('.qnode__input')?.value || '').trim();
     if (!val) { toast('El nombre no puede estar vacío.', { kind: 'error' }); return; }
     try {
-        await questionsApi.updateNode(ROOM_ID, nodeId, val);
+        await questionsApi.updateNode(ROOM_ID, nodeId, { name: val });
         toast('Tema renombrado.', { kind: 'success' });
         await refreshNodes();
         await reloadBank();   // las preguntas traen el node_name actualizado
@@ -573,6 +658,28 @@ if ($qnodeList) {
         else if (action === 'delete') confirmNodeDelete(li);
         else if (action === 'delete-yes') doNodeDelete(nodeId);
         else if (action === 'delete-no') renderNodeManager();
+    });
+
+    $qnodeList.addEventListener('change', async (e) => {
+        const input = e.target.closest('[data-qnode-quota]');
+        if (!input || !ROOM_ID) return;
+        const li = input.closest('.qnode');
+        const nodeId = Number(li?.dataset.nodeId);
+        if (!nodeId) return;
+        let value = Math.max(0, Math.floor(Number(input.value) || 0));
+        input.value = String(value);
+        try {
+            await questionsApi.updateNode(ROOM_ID, nodeId, { questions_per_session: value });
+            const node = NODES.find((n) => n.id === nodeId);
+            if (node) node.questions_per_session = value;
+            toast(value === 0
+                ? 'El tema mostrará todas sus preguntas por evaluación.'
+                : `El tema mostrará ${value} pregunta${value === 1 ? '' : 's'} por evaluación.`,
+                { kind: 'success' });
+        } catch (err) {
+            const msg = apiErrorMessage(err, 'No se pudo guardar la cantidad por evaluación.');
+            if (msg) toast(msg, { kind: 'error' });
+        }
     });
 }
 

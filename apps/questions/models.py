@@ -6,6 +6,9 @@ from django.db import models
 class KnowledgeNode(models.Model):
     room = models.ForeignKey('rooms.Room', on_delete=models.CASCADE, related_name='nodes')
     name = models.CharField(max_length=200)
+    # Cuántas preguntas de este tema se le sirven al estudiante por evaluación.
+    # 0 = todas las aprobadas del tema (sin tope).
+    questions_per_session = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

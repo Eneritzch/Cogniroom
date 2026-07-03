@@ -24,6 +24,16 @@ function profileLabel(p) {
     })[p] || '—';
 }
 
+// Cuadrante 2x2 (dominio real × confianza), en lenguaje claro.
+function quadrantLabel(q) {
+    return ({
+        calibrated: 'Sabe y confía',
+        underconfident: 'Sabe pero no confía',
+        overconfident: 'No sabe y confía',
+        aware_gap: 'No sabe y lo reconoce',
+    })[q] || 'Sin datos';
+}
+
 function activeRoomId() {
     return Number(localStorage.getItem('cogniroom.activeRoomId')) || null;
 }
@@ -83,7 +93,7 @@ function fullName(s) {
 function applyFilters(roster) {
     const q = currentSearch.trim().toLowerCase();
     return roster.filter((s) => {
-        if (currentProfile !== 'all' && s.profile !== currentProfile) return false;
+        if (currentProfile !== 'all' && s.quadrant !== currentProfile) return false;
         if (currentCurso !== 'all' && s.id_section !== currentCurso) return false;
         if (q && !fullName(s).toLowerCase().includes(q)) return false;
         return true;
@@ -235,7 +245,7 @@ function renderHeatmap() {
                 <span class="heatmap__row-avatar" aria-hidden="true">${initials(displayName)}</span>
                 <span class="heatmap__row-id">
                     <span class="heatmap__row-name-text" title="${escapeHTML(displayName)}">${escapeHTML(displayName)}</span>
-                    <span class="pill" data-profile="${row.profile}">${profileShort(row.profile)}</span>
+                    <span class="pill" data-quadrant="${row.quadrant || ''}">${escapeHTML(quadrantLabel(row.quadrant))}</span>
                 </span>
             </div>
             ${row.cells.map((v, i) => {

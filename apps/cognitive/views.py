@@ -9,6 +9,7 @@ from rest_framework.views import APIView
 
 from apps.rooms.models import Room, RoomMembership
 from apps.sessions.models import Answer, EvaluationSession
+from services.cognitive_quadrant import QUADRANTS, classify_quadrant, is_critical
 
 from .models import (
     AIDiagnosis,
@@ -272,30 +273,40 @@ class AtRiskView(APIView):
         if error:
             return error
 
-        # En riesgo = descalibración significativa (|gap| > 0.2). Se calcula desde
-        # las métricas cognitivas reales (no depende de que Claude haya corrido).
+        # En riesgo = descalibración metacognitiva. Se cruza lo que el estudiante
+        # REALMENTE sabe (BKT) con lo que CREE saber (confianza) en 4 cuadrantes;
+        # el crítico es "no sabe y está confiado". Se calcula desde las métricas
+        # reales (no depende de que Claude haya corrido). Los cuadrantes sanos
+        # (sabe y confía / no sabe y lo reconoce) no se listan como alerta.
         result = []
         memberships = RoomMembership.objects.filter(room=room).select_related('student')
         if section_id is not None:
             memberships = memberships.filter(section_id=section_id)
         for m in memberships:
-            gap = (
+            agg = (
                 CognitiveIndex.objects.filter(node__room=room, student=m.student)
-                .aggregate(g=Avg('metacognitive_gap'))['g']
+                .aggregate(gap=Avg('metacognitive_gap'), conf=Avg('avg_confidence'),
+                           mastery=Avg('bkt_mastery'))
             )
-            if gap is None or abs(gap) <= 0.2:
+            if agg['mastery'] is None or agg['conf'] is None:
                 continue
-            profile = 'overconfident' if gap > 0 else 'underconfident'
-            risk = 'high' if abs(gap) > 0.35 else 'medium'
+            quadrant = classify_quadrant(agg['mastery'], agg['conf'])
+            if quadrant not in ('overconfident', 'underconfident'):
+                continue
+            critical = is_critical(quadrant)
             result.append({
                 'first_name': m.student.first_name,
                 'last_name': m.student.last_name,
-                'profile': profile,
-                'metacognitive_gap': round(float(gap), 4),
-                'risk_level': risk,
+                'profile': quadrant,
+                'quadrant': quadrant,
+                'quadrant_label': QUADRANTS[quadrant]['label'],
+                'critical': critical,
+                'metacognitive_gap': round(float(agg['gap'] or 0.0), 4),
+                'risk_level': 'high' if critical else 'medium',
             })
 
-        result.sort(key=lambda s: abs(s['metacognitive_gap']), reverse=True)
+        # Los críticos primero; dentro de cada grupo, por magnitud de la brecha.
+        result.sort(key=lambda s: (not s['critical'], -abs(s['metacognitive_gap'])))
         return Response(result)
 
 
@@ -332,21 +343,29 @@ class RoomHeatmapView(APIView):
         roster = []
         for m in memberships:
             cells = [round(float(mastery.get((m.student_id, n.id), 0.0)), 4) for n in nodes]
-            gap = (
+            agg = (
                 CognitiveIndex.objects.filter(node__room=room, student=m.student)
-                .aggregate(g=Avg('metacognitive_gap'))['g']
-                or 0.0
+                .aggregate(gap=Avg('metacognitive_gap'), conf=Avg('avg_confidence'),
+                           mastery=Avg('bkt_mastery'))
             )
+            gap = agg['gap'] or 0.0
             if gap > 0.2:
                 profile = 'overconfident'
             elif gap < -0.2:
                 profile = 'underconfident'
             else:
                 profile = 'calibrated'
+            # Cuadrante 2x2 (dominio real × confianza); None si el estudiante aún
+            # no tiene datos cognitivos.
+            if agg['mastery'] is None or agg['conf'] is None:
+                quadrant = None
+            else:
+                quadrant = classify_quadrant(agg['mastery'], agg['conf'])
             roster.append({
                 'first_name': m.student.first_name,
                 'last_name': m.student.last_name,
                 'profile': profile,
+                'quadrant': quadrant,
                 'id_section': m.section_id,
                 'cells': cells,
             })
@@ -434,6 +453,7 @@ class StudentDetailView(APIView):
             profile = 'underconfident'
         else:
             profile = 'calibrated'
+        quadrant = classify_quadrant(mastery_avg, conf_avg) if nodes_data else None
 
         diagnoses = (
             AIDiagnosis.objects.filter(session__room=room, student=student)
@@ -455,6 +475,8 @@ class StudentDetailView(APIView):
             'section': section,
             'summary': {
                 'profile': profile,
+                'quadrant': quadrant,
+                'quadrant_label': QUADRANTS[quadrant]['label'] if quadrant else None,
                 'avg_confidence': conf_avg,
                 'bkt_mastery': mastery_avg,
                 'icc_value': icc_avg,

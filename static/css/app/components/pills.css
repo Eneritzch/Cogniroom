@@ -20,6 +20,18 @@
 .pill[data-profile='overconfident']  { background: var(--amber-soft); color: #6b4a25; }
 .pill[data-profile='underconfident'] { background: var(--stone-soft); color: #3d4759; }
 
+/* Cuadrante cognitivo (dominio real × confianza). Separado de data-profile
+   para no chocar con el perfil de 3 vías basado en la brecha. El crítico
+   (no sabe y está confiado) usa el color de peligro. */
+.pill[data-quadrant='calibrated']     { background: var(--moss-soft);  color: var(--moss); }
+.pill[data-quadrant='underconfident'] { background: var(--stone-soft); color: var(--stone); }
+.pill[data-quadrant='overconfident']  { background: var(--rust-soft);  color: var(--rust); }
+.pill[data-quadrant='aware_gap']      { background: var(--amber-soft); color: var(--amber); }
+.pill[data-quadrant='calibrated']::before     { background: var(--moss); }
+.pill[data-quadrant='underconfident']::before { background: var(--stone); }
+.pill[data-quadrant='overconfident']::before  { background: var(--rust); }
+.pill[data-quadrant='aware_gap']::before      { background: var(--amber); }
+
 .pill[data-risk='low']    { background: var(--moss-soft);  color: #2f4a2c; }
 .pill[data-risk='medium'] { background: var(--amber-soft); color: #6b4a25; }
 .pill[data-risk='high']   { background: var(--rust-soft);  color: #5e2b23; }

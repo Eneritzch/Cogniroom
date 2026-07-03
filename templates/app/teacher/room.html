@@ -96,6 +96,24 @@
                     </div>
                 </div>
 
+                <section class="alertq" aria-labelledby="alertq-title">
+                    <header class="alertq__head">
+                        <h3 class="alertq__title" id="alertq-title">Estudiantes en alerta</h3>
+                        <p class="alertq__lead">
+                            Cada punto es un estudiante, ubicado por lo que <strong>realmente sabe</strong>
+                            y lo que <strong>cree saber</strong>. La zona roja es la crítica: no sabe y está confiado.
+                        </p>
+                    </header>
+                    <div class="alertq__body">
+                        <figure class="alertq__chart">
+                            <span class="alertq__axis alertq__axis--y">Cree saber →</span>
+                            <div class="alertq__plot" id="quadrant-plot"></div>
+                            <figcaption class="alertq__axis alertq__axis--x">Realmente sabe →</figcaption>
+                        </figure>
+                        <ul class="alertq__list" id="alert-list" aria-label="Estudiantes en alerta"></ul>
+                    </div>
+                </section>
+
                 <div class="room-stats">
                     <div class="room-stat">
                         <div class="room-stat__k eyebrow">Temas con punto ciego del grupo</div>
@@ -108,12 +126,12 @@
                         <div class="room-stat__t" id="stat-evaluated-detail">—</div>
                     </div>
                     <div class="room-stat">
-                        <div class="room-stat__k eyebrow">Confían de más</div>
+                        <div class="room-stat__k eyebrow">No sabe y confía</div>
                         <div class="room-stat__v" id="stat-over">—</div>
-                        <div class="room-stat__t" data-tone="amber" id="stat-over-detail">—</div>
+                        <div class="room-stat__t" data-tone="rust" id="stat-over-detail">—</div>
                     </div>
                     <div class="room-stat">
-                        <div class="room-stat__k eyebrow">Confianza justa</div>
+                        <div class="room-stat__k eyebrow">Sabe y confía</div>
                         <div class="room-stat__v" id="stat-cal">—</div>
                         <div class="room-stat__t" data-tone="moss" id="stat-cal-detail">—</div>
                     </div>

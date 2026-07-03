@@ -50,20 +50,24 @@
                 </div>
 
                 <div class="metrics-controls__group">
-                    <span class="metrics-controls__label">Perfil</span>
+                    <span class="metrics-controls__label">Cuadrante</span>
                     <div class="metrics-controls__chips">
                         <button type="button" class="metrics-chip" data-profile-filter="all" aria-pressed="true">Todos</button>
                         <button type="button" class="metrics-chip" data-profile-filter="overconfident" aria-pressed="false">
-                            <span class="metrics-chip__dot" data-profile="overconfident"></span>
-                            Confían de más
-                        </button>
-                        <button type="button" class="metrics-chip" data-profile-filter="calibrated" aria-pressed="false">
-                            <span class="metrics-chip__dot" data-profile="calibrated"></span>
-                            Confianza justa
+                            <span class="metrics-chip__dot" data-quadrant="overconfident"></span>
+                            No sabe y confía
                         </button>
                         <button type="button" class="metrics-chip" data-profile-filter="underconfident" aria-pressed="false">
-                            <span class="metrics-chip__dot" data-profile="underconfident"></span>
-                            Confían de menos
+                            <span class="metrics-chip__dot" data-quadrant="underconfident"></span>
+                            Sabe pero no confía
+                        </button>
+                        <button type="button" class="metrics-chip" data-profile-filter="aware_gap" aria-pressed="false">
+                            <span class="metrics-chip__dot" data-quadrant="aware_gap"></span>
+                            No sabe y lo reconoce
+                        </button>
+                        <button type="button" class="metrics-chip" data-profile-filter="calibrated" aria-pressed="false">
+                            <span class="metrics-chip__dot" data-quadrant="calibrated"></span>
+                            Sabe y confía
                         </button>
                     </div>
                 </div>

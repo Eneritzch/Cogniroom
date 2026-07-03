@@ -112,6 +112,29 @@
                 </div>
             </div>
 
+            <div class="qbulk-bar" id="qbulk-bar" hidden>
+                <label class="qbulk-bar__all">
+                    <input type="checkbox" id="qbulk-all" aria-label="Seleccionar todas las preguntas visibles">
+                    Seleccionar todas las visibles
+                </label>
+                <span class="qbulk-bar__count num" id="qbulk-count">0 seleccionadas</span>
+                <div class="qbulk-bar__actions">
+                    <button type="button" class="ds-btn ds-btn--sage ds-btn--sm" id="qbulk-approve">
+                        <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        Aprobar
+                    </button>
+                    <button type="button" class="ds-btn ds-btn--ghost ds-btn--sm" id="qbulk-reject">
+                        <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+                            <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                        Rechazar
+                    </button>
+                    <button type="button" class="qbulk-bar__clear" id="qbulk-clear">Limpiar</button>
+                </div>
+            </div>
+
             <ul class="questions-list" id="questions-list" aria-label="Banco de preguntas"></ul>
         </section>
     </main>
@@ -238,7 +261,7 @@
                             <option value="">Sin PDF — usar el texto de abajo</option>
                         </select>
 
-                        <label class="form-label" for="gen-content">Contenido base</label>
+                        <label class="form-label" for="gen-content">Temas</label>
                         <textarea class="form-control" id="gen-content" rows="5"
                                   placeholder="Pegue el material sobre el que generar las preguntas (o elija un PDF arriba)…"></textarea>
                         <p class="qmodal__hint">En salas grupales, las preguntas generadas quedan <strong>por revisar</strong> hasta que las apruebes.</p>
