@@ -1,5 +1,5 @@
 const _v = new URL(import.meta.url).searchParams.get('v') || '';
-const { rooms: roomsApi, pdfs: pdfsApi, tokens, ApiError } = await import(`../api.js?v=${_v}`);
+const { rooms: roomsApi, pdfs: pdfsApi, tokens, ApiError, apiErrorMessage } = await import(`../api.js?v=${_v}`);
 const { toast } = await import(`../toast.js?v=${_v}`);
 
 
@@ -53,7 +53,7 @@ function render() {
     if (!$list) return;
 
     if (FILES.length === 0) {
-        $list.innerHTML = `<li class="pdfs-empty">Todavía no subió material de origen. Use “Subir PDF” para añadir el primero.</li>`;
+        $list.innerHTML = `<li class="pdfs-empty">Todavía no subió material de origen. Use “Subir documento” (PDF, PPTX o DOCX) para añadir el primero.</li>`;
         return;
     }
 
@@ -118,7 +118,7 @@ document.getElementById('pdfs-list').addEventListener('click', async (e) => {
         await reloadFiles();
     } catch (err) {
         if (err instanceof ApiError && err.status === 401) { tokens.clear(); location.replace('/app/'); return; }
-        toast(err?.body?.detail || 'No se pudo eliminar el PDF.', { kind: 'error' });
+        toast(apiErrorMessage(err, 'No se pudo eliminar el PDF.'), { kind: 'error' });
         btn.disabled = false;
     }
 });
@@ -183,18 +183,39 @@ document.addEventListener('keydown', (e) => {
 });
 
 
-/* Subir PDF */
+/* Subir documento (PDF · PPTX · DOCX) */
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10 MB — igual que PDFUploadSerializer
+const ALLOWED_EXTENSIONS = ['.pdf', '.pptx', '.docx'];
+const UPLOAD_HINT_DEFAULT = 'PDF, PPTX o DOCX · máximo 10 MB';
 const $uploadBtn = document.getElementById('pdf-upload-btn');
 const $fileInput = document.getElementById('pdf-file-input');
+const $uploadHint = document.getElementById('pdf-upload-hint');
 if ($uploadBtn && $fileInput) {
     $uploadBtn.addEventListener('click', () => $fileInput.click());
     $fileInput.addEventListener('change', async () => {
         const file = $fileInput.files && $fileInput.files[0];
         if (!file || !ROOM_ID) return;
-        if (!file.name.toLowerCase().endsWith('.pdf')) {
-            toast('El archivo debe ser un PDF.', { kind: 'error' });
+        const ext = file.name.toLowerCase().slice(file.name.lastIndexOf('.'));
+        if (!ALLOWED_EXTENSIONS.includes(ext)) {
+            toast('El documento debe ser PDF, PPTX o DOCX.', { kind: 'error' });
             $fileInput.value = '';
             return;
+        }
+        // Validación de tamaño en cliente: mismo límite que el backend (10 MB),
+        // así se avisa al instante sin subir megabytes para que el server lo rechace.
+        if (file.size > MAX_UPLOAD_BYTES) {
+            const mb = (file.size / (1024 * 1024)).toFixed(1);
+            toast(`El documento pesa ${mb} MB y el máximo son 10 MB. Comprímelo o divídelo.`, { kind: 'error' });
+            if ($uploadHint) {
+                $uploadHint.textContent = `Ese archivo pesa ${mb} MB · máximo 10 MB`;
+                $uploadHint.dataset.state = 'error';
+            }
+            $fileInput.value = '';
+            return;
+        }
+        if ($uploadHint) {
+            $uploadHint.textContent = UPLOAD_HINT_DEFAULT;
+            delete $uploadHint.dataset.state;
         }
         $uploadBtn.disabled = true;
         const prev = $uploadBtn.innerHTML;
@@ -205,7 +226,7 @@ if ($uploadBtn && $fileInput) {
             await reloadFiles();
         } catch (err) {
             if (err instanceof ApiError && err.status === 401) { tokens.clear(); location.replace('/app/'); return; }
-            toast(err?.body?.detail || err?.message || 'No se pudo subir el PDF.', { kind: 'error' });
+            toast(apiErrorMessage(err, 'No se pudo subir el PDF.'), { kind: 'error' });
         } finally {
             $fileInput.value = '';
             $uploadBtn.disabled = false;

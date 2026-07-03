@@ -161,19 +161,27 @@ class PDFDocumentDetailSerializer(serializers.ModelSerializer):
 
 class PDFUploadSerializer(serializers.Serializer):
     MAX_BYTES = 10 * 1024 * 1024  # 10 MB
+    ALLOWED_EXTENSIONS = ('.pdf', '.pptx', '.docx')
 
     file = serializers.FileField()
 
     def validate_file(self, value):
         if value.size > self.MAX_BYTES:
             raise serializers.ValidationError(
-                'El PDF supera el tamaño máximo permitido (10 MB).'
+                'El documento supera el tamaño máximo permitido (10 MB).'
             )
-        if not (value.name or '').lower().endswith('.pdf'):
-            raise serializers.ValidationError('El archivo debe tener extensión .pdf.')
-        # Magic bytes: un .pdf renombrado o un binario arbitrario no pasa.
+        name = (value.name or '').lower()
+        if not name.endswith(self.ALLOWED_EXTENSIONS):
+            raise serializers.ValidationError(
+                'El documento debe ser PDF, PPTX o DOCX.'
+            )
+        # Magic bytes: un archivo renombrado o un binario arbitrario no pasa.
+        # PDF empieza por %PDF-; PPTX/DOCX son ZIP (Office Open XML) → 'PK'.
         head = value.read(5)
         value.seek(0)
-        if head[:5] != b'%PDF-':
-            raise serializers.ValidationError('El archivo no es un PDF válido.')
+        if name.endswith('.pdf'):
+            if head[:5] != b'%PDF-':
+                raise serializers.ValidationError('El archivo no es un PDF válido.')
+        elif head[:2] != b'PK':
+            raise serializers.ValidationError('El archivo no es un PPTX/DOCX válido.')
         return value

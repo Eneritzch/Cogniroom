@@ -29,16 +29,20 @@
         <section class="room-panel" role="region" aria-labelledby="pdfs-title">
             <header class="pdfs-toolbar">
                 <h2 id="pdfs-title" class="pdfs-toolbar__title">Material de origen</h2>
-                <button type="button" class="ds-btn ds-btn--ink" id="pdf-upload-btn">
-                    <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="17 8 12 3 7 8"></polyline>
-                        <line x1="12" y1="3" x2="12" y2="15"></line>
-                    </svg>
-                    Subir PDF
-                </button>
-                <input type="file" id="pdf-file-input" accept="application/pdf,.pdf" hidden>
-
+                <div class="pdfs-upload">
+                    <button type="button" class="ds-btn ds-btn--ink" id="pdf-upload-btn">
+                        <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        Subir documento
+                    </button>
+                    <input type="file" id="pdf-file-input"
+                           accept=".pdf,.pptx,.docx,application/pdf,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                           hidden>
+                    <p class="pdfs-upload__hint" id="pdf-upload-hint">PDF, PPTX o DOCX · máximo 10 MB</p>
+                </div>
             </header>
 
             <ul class="pdfs-list" id="pdfs-list" aria-label="PDFs procesados"></ul>

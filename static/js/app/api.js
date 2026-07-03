@@ -26,6 +26,21 @@ export class ApiError extends Error {
     }
 }
 
+/**
+ * Mensaje legible desde un error de API. DRF devuelve errores de campo como
+ * {campo: ["msg"]} (p. ej. {file: ["El PDF supera 10 MB"]}) o {detail: "msg"};
+ * leer solo `detail` se pierde los de campo. Este helper cubre ambos.
+ */
+export function apiErrorMessage(err, fallback = 'Ocurrió un error.') {
+    const body = err && err.body;
+    if (body && typeof body === 'object') {
+        const field = Object.values(body).find((v) => Array.isArray(v) && v.length);
+        if (field) return String(field[0]);
+        if (typeof body.detail === 'string') return body.detail;
+    }
+    return (err && err.message) || fallback;
+}
+
 async function request(path, { method = 'GET', body, auth = true, isFormData = false } = {}) {
     const headers = {};
     if (!isFormData) headers['Content-Type'] = 'application/json';

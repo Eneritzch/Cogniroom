@@ -477,16 +477,64 @@ class QuestionDetailView(APIView):
         return Response(QuestionSerializer(question).data)
 
 
-def _extract_pdf_text(file_obj) -> str:
+def _extract_pdf_text(path) -> str:
     import pdfplumber
 
     parts = []
-    with pdfplumber.open(file_obj) as pdf:
+    with pdfplumber.open(path) as pdf:
         for page in pdf.pages:
             text = page.extract_text() or ''
             if text:
                 parts.append(text)
     return '\n\n'.join(parts).strip()
+
+
+def _extract_pptx_text(path) -> str:
+    from pptx import Presentation
+
+    parts = []
+    prs = Presentation(path)
+    for slide in prs.slides:
+        for shape in slide.shapes:
+            if shape.has_text_frame:
+                text = shape.text_frame.text.strip()
+                if text:
+                    parts.append(text)
+            if shape.has_table:
+                for row in shape.table.rows:
+                    cells = [c.text.strip() for c in row.cells]
+                    if any(cells):
+                        parts.append(' | '.join(cells))
+    return '\n'.join(parts).strip()
+
+
+def _extract_docx_text(path) -> str:
+    from docx import Document
+
+    doc = Document(path)
+    parts = [p.text.strip() for p in doc.paragraphs if p.text.strip()]
+    for table in doc.tables:
+        for row in table.rows:
+            cells = [c.text.strip() for c in row.cells]
+            if any(cells):
+                parts.append(' | '.join(cells))
+    return '\n'.join(parts).strip()
+
+
+# Formatos aceptados como material de origen. PDF permite además análisis nativo
+# por Claude (Files API); PPTX/DOCX se procesan solo por su texto extraído.
+ALLOWED_UPLOAD_EXTENSIONS = ('.pdf', '.pptx', '.docx')
+
+
+def _extract_document_text(path, filename) -> str:
+    name = (filename or '').lower()
+    if name.endswith('.pdf'):
+        return _extract_pdf_text(path)
+    if name.endswith('.pptx'):
+        return _extract_pptx_text(path)
+    if name.endswith('.docx'):
+        return _extract_docx_text(path)
+    return ''
 
 
 class PDFUploadListView(APIView):
@@ -514,10 +562,11 @@ class PDFUploadListView(APIView):
         serializer = PDFUploadSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         uploaded = serializer.validated_data['file']
+        name = uploaded.name.lower()
 
-        if not uploaded.name.lower().endswith('.pdf'):
+        if not name.endswith(ALLOWED_UPLOAD_EXTENSIONS):
             return Response(
-                {'detail': 'File must be a .pdf'},
+                {'detail': 'El documento debe ser PDF, PPTX o DOCX.'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -528,36 +577,37 @@ class PDFUploadListView(APIView):
         )
 
         try:
-            pdf.file_path.open('rb')
-            pdf.extracted_text = _extract_pdf_text(pdf.file_path)
+            pdf.extracted_text = _extract_document_text(pdf.file_path.path, uploaded.name)
             pdf.status = PDFDocument.STATUS_PROCESSED
             pdf.save(update_fields=['extracted_text', 'status'])
 
-            # Subida a la Files API para generación con PDF nativo (tablas,
-            # fórmulas, figuras). Best-effort: si falla, queda el texto plano.
-            try:
-                pdf.file_path.open('rb')
-                file_id = CognitiveAnalysisService().upload_pdf(pdf.file_path, uploaded.name)
-                if file_id:
-                    pdf.file_id = file_id
-                    pdf.save(update_fields=['file_id'])
-            except Exception:
-                pass
+            # Análisis nativo por Claude (Files API) solo para PDF: preserva
+            # tablas, fórmulas y figuras. PPTX/DOCX quedan con su texto extraído.
+            # Best-effort: si falla, queda el texto plano.
+            if name.endswith('.pdf'):
+                try:
+                    pdf.file_path.open('rb')
+                    file_id = CognitiveAnalysisService().upload_pdf(pdf.file_path, uploaded.name)
+                    if file_id:
+                        pdf.file_id = file_id
+                        pdf.save(update_fields=['file_id'])
+                except Exception:
+                    pass
+                finally:
+                    try:
+                        pdf.file_path.close()
+                    except Exception:
+                        pass
         except Exception:
             pdf.status = PDFDocument.STATUS_FAILED
             pdf.save(update_fields=['status'])
             return Response(
                 {
-                    'detail': 'El PDF se subió pero no se pudo extraer su contenido.',
+                    'detail': 'El documento se subió pero no se pudo extraer su contenido.',
                     'pdf': PDFDocumentSerializer(pdf).data,
                 },
                 status=status.HTTP_201_CREATED,
             )
-        finally:
-            try:
-                pdf.file_path.close()
-            except Exception:
-                pass
 
         return Response(
             PDFDocumentDetailSerializer(pdf).data,
