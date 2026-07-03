@@ -307,8 +307,7 @@ function renderInsight(profileKey, nodes) {
     if (!$box || !$text) return;
 
     if (!nodes.length) {
-        $text.textContent = 'Aún no has evaluado ningún tema. Al completar tu primera evaluación, aquí aparecerá tu situación y los temas por reforzar.';
-        $box.hidden = false;
+        $box.hidden = true;
         return;
     }
 
@@ -334,22 +333,26 @@ function renderInsight(profileKey, nodes) {
 function renderSummary(profile, nodes) {
     const set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
     const pct = (x) => (x == null || Number.isNaN(x)) ? '—' : `${Math.round(x * 100)}%`;
-    set('nodes-hero-icc', pct(profile.icc_avg));
-    set('nodes-hero-mastery', pct(profile.avg_mastery));
+
+    // Sin respuestas todavía no hay perfil: estado neutro en vez de valores
+    // fabricados (perfil "calibrated" y 0% no son reales sin evaluaciones).
+    const hasData = (profile.total_answers ?? 0) > 0;
+    set('nodes-hero-icc', hasData ? pct(profile.icc_avg) : '—');
+    set('nodes-hero-mastery', hasData ? pct(profile.avg_mastery) : '—');
     set('nodes-hero-count', String((nodes || []).length));
 
     const profileKey = profile.predominant_profile || 'calibrated';
     const $pill = document.getElementById('nodes-hero-pill');
     if ($pill) {
-        $pill.textContent = profileLabel(profileKey);
-        $pill.dataset.profile = profileKey;
+        $pill.textContent = hasData ? profileLabel(profileKey) : 'Sin datos aún';
+        $pill.dataset.profile = hasData ? profileKey : '';
     }
     const hints = {
         overconfident: 'lo que cree saber supera lo que sabe',
         underconfident: 'lo que sabe supera lo que cree saber',
         calibrated: 'tu autoevaluación es precisa',
     };
-    set('nodes-hero-profile-hint', hints[profileKey] || '');
+    set('nodes-hero-profile-hint', hasData ? (hints[profileKey] || '') : 'aún no te has evaluado');
 
     renderInsight(profileKey, nodes || []);
 }
