@@ -7,11 +7,19 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView  # noqa: F401
 
-from .models import Institution
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+
+from apps.notifications.services import send_branded_email
+
+from .models import Institution, User
 from .serializers import (
     ChangePasswordSerializer,
     InstitutionSerializer,
     LoginSerializer,
+    PasswordResetConfirmSerializer,
+    PasswordResetRequestSerializer,
     RegisterSerializer,
     UpdateMeSerializer,
     UserSerializer,
@@ -129,3 +137,58 @@ class ChangePasswordView(APIView):
         serializer.save()
         # JWT es stateless: la sesión sigue válida tras el cambio.
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class PasswordResetRequestView(APIView):
+    """Paso 1: el usuario pide el enlace con su correo. Responde igual exista o no
+    la cuenta (anti-enumeración); si existe, envía el enlace con token de Django."""
+
+    permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'auth'
+
+    GENERIC_MESSAGE = (
+        'Si el correo corresponde a una cuenta, te enviamos un enlace para '
+        'restablecer tu contraseña.'
+    )
+
+    def post(self, request):
+        serializer = PasswordResetRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email']
+
+        user = User.objects.filter(email__iexact=email, is_active=True).first()
+        if user:
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+            send_branded_email(
+                user.email,
+                title='Restablecé tu contraseña',
+                body=(
+                    'Recibimos una solicitud para restablecer tu contraseña en '
+                    'CogniRoom. Usá el botón para elegir una nueva. El enlace es '
+                    'de un solo uso y caduca por seguridad. Si no fuiste vos, '
+                    'ignorá este correo: tu contraseña no cambia.'
+                ),
+                link=f'/app/reset-password/?uid={uid}&token={token}',
+                action_label='Restablecer contraseña',
+                eyebrow='Seguridad de la cuenta',
+            )
+
+        return Response({'detail': self.GENERIC_MESSAGE})
+
+
+class PasswordResetConfirmView(APIView):
+    """Paso 2: valida el enlace (uid + token) y fija la nueva contraseña."""
+
+    permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'auth'
+
+    def post(self, request):
+        serializer = PasswordResetConfirmSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            {'detail': 'Tu contraseña se actualizó. Ya podés iniciar sesión.'}
+        )

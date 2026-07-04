@@ -1,5 +1,8 @@
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_decode
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -128,6 +131,55 @@ class ChangePasswordSerializer(serializers.Serializer):
 
     def save(self, **kwargs):
         user = self.context['request'].user
+        user.set_password(self.validated_data['new_password'])
+        user.save(update_fields=['password'])
+        return user
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    """Solicitud de recuperación: solo el correo. La vista responde igual exista
+    o no la cuenta, así que este serializer no revela nada."""
+
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        return value.strip().lower()
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    """Confirma el enlace (uid + token estándar de Django) y fija la nueva
+    contraseña. El token caduca por tiempo y se invalida solo al cambiar la
+    contraseña, porque el generador lo deriva del hash actual."""
+
+    uid = serializers.CharField()
+    token = serializers.CharField()
+    new_password = serializers.CharField(write_only=True)
+
+    default_error_messages = {
+        'invalid_link': 'El enlace no es válido o ya expiró. Pedí uno nuevo.',
+    }
+
+    def validate_new_password(self, value):
+        validate_password(value)
+        return value
+
+    def validate(self, attrs):
+        user = self._user_from_uid(attrs['uid'])
+        if user is None or not default_token_generator.check_token(user, attrs['token']):
+            self.fail('invalid_link')
+        attrs['user'] = user
+        return attrs
+
+    @staticmethod
+    def _user_from_uid(uidb64):
+        try:
+            pk = force_str(urlsafe_base64_decode(uidb64))
+            return User.objects.get(pk=pk)
+        except (User.DoesNotExist, ValueError, TypeError, OverflowError):
+            return None
+
+    def save(self, **kwargs):
+        user = self.validated_data['user']
         user.set_password(self.validated_data['new_password'])
         user.save(update_fields=['password'])
         return user

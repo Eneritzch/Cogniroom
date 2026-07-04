@@ -138,25 +138,45 @@ function renderStudentNodes(nodes) {
 }
 
 
-function renderStudentDiagnosis(diag) {
-    const $title = document.getElementById('student-diag-title');
-    const $body = document.getElementById('student-diag-body');
-    const $sug = document.getElementById('student-diag-suggestion');
-    const $sugText = document.getElementById('student-diag-suggestion-text');
+const DIAG_RISK_LABELS = { high: 'Riesgo alto', medium: 'Riesgo medio', low: 'Riesgo bajo' };
 
+function renderStudentDiagnosis(diag) {
     if (!diag) return;
 
-    const title = diag.title || '';
-    const reasoning = diag.reasoning || '';
-    const recommendation = diag.recommendation || '';
+    const classification = diag.classification || 'calibrated';
+    const risk = diag.risk_level || 'medium';
 
-    $title.textContent = title ? `«${title}»` : '«Diagnóstico disponible.»';
-    $body.textContent = reasoning;
+    const $title = document.getElementById('student-diag-title');
+    if ($title) {
+        const title = diag.title || DIAG_TITLES[classification] || 'Diagnóstico disponible';
+        $title.textContent = `«${title}»`;
+    }
 
-    if (recommendation) {
-        $sugText.textContent = recommendation;
+    const $risk = document.getElementById('student-diag-risk');
+    if ($risk) {
+        $risk.textContent = DIAG_RISK_LABELS[risk] || 'Riesgo medio';
+        $risk.dataset.risk = risk;
+    }
+    const $class = document.getElementById('student-diag-classification');
+    if ($class) {
+        $class.textContent = profileLabel(classification);
+        $class.dataset.profile = classification;
+    }
+    const $fail = document.getElementById('student-diag-failprob');
+    if ($fail) {
+        $fail.textContent = diag.failure_probability != null
+            ? `p=${Number(diag.failure_probability).toFixed(2)}`
+            : 'p=—';
+    }
+    const $meta = document.getElementById('student-diag-meta');
+    if ($meta) $meta.hidden = false;
+
+    const $sug = document.getElementById('student-diag-suggestion');
+    const $sugText = document.getElementById('student-diag-suggestion-text');
+    if (diag.recommendation && $sug && $sugText) {
+        $sugText.textContent = diag.recommendation;
         $sug.hidden = false;
-    } else {
+    } else if ($sug) {
         $sug.hidden = true;
     }
 }
@@ -550,11 +570,7 @@ async function bootstrapStudent(user) {
 
     const latestDiag = (diagnoses || [])[0];
     if (latestDiag) {
-        renderStudentDiagnosis({
-            title: latestDiag.title || DIAG_TITLES[latestDiag.classification] || 'Diagnóstico disponible',
-            reasoning: latestDiag.reasoning,
-            recommendation: latestDiag.recommendation,
-        });
+        renderStudentDiagnosis(latestDiag);
     }
 
     // El grafo y la grilla de nodos se movieron a su página dedicada

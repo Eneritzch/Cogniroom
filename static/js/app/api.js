@@ -82,6 +82,12 @@ export const auth = {
     changePassword: (current_password, new_password) => request('/auth/change-password/', {
         method: 'POST', body: { current_password, new_password },
     }),
+    requestPasswordReset: (email) => request('/auth/password-reset/', {
+        method: 'POST', body: { email }, auth: false,
+    }),
+    confirmPasswordReset: (uid, token, new_password) => request('/auth/password-reset/confirm/', {
+        method: 'POST', body: { uid, token, new_password }, auth: false,
+    }),
     logout: () => {
         // Cierre de sesión a prueba de fallos: primero se limpia el estado local
         // (instantáneo, no depende de la red), luego se revoca el refresh en el

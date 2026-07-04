@@ -366,6 +366,31 @@ body.auth-page {
   color: var(--ink-muted);
 }
 
+/* Link "¿Olvidaste tu contraseña?" bajo el campo de la contraseña */
+.auth-form__aux {
+  margin: var(--s-4) 0 0;
+  text-align: right;
+  font-size: 12px;
+}
+
+/* Chip de icono para los estados de confirmación (enlace enviado / no válido) */
+.auth-form__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: var(--s-4);
+  border-radius: var(--r-pill);
+  color: var(--color-success);
+  background: var(--color-success-bg);
+}
+
+.auth-form__badge--warn {
+  color: var(--color-warning);
+  background: var(--color-warning-bg);
+}
+
 .auth-form__group { margin-top: var(--s-6); }
 
 .auth-form__group-label {
