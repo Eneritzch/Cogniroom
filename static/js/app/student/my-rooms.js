@@ -91,8 +91,8 @@ function renderCard(r) {
                    <line x1="3" y1="10" x2="21" y2="10"></line>
                </svg>
                <span class="rcard__section-name">${escapeHTML(section.name || section.code || '')}</span>
-               <span class="rcard__section-sep">·</span>
-               <span class="rcard__section-schedule">${escapeHTML(section.schedule || '')}</span>
+               ${section.schedule ? `<span class="rcard__section-sep">·</span>
+               <span class="rcard__section-schedule">${escapeHTML(section.schedule)}</span>` : ''}
            </div>`
         : '';
 
@@ -463,66 +463,117 @@ function renderDiscover(items) {
         const hasSections = sections.length > 0;
         const reqSec = sections.find((s) => s.id === r.requested_section_id);
 
-        const pending = `
-            ${reqSec ? `<span class="discover-row__paralelo">Paralelo ${escapeHTML(reqSec.code)}</span>` : ''}
-            <button type="button" class="ds-btn ds-btn--ghost discover-row__btn" data-cancel="${r.id}">Solicitud enviada · Cancelar</button>`;
+        const cta = r.requested
+            ? `${reqSec ? `<span class="discover-row__paralelo">Paralelo ${escapeHTML(reqSec.code)}</span>` : ''}
+               <button type="button" class="ds-btn ds-btn--ghost discover-row__btn" data-cancel="${r.id}">Cancelar solicitud</button>`
+            : `<button type="button" class="ds-btn ds-btn--ink discover-row__btn" data-request="${r.id}">Solicitar unirse</button>`;
 
-        const select = hasSections ? `
-            <select class="form-select discover-row__select" data-section-for="${r.id}" aria-label="Elige tu paralelo en ${escapeHTML(r.name)}">
-                <option value="" disabled selected>Elige tu paralelo</option>
-                ${sections.map((s) => `<option value="${s.id}">${escapeHTML(s.code)}${s.schedule ? ` · ${escapeHTML(s.schedule)}` : ''}</option>`).join('')}
-            </select>` : '';
-
-        const available = `
-            ${select}
-            <button type="button" class="ds-btn ds-btn--ink discover-row__btn" data-request="${r.id}">Solicitar unirse</button>`;
+        const paralelos = (!r.requested && hasSections) ? `
+            <div class="discover-row__paralelos">
+                <span class="discover-row__paralelos-label">Elige tu paralelo</span>
+                <div class="discover-row__chips" role="radiogroup" aria-label="Paralelo en ${escapeHTML(r.name)}">
+                    ${sections.map((s) => `<button type="button" class="paralelo-chip" role="radio" aria-checked="false" data-paralelo="${s.id}" data-room="${r.id}" title="${escapeHTML(s.name || '')}${s.schedule ? ` · ${escapeHTML(s.schedule)}` : ''}">${escapeHTML(s.code)}</button>`).join('')}
+                </div>
+            </div>` : '';
 
         return `
-        <li class="discover-row">
-            <div class="discover-row__main">
-                <span class="discover-row__name">${escapeHTML(r.name)}</span>
-                <span class="discover-row__meta">${escapeHTML(r.teacher_name || '')} · <span class="num">${r.member_count ?? 0}</span> est.</span>
+        <li class="discover-row" data-room-row="${r.id}">
+            <div class="discover-row__top">
+                <div class="discover-row__main">
+                    <span class="discover-row__name">${escapeHTML(r.name)}</span>
+                    <span class="discover-row__meta">
+                        <svg class="icon-svg" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        Docente · ${escapeHTML(r.teacher_name || '')}
+                    </span>
+                </div>
+                <div class="discover-row__cta">${cta}</div>
             </div>
-            <div class="discover-row__action">
-                ${r.requested ? pending : available}
-            </div>
+            ${paralelos}
         </li>`;
     }).join('');
 }
 
-async function loadDiscover() {
+let discoverTimer = null;
+let discoverSeq = 0;
+
+async function loadDiscover(q = '', { initial = false } = {}) {
     const $list = document.getElementById('discover-list');
-    if ($list) $list.innerHTML = '<li class="discover-list__loading">Cargando salas…</li>';
+    const seq = ++discoverSeq;
+    // Solo la apertura muestra "Cargando…". Al buscar se mantiene la lista
+    // actual (atenuada) para que no haya un corte/flash en cada tecla.
+    if (initial && $list) $list.innerHTML = '<li class="discover-list__loading">Cargando salas…</li>';
+    if ($list) $list.classList.add('discover-list--busy');
     try {
-        renderDiscover((await roomsApi.discover()) || []);
+        const items = (await roomsApi.discover(q)) || [];
+        if (seq !== discoverSeq) return; // respuesta obsoleta: llegó otra búsqueda
+        if (!items.length) {
+            $list.innerHTML = q
+                ? `<li class="discover-list__empty">No se encontraron salas para “${escapeHTML(q)}”.</li>`
+                : '<li class="discover-list__empty">No hay salas disponibles en tu institución por ahora.</li>';
+        } else {
+            renderDiscover(items);
+        }
     } catch (err) {
+        if (seq !== discoverSeq) return;
         if (err instanceof ApiError && err.status === 401) { tokens.clear(); location.replace('/app/'); return; }
         if ($list) $list.innerHTML = '<li class="discover-list__empty">No se pudieron cargar las salas.</li>';
+    } finally {
+        if (seq === discoverSeq && $list) $list.classList.remove('discover-list--busy');
     }
 }
 
 function bindDiscover() {
     const $modal = document.getElementById('discoverModal');
     const $list = document.getElementById('discover-list');
+    const $search = document.getElementById('discover-search');
     if (!$modal || !$list) return;
 
-    $modal.addEventListener('shown.bs.modal', loadDiscover);
+    // Carga al INICIAR la apertura (no al terminar): así el contenido ya está
+    // cuando el modal termina de aparecer y no da un tirón al re-centrarse.
+    $modal.addEventListener('show.bs.modal', () => {
+        if ($search) $search.value = '';
+        loadDiscover('', { initial: true });
+    });
+    $modal.addEventListener('shown.bs.modal', () => { $search?.focus(); });
+
+    if ($search) {
+        $search.addEventListener('input', () => {
+            clearTimeout(discoverTimer);
+            discoverTimer = setTimeout(() => loadDiscover($search.value.trim()), 250);
+        });
+    }
 
     $list.addEventListener('click', async (e) => {
+        // Selección de paralelo (chip segmentado): marca uno y desmarca los demás.
+        const chip = e.target.closest('.paralelo-chip');
+        if (chip) {
+            const room = chip.dataset.room;
+            $list.querySelectorAll(`.paralelo-chip[data-room="${room}"]`).forEach((c) => {
+                c.setAttribute('aria-checked', c === chip ? 'true' : 'false');
+            });
+            return;
+        }
+
         const btn = e.target.closest('[data-request], [data-cancel]');
         if (!btn) return;
         const requestId = btn.dataset.request;
         const cancelId = btn.dataset.cancel;
 
+        let sectionId = null;
         if (requestId) {
-            const $sel = $list.querySelector(`[data-section-for="${requestId}"]`);
-            // Si la sala tiene paralelos, exigir que el alumno elija el suyo.
-            if ($sel && !$sel.value) {
-                toast('Elige tu paralelo antes de solicitar.', { kind: 'error' });
-                $sel.focus();
-                return;
+            const row = $list.querySelector(`[data-room-row="${requestId}"]`);
+            const chips = row ? row.querySelectorAll('.paralelo-chip') : [];
+            if (chips.length) {
+                const sel = row.querySelector('.paralelo-chip[aria-checked="true"]');
+                if (!sel) {
+                    toast('Elige tu paralelo antes de solicitar.', { kind: 'error' });
+                    return;
+                }
+                sectionId = Number(sel.dataset.paralelo);
             }
-            var sectionId = $sel && $sel.value ? Number($sel.value) : null;
         }
 
         btn.disabled = true;

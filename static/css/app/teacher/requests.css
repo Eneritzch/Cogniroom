@@ -70,6 +70,10 @@
   font-size: 13px;
 }
 
+.join-request-row__actions .cselect {
+  width: 170px;
+}
+
 
 .requests-empty {
   display: flex;

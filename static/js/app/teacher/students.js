@@ -1,6 +1,7 @@
 const _v = new URL(import.meta.url).searchParams.get('v') || '';
 const { rooms: roomsApi, sections: sectionsApi, tokens, ApiError } = await import(`../api.js?v=${_v}`);
 const { toast } = await import(`../toast.js?v=${_v}`);
+const { enhanceSelects } = await import(`../custom-select.js?v=${_v}`);
 
 
 if (!tokens.access) {
@@ -158,14 +159,15 @@ function sectionSelectHTML(student, sections) {
     const currentId = student.membership?.section?.id_section ?? '';
     const opts = ['<option value="">Sin sección</option>'].concat(
         sections.map((c) => {
-            const label = c.name ? `${c.code} · ${c.name}` : c.code;
-            return `<option value="${c.id_section}" ${c.id_section === currentId ? 'selected' : ''}>${escapeHTML(label)}</option>`;
+            // Solo el código en la etiqueta (el nombre/horario va en el title).
+            const title = c.name ? ` title="${escapeHTML(`${c.code} · ${c.name}`)}"` : '';
+            return `<option value="${c.id_section}" ${c.id_section === currentId ? 'selected' : ''}${title}>${escapeHTML(c.code)}</option>`;
         }),
     );
     return `
         <label class="student-card__section">
             <span class="student-card__section-label">Sección</span>
-            <select class="student-card__section-select" data-assign-section="${student.user?.id ?? ''}"
+            <select class="form-select student-card__section-select" data-assign-section="${student.user?.id ?? ''}"
                     aria-label="Asignar sección a ${escapeHTML(fullName(student.user))}">
                 ${opts.join('')}
             </select>
@@ -209,7 +211,10 @@ function renderList() {
         const tone = gapTone(gap);
         const gapText = gapPts > 0 ? `+${gapPts}` : `${gapPts}`;
         const name = fullName(s.user);
-        const reading = calibrationReading(s.profile, gapPts);
+        // Sin cuadrante = sin datos cognitivos: no inventar "Bien calibrado".
+        const reading = s.quadrant
+            ? calibrationReading(s.profile, gapPts)
+            : { headline: 'Sin evaluaciones', detail: 'Todavía no ha respondido ninguna evaluación en esta sala.' };
 
         return `
         <li class="student-card" data-profile="${s.profile}">
@@ -241,10 +246,22 @@ function renderList() {
                         <polyline points="12 5 19 12 12 19"></polyline>
                     </svg>
                 </button>
+                <button type="button" class="student-card__remove" data-remove-row="${s.user?.id ?? ''}" data-name="${escapeHTML(name)}" title="Quitar de la sala" aria-label="Quitar a ${escapeHTML(name)} de la sala">
+                    <svg class="icon-svg" width="15" height="15" viewBox="0 0 24 24" aria-hidden="true">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                        <path d="M10 11v6"></path>
+                        <path d="M14 11v6"></path>
+                        <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                </button>
             </div>
         </li>
         `;
     }).join('');
+
+    // Convierte los <select> de sección al dropdown del design system.
+    enhanceSelects($rows);
 
     if ($pager && $more) {
         const remaining = filtered.length - visibleCount;
@@ -492,7 +509,50 @@ if ($more) {
 
 function icc2(v) { return v == null ? '—' : Number(v).toFixed(2); }
 
+function removeModal(id) {
+    const el = document.getElementById(id);
+    if (!el || !window.bootstrap) return null;
+    return window.bootstrap.Modal.getInstance(el) || new window.bootstrap.Modal(el);
+}
+
+let pendingRemove = null;
+
+function askRemoveStudent(studentId, name, fromDetail) {
+    if (!studentId || !ROOM_ID) return;
+    pendingRemove = { studentId, name: name || 'este estudiante', fromDetail: !!fromDetail };
+    const $name = document.getElementById('confirm-remove-name');
+    if ($name) $name.textContent = pendingRemove.name;
+    removeModal('confirmRemoveModal')?.show();
+}
+
+document.getElementById('confirm-remove-btn')?.addEventListener('click', async () => {
+    if (!pendingRemove || !ROOM_ID) return;
+    const { studentId, fromDetail } = pendingRemove;
+    const $btn = document.getElementById('confirm-remove-btn');
+    $btn.disabled = true;
+    try {
+        await roomsApi.unenroll(ROOM_ID, studentId);
+        toast('Estudiante quitado de la sala.', { kind: 'success' });
+        removeModal('confirmRemoveModal')?.hide();
+        if (fromDetail) removeModal('studentDetailModal')?.hide();
+        await reloadRoom();
+    } catch (err) {
+        if (err instanceof ApiError && err.status === 401) { tokens.clear(); location.replace('/app/'); return; }
+        toast(err?.body?.detail || 'No se pudo quitar al estudiante.', { kind: 'error' });
+    } finally {
+        $btn.disabled = false;
+        pendingRemove = null;
+    }
+});
+
+
 document.getElementById('students-rows').addEventListener('click', (e) => {
+    const remove = e.target.closest('[data-remove-row]');
+    if (remove) {
+        askRemoveStudent(Number(remove.dataset.removeRow), remove.dataset.name, false);
+        return;
+    }
+
     const btn = e.target.closest('.student-card__action');
     if (!btn) return;
     const studentId = Number(btn.dataset.studentId);
@@ -551,7 +611,9 @@ function renderStudentDetail(d) {
     const gapText = gapPts > 0 ? `+${gapPts}` : `${gapPts}`;
     const conf = Math.round((sum.avg_confidence ?? 0) * 100);
     const mast = Math.round((sum.bkt_mastery ?? 0) * 100);
-    const reading = calibrationReading(sum.profile, gapPts);
+    const reading = sum.quadrant
+        ? calibrationReading(sum.profile, gapPts)
+        : { headline: 'Sin evaluaciones', detail: 'Todavía no ha respondido ninguna evaluación en esta sala.' };
     const sectionLine = d.section
         ? `<span class="sd-hero__section">${escapeHTML(`${d.section.code} · ${d.section.name}`)}</span>`
         : '';
@@ -569,7 +631,7 @@ function renderStudentDetail(d) {
         <p class="sd-hero__reading"><strong>${reading.headline}.</strong> ${reading.detail}</p>
         <div class="sd-compare">${compareBars(conf, mast)}</div>
         <div class="sd-hero__actions">
-          <button type="button" class="sd-remove" data-remove-student="${st.id}">
+          <button type="button" class="sd-remove" data-remove-student="${st.id}" data-name="${escapeHTML(name)}">
             <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
               <polyline points="3 6 5 6 21 6"></polyline>
               <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
@@ -658,15 +720,32 @@ function renderEnrollResults(items) {
         const name = `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.username || '';
         const ini = (name.split(/\s+/).map((p) => p[0]).join('') || '?').slice(0, 2).toUpperCase();
         return `
-        <li class="enroll__row">
+        <li class="enroll__row" data-enroll-row="${u.id}">
             <span class="enroll__avatar" aria-hidden="true">${escapeHTML(ini)}</span>
             <div class="enroll__id">
                 <span class="enroll__name">${escapeHTML(name)}</span>
                 <span class="enroll__email">${escapeHTML(u.email || '')}</span>
             </div>
-            <button type="button" class="enroll__add" data-enroll="${u.id}">Agregar</button>
+            <div class="enroll__actions" data-user="${u.id}">
+                <button type="button" class="enroll__add" data-enroll="${u.id}">Agregar</button>
+            </div>
         </li>`;
     }).join('');
+}
+
+
+async function doEnroll(uid, sectionId, btn) {
+    btn.disabled = true;
+    try {
+        await roomsApi.enroll(ROOM_ID, uid, sectionId);
+        toast('Estudiante agregado a la sala.', { kind: 'success' });
+        btn.closest('.enroll__row')?.remove();
+        await reloadRoom();
+    } catch (err) {
+        if (err instanceof ApiError && err.status === 401) { tokens.clear(); location.replace('/app/'); return; }
+        toast(err?.body?.detail || 'No se pudo agregar al estudiante.', { kind: 'error' });
+        btn.disabled = false;
+    }
 }
 
 async function loadEnrollCandidates(q = '') {
@@ -698,44 +777,53 @@ if ($enrollModal) {
 
 if ($enrollResults) {
     $enrollResults.addEventListener('click', async (e) => {
+        // Selección de sección (chip) al agregar.
+        const chip = e.target.closest('.enroll__sec-chip');
+        if (chip) {
+            const uid = chip.dataset.user;
+            $enrollResults.querySelectorAll(`.enroll__sec-chip[data-user="${uid}"]`).forEach((c) => {
+                c.setAttribute('aria-checked', c === chip ? 'true' : 'false');
+            });
+            return;
+        }
+
+        // Confirmar con la sección elegida.
+        const confirmBtn = e.target.closest('[data-enroll-confirm]');
+        if (confirmBtn && ROOM_ID) {
+            const uid = Number(confirmBtn.dataset.enrollConfirm);
+            const sel = confirmBtn.closest('.enroll__actions')?.querySelector('.enroll__sec-chip[aria-checked="true"]');
+            if (!sel) { toast('Elige una sección para agruparlo.', { kind: 'error' }); return; }
+            await doEnroll(uid, Number(sel.dataset.sec), confirmBtn);
+            return;
+        }
+
+        // Agregar (paso inicial): si la sala tiene >1 sección, pedir cuál.
         const btn = e.target.closest('[data-enroll]');
         if (!btn || !ROOM_ID) return;
-        btn.disabled = true;
-        try {
-            await roomsApi.enroll(ROOM_ID, Number(btn.dataset.enroll));
-            toast('Estudiante agregado a la sala.', { kind: 'success' });
-            btn.closest('.enroll__row')?.remove();
-            await reloadRoom();
-        } catch (err) {
-            if (err instanceof ApiError && err.status === 401) { tokens.clear(); location.replace('/app/'); return; }
-            toast(err?.body?.detail || 'No se pudo agregar al estudiante.', { kind: 'error' });
-            btn.disabled = false;
+        const uid = Number(btn.dataset.enroll);
+        const sections = (DATA && DATA.sections) || [];
+        if (sections.length > 1) {
+            const $actions = btn.closest('.enroll__actions');
+            $actions.innerHTML = `
+                <span class="enroll__pick-label">Sección:</span>
+                <div class="enroll__chips" role="radiogroup" aria-label="Elige la sección">
+                    ${sections.map((c) => `<button type="button" class="enroll__sec-chip" data-user="${uid}" data-sec="${c.id_section}" role="radio" aria-checked="false">${escapeHTML(c.code)}</button>`).join('')}
+                </div>
+                <button type="button" class="enroll__add" data-enroll-confirm="${uid}">Agregar</button>`;
+            return;
         }
+        // 0 o 1 sección: agrega directo (auto-asigna la única sección si existe).
+        const sectionId = sections.length === 1 ? sections[0].id_section : null;
+        await doEnroll(uid, sectionId, btn);
     });
 }
 
 
 /* ---- Quitar estudiante de la sala (desde el modal de detalle) ---- */
-document.getElementById('student-detail-body')?.addEventListener('click', async (e) => {
+document.getElementById('student-detail-body')?.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-remove-student]');
-    if (!btn || !ROOM_ID) return;
-    const studentId = Number(btn.dataset.removeStudent);
-    if (!studentId) return;
-    if (!window.confirm('¿Quitar a este estudiante de la sala? Perderá el acceso a las evaluaciones de esta sala; sus datos históricos se conservan.')) return;
-    btn.disabled = true;
-    try {
-        await roomsApi.unenroll(ROOM_ID, studentId);
-        toast('Estudiante quitado de la sala.', { kind: 'success' });
-        const $modal = document.getElementById('studentDetailModal');
-        if (window.bootstrap && $modal) {
-            (window.bootstrap.Modal.getInstance($modal) || new window.bootstrap.Modal($modal)).hide();
-        }
-        await reloadRoom();
-    } catch (err) {
-        if (err instanceof ApiError && err.status === 401) { tokens.clear(); location.replace('/app/'); return; }
-        toast(err?.body?.detail || 'No se pudo quitar al estudiante.', { kind: 'error' });
-        btn.disabled = false;
-    }
+    if (!btn) return;
+    askRemoveStudent(Number(btn.dataset.removeStudent), btn.dataset.name, true);
 });
 
 

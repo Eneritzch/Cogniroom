@@ -1,6 +1,7 @@
 const _v = new URL(import.meta.url).searchParams.get('v') || '';
 const { rooms: roomsApi, tokens, ApiError, apiErrorMessage } = await import(`../api.js?v=${_v}`);
 const { toast } = await import(`../toast.js?v=${_v}`);
+const { enhanceSelects } = await import(`../custom-select.js?v=${_v}`);
 
 
 if (!tokens.access) {
@@ -60,6 +61,8 @@ function render(items) {
     }
     if ($empty) $empty.hidden = true;
     $list.innerHTML = items.map(rowHTML).join('');
+    // Convierte los <select> de paralelo al dropdown del design system.
+    enhanceSelects($list);
 }
 
 

@@ -6,7 +6,7 @@
     <meta name="description" content="CogniRoom — Plataforma de evaluación cognitiva adaptativa para universidades. Compara lo que un estudiante cree saber con lo que de verdad sabe y detecta el exceso de confianza antes de que afecte el rendimiento.">
     <title>CogniRoom — Mide lo que tus estudiantes creen vs. lo que saben</title>
     {% include 'app/partials/_styles.html' %}
-    <link rel="stylesheet" href="{% static 'css/landing.css' %}?v={% now "U" %}">
+    <link rel="stylesheet" href="{% static 'css/landing.css' %}?v={{ ASSET_V }}">
 </head>
 <body class="landing-body">
 
@@ -691,7 +691,7 @@
     </div>
 
     {% include 'app/partials/_bootstrap-bundle.html' %}
-    <script type="module" src="{% static 'js/landing.js' %}?v={% now "U" %}"></script>
-    <script type="module" src="{% static 'js/app/nav-auth.js' %}?v={% now "U" %}"></script>
+    <script type="module" src="{% static 'js/landing.js' %}?v={{ ASSET_V }}"></script>
+    <script type="module" src="{% static 'js/app/nav-auth.js' %}?v={{ ASSET_V }}"></script>
 </body>
 </html>

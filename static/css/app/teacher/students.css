@@ -980,3 +980,112 @@
 }
 
 .sd-remove:disabled { opacity: 0.5; cursor: default; }
+
+
+/* ---- Quitar estudiante del roster ---- */
+.student-card__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  background: transparent;
+  border: 1px solid var(--paper-border);
+  border-radius: var(--r-sm);
+  color: var(--ink-muted);
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out),
+              background-color var(--dur-fast) var(--ease-out);
+}
+
+.student-card__remove:hover {
+  color: var(--rust);
+  border-color: var(--rust);
+  background: color-mix(in srgb, var(--rust) 10%, transparent);
+}
+
+
+/* ---- Elegir sección al agregar estudiante ---- */
+.enroll__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+  margin-left: auto;
+}
+
+.enroll__pick-label {
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+
+.enroll__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.enroll__sec-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 5px 12px;
+  background: var(--paper-elevated);
+  border: 1px solid var(--paper-border-strong);
+  border-radius: var(--r-pill);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--ink-muted);
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-out),
+              background-color var(--dur-fast) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out);
+}
+
+.enroll__sec-chip:hover {
+  color: var(--ink);
+  border-color: var(--sage);
+}
+
+.enroll__sec-chip[aria-checked='true'] {
+  background: var(--sage-soft);
+  border-color: var(--sage);
+  color: var(--sage);
+  font-weight: var(--fw-semibold);
+}
+
+.confirm-remove__text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink-muted);
+}
+.confirm-remove__text strong { color: var(--ink); }
+
+/* cselect (design system) compacto dentro de la tarjeta de estudiante */
+.student-card__section .cselect {
+  width: 132px;
+}
+.student-card__section .cselect__button {
+  min-height: 32px;
+  padding: 5px 10px;
+  font-size: 12px;
+}
+.student-card__section .cselect__button .cselect__chevron .icon-svg {
+  width: 13px;
+  height: 13px;
+}
+.student-card__section .cselect__menu {
+  min-width: 132px;
+  padding: 4px;
+  gap: 1px;
+}
+.student-card__section .cselect__option {
+  min-height: 28px;
+  padding: 4px 9px;
+  font-size: 12px;
+  line-height: 1.2;
+}

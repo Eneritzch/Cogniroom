@@ -6,10 +6,10 @@
     <meta name="description" content="Tus salas grupales e individuales en CogniRoom.">
     <title>Mis salas · CogniRoom</title>
     {% include 'app/partials/_styles.html' %}
-    <link rel="stylesheet" href="{% static 'css/app/shared/dashboard.css' %}?v={% now "U" %}">
-    <link rel="stylesheet" href="{% static 'css/app/teacher/room.css' %}?v={% now "U" %}">
-    <link rel="stylesheet" href="{% static 'css/app/teacher/rooms.css' %}?v={% now "U" %}">
-    <link rel="stylesheet" href="{% static 'css/app/student/my-rooms.css' %}?v={% now "U" %}">
+    <link rel="stylesheet" href="{% static 'css/app/shared/dashboard.css' %}?v={{ ASSET_V }}">
+    <link rel="stylesheet" href="{% static 'css/app/teacher/room.css' %}?v={{ ASSET_V }}">
+    <link rel="stylesheet" href="{% static 'css/app/teacher/rooms.css' %}?v={{ ASSET_V }}">
+    <link rel="stylesheet" href="{% static 'css/app/student/my-rooms.css' %}?v={{ ASSET_V }}">
 </head>
 <body class="rooms-page my-rooms-page dashboard-shell">
 
@@ -146,7 +146,7 @@
     </div>
 
     <div class="modal fade" id="discoverModal" tabindex="-1" aria-labelledby="discoverModalTitle" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content create-room-modal">
                 <header class="create-room-modal__head">
                     <div>
@@ -163,8 +163,15 @@
 
                 <div class="create-room-modal__body">
                     <p class="create-room-modal__hint">
-                        Estas son las salas de tu institución. Solicita unirte y tu docente aprobará tu ingreso —sin códigos.
+                        Estas son las salas de tu institución. Solicita unirte y tu docente aprobará tu ingreso 
                     </p>
+                    <label class="discover-search" aria-label="Buscar sala o docente">
+                        <svg class="icon-svg" width="15" height="15" viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="11" cy="11" r="7"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <input type="search" id="discover-search" placeholder="Buscar por sala o docente…" autocomplete="off">
+                    </label>
                     <ul class="discover-list" id="discover-list" aria-live="polite">
                         <li class="discover-list__loading">Cargando salas…</li>
                     </ul>
@@ -176,7 +183,7 @@
     <div class="toast-host" id="toast-host" aria-live="polite" aria-atomic="true"></div>
 
     {% include 'app/partials/_bootstrap-bundle.html' %}
-    <script type="module" src="{% static 'js/app/nav-auth.js' %}?v={% now "U" %}"></script>
-    <script type="module" src="{% static 'js/app/student/my-rooms.js' %}?v={% now "U" %}"></script>
+    <script type="module" src="{% static 'js/app/nav-auth.js' %}?v={{ ASSET_V }}"></script>
+    <script type="module" src="{% static 'js/app/student/my-rooms.js' %}?v={{ ASSET_V }}"></script>
 </body>
 </html>

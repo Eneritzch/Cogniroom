@@ -647,13 +647,15 @@ function bindData(key, value) {
 
 
 function countProfiles(roster) {
-    let cal = 0, over = 0, und = 0;
+    let cal = 0, over = 0, und = 0, nodata = 0;
     (roster || []).forEach((s) => {
+        // Sin cuadrante = sin datos cognitivos: no cuenta como "confianza justa".
+        if (!s.quadrant) { nodata += 1; return; }
         if (s.profile === 'overconfident') over += 1;
         else if (s.profile === 'underconfident') und += 1;
         else cal += 1;
     });
-    return { cal, over, und };
+    return { cal, over, und, nodata };
 }
 
 
@@ -728,14 +730,9 @@ bootstrap();
 
 
 function renderDonut(counts) {
-    const total = (counts.cal || 0) + (counts.over || 0) + (counts.und || 0);
-    if (total === 0) return;
-
     const R = 48;
     const C = 2 * Math.PI * R;
-    const calArc  = (counts.cal  / total) * C;
-    const overArc = (counts.over / total) * C;
-    const undArc  = (counts.und  / total) * C;
+    const total = (counts.cal || 0) + (counts.over || 0) + (counts.und || 0);
 
     const set = (sel, len, offset) => {
         const el = document.querySelector(sel);
@@ -744,16 +741,35 @@ function renderDonut(counts) {
         el.style.strokeDashoffset = `${(-offset).toFixed(2)}`;
     };
 
+    // La leyenda siempre refleja los conteos reales.
+    const $cal = document.getElementById('donut-cal');   if ($cal)  $cal.textContent  = counts.cal || 0;
+    const $over = document.getElementById('donut-over'); if ($over) $over.textContent = counts.over || 0;
+    const $und = document.getElementById('donut-und');   if ($und)  $und.textContent  = counts.und || 0;
+
+    const $pct = document.getElementById('donut-pct');
+    const $label = document.querySelector('.d-donut__label');
+
+    // Nadie con datos aún: anillo vacío + "Sin datos", no un 100% fabricado.
+    if (total === 0) {
+        set('.d-donut__seg--cal',  0, 0);
+        set('.d-donut__seg--over', 0, 0);
+        set('.d-donut__seg--und',  0, 0);
+        if ($pct) $pct.textContent = '—';
+        if ($label) $label.textContent = (counts.nodata || 0) > 0 ? 'Sin evaluaciones' : 'Sin estudiantes';
+        return;
+    }
+
+    const calArc  = (counts.cal  / total) * C;
+    const overArc = (counts.over / total) * C;
+    const undArc  = (counts.und  / total) * C;
+
     set('.d-donut__seg--cal',  calArc,  0);
     set('.d-donut__seg--over', overArc, calArc);
     set('.d-donut__seg--und',  undArc,  calArc + overArc);
 
     const calPct = Math.round((counts.cal / total) * 100);
-    const $pct = document.getElementById('donut-pct');
     if ($pct) $pct.textContent = `${calPct}%`;
-    const $cal = document.getElementById('donut-cal');   if ($cal)  $cal.textContent  = counts.cal;
-    const $over = document.getElementById('donut-over'); if ($over) $over.textContent = counts.over;
-    const $und = document.getElementById('donut-und');   if ($und)  $und.textContent  = counts.und;
+    if ($label) $label.textContent = 'Confianza justa';
 }
 
 

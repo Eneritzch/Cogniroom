@@ -448,7 +448,22 @@ class RoomEnrollView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        _, created = RoomMembership.objects.get_or_create(room=room, student=student)
+        # Sección opcional: al agregar, el docente puede agrupar al alumno en un
+        # paralelo (si la sala tiene secciones).
+        section = None
+        section_id = request.data.get('section_id')
+        if section_id not in (None, '', 'null'):
+            try:
+                section = Section.objects.get(id=section_id, room=room)
+            except (Section.DoesNotExist, ValueError, TypeError):
+                return Response(
+                    {'detail': 'El paralelo no pertenece a esta sala.'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        membership, created = RoomMembership.objects.get_or_create(
+            room=room, student=student, defaults={'section': section}
+        )
         if not created:
             return Response(
                 {'detail': 'El estudiante ya está en la sala.'},
@@ -532,14 +547,24 @@ class RoomDiscoverView(APIView):
             .exclude(id__in=member_ids)
             .select_related('teacher')
             .prefetch_related('sections')
-            .order_by('name')
         )
+        # Búsqueda por sala o docente: en instituciones grandes (muchos docentes
+        # con muchas salas) la lista se vuelve enorme; se filtra en servidor y se
+        # limita el resultado en vez de traerlo todo.
+        q = (request.query_params.get('q') or '').strip()
+        if q:
+            rooms = rooms.filter(
+                Q(name__icontains=q)
+                | Q(subject__icontains=q)
+                | Q(teacher__first_name__icontains=q)
+                | Q(teacher__last_name__icontains=q)
+            )
+        rooms = rooms.order_by('name')[:40]
         data = [{
             'id': r.id,
             'name': r.name,
             'subject': r.subject,
             'teacher_name': f'{r.teacher.first_name} {r.teacher.last_name}'.strip() or r.teacher.username,
-            'member_count': RoomMembership.objects.filter(room=r).count(),
             'requested': r.id in requested,
             'requested_section_id': requested.get(r.id),
             'sections': [

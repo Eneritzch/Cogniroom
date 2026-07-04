@@ -137,8 +137,9 @@ export const rooms = {
         method: 'PATCH', body: { section_id: sectionId },
     }),
     enrollSearch: (roomId, q) => request(`/rooms/${roomId}/enroll/${q ? `?q=${encodeURIComponent(q)}` : ''}`),
-    enroll:       (roomId, studentId) => request(`/rooms/${roomId}/enroll/`, {
-        method: 'POST', body: { student_id: studentId },
+    enroll:       (roomId, studentId, sectionId) => request(`/rooms/${roomId}/enroll/`, {
+        method: 'POST',
+        body: sectionId != null ? { student_id: studentId, section_id: sectionId } : { student_id: studentId },
     }),
     unenroll:     (roomId, studentId) => request(`/rooms/${roomId}/members/${studentId}/`, { method: 'DELETE' }),
     studentDetail: (roomId, studentId) => request(`/rooms/${roomId}/students/${studentId}/`),
@@ -148,7 +149,7 @@ export const rooms = {
 
     // Autoinscripción por institución (alumno) + aprobación (docente).
     // El alumno declara su paralelo (section_id); el docente puede corregirlo al aprobar.
-    discover:      () => request('/rooms/discover/'),
+    discover:      (q) => request(`/rooms/discover/${q ? `?q=${encodeURIComponent(q)}` : ''}`),
     requestJoin:   (roomId, sectionId) => request(`/rooms/${roomId}/request-join/`, {
         method: 'POST', body: sectionId != null ? { section_id: sectionId } : undefined,
     }),

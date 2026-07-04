@@ -6,9 +6,9 @@
     <meta name="description" content="Lista de estudiantes con su perfil de la sala activa.">
     <title>Estudiantes · CogniRoom</title>
     {% include 'app/partials/_styles.html' %}
-    <link rel="stylesheet" href="{% static 'css/app/shared/dashboard.css' %}?v={% now "U" %}">
-    <link rel="stylesheet" href="{% static 'css/app/teacher/room.css' %}?v={% now "U" %}">
-    <link rel="stylesheet" href="{% static 'css/app/teacher/students.css' %}?v={% now "U" %}">
+    <link rel="stylesheet" href="{% static 'css/app/shared/dashboard.css' %}?v={{ ASSET_V }}">
+    <link rel="stylesheet" href="{% static 'css/app/teacher/room.css' %}?v={{ ASSET_V }}">
+    <link rel="stylesheet" href="{% static 'css/app/teacher/students.css' %}?v={{ ASSET_V }}">
 </head>
 <body class="room-page dashboard-shell">
 
@@ -177,10 +177,48 @@
         </div>
     </div>
 
+    <div class="modal fade" id="confirmRemoveModal" tabindex="-1" aria-labelledby="confirmRemoveTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content create-room-modal">
+                <header class="create-room-modal__head">
+                    <div>
+                        <span class="eyebrow">Quitar estudiante</span>
+                        <h2 id="confirmRemoveTitle" class="create-room-modal__title">¿Quitar de la sala?</h2>
+                    </div>
+                    <button type="button" class="create-room-modal__close" data-bs-dismiss="modal" aria-label="Cerrar">
+                        <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </header>
+
+                <div class="create-room-modal__body">
+                    <p class="confirm-remove__text">
+                        Vas a quitar a <strong id="confirm-remove-name">este estudiante</strong> de la sala.
+                        Perderá el acceso a esta sala, su historial se conserva y volverá a estar disponible si lo readmites
+                    </p>
+                </div>
+
+                <footer class="create-room-modal__foot">
+                    <button type="button" class="ds-btn ds-btn--ghost" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="ds-btn ds-btn--danger" id="confirm-remove-btn">
+                        <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                            <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                        Quitar de la sala
+                    </button>
+                </footer>
+            </div>
+        </div>
+    </div>
+
     <div class="toast-host" id="toast-host" aria-live="polite" aria-atomic="true"></div>
 
     {% include 'app/partials/_bootstrap-bundle.html' %}
-    <script type="module" src="{% static 'js/app/nav-auth.js' %}?v={% now "U" %}"></script>
-    <script type="module" src="{% static 'js/app/teacher/students.js' %}?v={% now "U" %}"></script>
+    <script type="module" src="{% static 'js/app/nav-auth.js' %}?v={{ ASSET_V }}"></script>
+    <script type="module" src="{% static 'js/app/teacher/students.js' %}?v={{ ASSET_V }}"></script>
 </body>
 </html>

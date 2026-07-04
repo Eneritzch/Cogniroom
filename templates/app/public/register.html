@@ -6,7 +6,7 @@
     <meta name="description" content="Creá tu cuenta en CogniRoom — plataforma de evaluación cognitiva para docentes y estudiantes.">
     <title>Crear cuenta · CogniRoom</title>
     {% include 'app/partials/_styles.html' %}
-    <link rel="stylesheet" href="{% static 'css/app/public/auth.css' %}?v={% now "U" %}">
+    <link rel="stylesheet" href="{% static 'css/app/public/auth.css' %}?v={{ ASSET_V }}">
 </head>
 <body class="auth-page">
     <main class="auth-shell">
@@ -263,6 +263,6 @@
     <div class="toast-host" id="toast-host" aria-live="polite" aria-atomic="true"></div>
 
     {% include 'app/partials/_bootstrap-bundle.html' %}
-    <script type="module" src="{% static 'js/app/public/register.js' %}?v={% now "U" %}"></script>
+    <script type="module" src="{% static 'js/app/public/register.js' %}?v={{ ASSET_V }}"></script>
 </body>
 </html>

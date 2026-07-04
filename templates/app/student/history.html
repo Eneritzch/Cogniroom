@@ -6,10 +6,10 @@
     <meta name="description" content="Historial de sesiones de evaluación del estudiante en CogniRoom.">
     <title>Historial · CogniRoom</title>
     {% include 'app/partials/_styles.html' %}
-    <link rel="stylesheet" href="{% static 'css/app/shared/dashboard.css' %}?v={% now "U" %}">
-    <link rel="stylesheet" href="{% static 'css/app/teacher/room.css' %}?v={% now "U" %}">
-    <link rel="stylesheet" href="{% static 'css/app/teacher/rooms.css' %}?v={% now "U" %}">
-    <link rel="stylesheet" href="{% static 'css/app/student/history.css' %}?v={% now "U" %}">
+    <link rel="stylesheet" href="{% static 'css/app/shared/dashboard.css' %}?v={{ ASSET_V }}">
+    <link rel="stylesheet" href="{% static 'css/app/teacher/room.css' %}?v={{ ASSET_V }}">
+    <link rel="stylesheet" href="{% static 'css/app/teacher/rooms.css' %}?v={{ ASSET_V }}">
+    <link rel="stylesheet" href="{% static 'css/app/student/history.css' %}?v={{ ASSET_V }}">
 </head>
 <body class="history-page dashboard-shell">
 
@@ -123,7 +123,7 @@
     <div class="toast-host" id="toast-host" aria-live="polite" aria-atomic="true"></div>
 
     {% include 'app/partials/_bootstrap-bundle.html' %}
-    <script type="module" src="{% static 'js/app/nav-auth.js' %}?v={% now "U" %}"></script>
-    <script type="module" src="{% static 'js/app/student/history.js' %}?v={% now "U" %}"></script>
+    <script type="module" src="{% static 'js/app/nav-auth.js' %}?v={{ ASSET_V }}"></script>
+    <script type="module" src="{% static 'js/app/student/history.js' %}?v={{ ASSET_V }}"></script>
 </body>
 </html>
