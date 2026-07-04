@@ -6,21 +6,30 @@
 }
 
 .session-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   border-bottom: 1px solid var(--paper-border);
   background: var(--paper);
 }
 
+/* El header se alinea al MISMO ancho que el contenido de la evaluación
+   (760/1240) para que el logo, el "3/5" y la barra cuadren con las preguntas. */
 .session-header__inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  max-width: 800px;
+  gap: var(--s-4);
+  max-width: 760px;
   margin-inline: auto;
   padding: var(--s-3) var(--s-5);
 }
 
 @media (min-width: 768px) {
-  .session-header__inner { padding-inline: var(--s-8); }
+  .session-header__inner {
+    max-width: 1240px;
+    padding: var(--s-3) var(--s-10);
+  }
 }
 
 .session-header__brand {
@@ -48,36 +57,35 @@
   .session-header__context { display: inline; }
 }
 
-.session-header__progress {
+.session-header__close {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-}
-
-.session-header__progress .num { color: var(--ink); }
-
-.session-header__close {
+  justify-content: center;
+  width: 30px;
+  height: 30px;
   background: 0;
-  border: 0;
-  padding: 0;
+  border: 1px solid var(--paper-border);
+  border-radius: var(--r-sm);
   color: var(--ink-faint);
   text-decoration: none;
-  display: inline-flex;
   cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
 }
 
-.session-header__close:hover { color: var(--ink); }
+.session-header__close:hover { color: var(--ink); border-color: var(--paper-border-strong); }
 
 
 .session-progress {
-  height: 2px;
+  height: 3px;
   width: 100%;
   background: var(--paper-elevated);
 }
 
 .session-progress__fill {
   height: 100%;
-  background: var(--sage);
+  border-radius: 0 var(--r-pill) var(--r-pill) 0;
+  background: linear-gradient(90deg, var(--sage), var(--sage-strong));
+  box-shadow: 0 0 10px var(--sage-soft);
   transition: width var(--dur-slow) var(--ease-out);
 }
 

@@ -77,7 +77,7 @@ function setMascot(state) { if ($mascot) $mascot.dataset.state = state; }
 
 // La sesión termina cuando el backend responde `completed` (no se conoce el
 // total de preguntas de antemano).
-$total.textContent = '—';
+if ($total) $total.textContent = '—';
 
 
 // El estudiante DEBE declarar su confianza antes de que se desbloqueen las
@@ -140,11 +140,11 @@ function renderQuestion(q) {
     const num = currentIndex + 1;
     const total = typeof q.total === 'number' ? q.total : null;
 
-    $current.textContent = String(num);
+    if ($current) $current.textContent = String(num);
     if ($progressCurrent) $progressCurrent.textContent = String(num);
 
     if (total != null) {
-        $total.textContent = String(total);
+        if ($total) $total.textContent = String(total);
         if ($progressTotal) $progressTotal.textContent = String(total);
         const pct = Math.min(100, (currentIndex / total) * 100);
         $progress.style.width = `${pct}%`;

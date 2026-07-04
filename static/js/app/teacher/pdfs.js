@@ -68,7 +68,7 @@ function render() {
         const statusLabel = processed ? 'Procesado' : (p.status === 'failed' ? 'Falló' : 'Pendiente');
         const fileUrl = p.file_path ?? '';
         return `
-        <li class="pdf-item" data-file="${escapeHTML(fileUrl)}" data-name="${escapeHTML(originalName)}" role="button" tabindex="0" aria-label="Abrir ${escapeHTML(originalName)}">
+        <li class="pdf-item" data-id="${p.id}" data-file="${escapeHTML(fileUrl)}" data-name="${escapeHTML(originalName)}" role="button" tabindex="0" aria-label="Abrir ${escapeHTML(originalName)}">
             <div class="pdf-item__top">
                 <span class="pdf-item__icon" aria-hidden="true">
                     <svg class="icon-svg" width="20" height="20" viewBox="0 0 24 24">
@@ -124,21 +124,21 @@ document.getElementById('pdfs-list').addEventListener('click', async (e) => {
 });
 
 
-/* ---------- Visor flotante de PDF ---------- */
+/* ---------- Visor flotante (solo PDF) ---------- */
 const $pdfView = document.getElementById('pdfview-overlay');
 const $pdfFrame = document.getElementById('pdfview-frame');
 const $pdfTitle = document.getElementById('pdfview-title');
 const $pdfOpen = document.getElementById('pdfview-open');
 let pdfBlobUrl = null;
 
+// PDF: se incrusta como blob (el servidor manda X-Frame-Options: DENY, que
+// impide el iframe por URL directa).
 async function openPdfViewer(url, name) {
     if (!$pdfView || !url) return;
     if ($pdfTitle) $pdfTitle.textContent = name || 'Documento';
     if ($pdfOpen) $pdfOpen.href = url;  // "abrir en pestaña" usa la URL directa
     $pdfView.hidden = false;
     if (!$pdfFrame) return;
-    // El PDF se sirve con X-Frame-Options: DENY, que impide incrustarlo en un
-    // iframe por URL. Lo descargamos y lo mostramos como blob (sin esa cabecera).
     $pdfFrame.removeAttribute('src');
     try {
         const res = await fetch(url);
@@ -152,6 +152,28 @@ async function openPdfViewer(url, name) {
     }
 }
 
+// Word/PPTX no se previsualizan en el navegador (no es un formato visual): se
+// descargan directamente. Solo el PDF abre el visor.
+function downloadFile(url, name) {
+    if (!url) return;
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name || '';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+}
+
+function openDocViewer(item) {
+    const name = item.dataset.name || '';
+    const url = item.dataset.file || '';
+    if (name.toLowerCase().endsWith('.pdf')) {
+        openPdfViewer(url, name);
+    } else {
+        downloadFile(url, name);
+    }
+}
+
 function closePdfViewer() {
     if (!$pdfView) return;
     $pdfView.hidden = true;
@@ -159,12 +181,12 @@ function closePdfViewer() {
     if (pdfBlobUrl) { URL.revokeObjectURL(pdfBlobUrl); pdfBlobUrl = null; }
 }
 
-/* Abrir el visor al hacer clic en un PDF (sin interferir con el boton de borrar). */
+/* Abrir el visor al hacer clic (sin interferir con el boton de borrar). */
 document.getElementById('pdfs-list').addEventListener('click', (e) => {
     if (e.target.closest('.pdf-item__del')) return;
     const item = e.target.closest('.pdf-item');
     if (!item || !item.dataset.file) return;
-    openPdfViewer(item.dataset.file, item.dataset.name);
+    openDocViewer(item);
 });
 
 document.getElementById('pdfs-list').addEventListener('keydown', (e) => {
@@ -173,7 +195,7 @@ document.getElementById('pdfs-list').addEventListener('keydown', (e) => {
     const item = e.target.closest('.pdf-item');
     if (!item || !item.dataset.file) return;
     e.preventDefault();
-    openPdfViewer(item.dataset.file, item.dataset.name);
+    openDocViewer(item);
 });
 
 document.getElementById('pdfview-close')?.addEventListener('click', closePdfViewer);

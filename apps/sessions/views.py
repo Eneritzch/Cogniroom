@@ -168,6 +168,7 @@ def _run_ai_analysis(answer_id, new_mastery):
             selected_answer,
             correct_answer,
             {'p_mastery': new_mastery, 'node': question.node.name},
+            is_correct=answer.is_correct,
         )
         if feedback:
             answer.ai_feedback = feedback

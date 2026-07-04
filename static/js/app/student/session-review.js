@@ -100,7 +100,6 @@ function paintHeader(session, answers) {
     document.getElementById('review-room-name').textContent = session.room?.name || '';
     document.getElementById('review-date').textContent = fmtDate(session.started_at);
     document.getElementById('review-duration').textContent = fmtDuration(durationMin);
-    document.getElementById('review-id').textContent = `Sesión #${session.id_session}`;
 
     const correct = answers.filter((a) => a.is_correct).length;
     const pct = answers.length ? Math.round((correct / answers.length) * 100) : 0;
@@ -222,11 +221,11 @@ function renderQuestion(a, i) {
                         </svg>
                         ${a.is_correct ? 'Acertada' : 'Fallada'}
                     </span>
-                    ${hasAi ? `<span class="rq__ai-tag">
+                    ${hasAi ? `<span class="rq__ai-tag" data-kind="${a.is_correct ? 'confidence' : 'ai'}">
                         <svg class="icon-svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path>
                         </svg>
-                        Feedback IA
+                        ${a.is_correct ? 'Acertaste — solo te faltó confianza' : 'Feedback IA'}
                     </span>` : ''}
                 </div>
                 <p class="rq__statement">${escapeHTML(a.statement)}</p>
@@ -315,7 +314,6 @@ function renderUnavailable(session) {
         : 'Esta sesión aún no se puede revisar';
     document.getElementById('review-date').textContent = session ? fmtDate(session.started_at) : '';
     document.getElementById('review-duration').textContent = session ? fmtDuration(durationMinFromSession(session)) : '';
-    document.getElementById('review-id').textContent = session ? `Sesión #${session.id_session}` : '';
 
     const $empty = document.getElementById('review-empty');
     $empty.hidden = false;

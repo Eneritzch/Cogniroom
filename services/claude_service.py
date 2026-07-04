@@ -160,13 +160,13 @@ class CognitiveAnalysisService:
         }
 
         system = (
-            'Eres un sistema experto en análisis cognitivo académico. '
-            'Respondes únicamente en JSON válido, sin texto adicional, '
+            'Eres un analista pedagógico que ayuda a un docente a entender a un '
+            'estudiante. Respondes únicamente en JSON válido, sin texto adicional, '
             'sin markdown, sin backticks.'
         )
 
         user_prompt = (
-            'Analiza el perfil cognitivo del estudiante con los siguientes datos:\n'
+            'Analiza el perfil del estudiante con los siguientes datos:\n'
             f"- icc_avg: {student_data.get('icc_avg', 0.0)}\n"
             f"- bkt_nodes: {json.dumps(student_data.get('bkt_nodes', {}), ensure_ascii=False)}\n"
             f"- confidence_avg: {student_data.get('confidence_avg', 0.0)}\n"
@@ -176,17 +176,27 @@ class CognitiveAnalysisService:
             '{\n'
             '  "profile": "overconfident|underconfident|calibrated",\n'
             '  "risk_level": "high|medium|low",\n'
-            '  "risk_nodes": ["nodo1", "nodo2"],\n'
+            '  "risk_nodes": ["tema1", "tema2"],\n'
             '  "prediction": 0.0,\n'
             '  "problem_type": "vacio_conceptual|confusion_conceptual|error_procedimental|aplicacion_incorrecta|sin_patron",\n'
             '  "reasoning": "texto",\n'
             '  "recommendation": "texto"\n'
             '}\n'
-            '"problem_type" es el TIPO de error cognitivo (no la calibración): '
+            '"problem_type" es un valor interno (elige uno del enum): '
             '"vacio_conceptual" (no conoce el concepto), "confusion_conceptual" '
             '(mezcla conceptos), "error_procedimental" (conoce pero falla al aplicar), '
             '"aplicacion_incorrecta" (aplica bien un concepto equivocado) o '
-            '"sin_patron" (sin patrón claro).'
+            '"sin_patron" (sin patrón claro).\n\n'
+            'MUY IMPORTANTE — los campos "reasoning" y "recommendation" los lee '
+            'una persona (el docente) y deben estar en español claro, natural y '
+            'cotidiano, que entienda cualquiera. PROHIBIDO usar jerga técnica: '
+            'nada de "BKT", "ICC", "metacognición", "calibración", "vacío '
+            'conceptual", "nodo", ni números/probabilidades. En "reasoning" di en '
+            '1-2 frases sencillas qué le está pasando al estudiante (p. ej. "cree '
+            'que domina X pero le cuesta más de lo que piensa"). En '
+            '"recommendation" da un consejo concreto y accionable para el docente '
+            'en lenguaje simple (qué hacer o reforzar). Habla de "temas" o '
+            '"materias", no de "nodos".'
         )
 
         raw = self._message(system, user_prompt)
@@ -390,20 +400,40 @@ class CognitiveAnalysisService:
         selected_answer: str,
         correct_answer: str,
         bkt_context: dict,
+        is_correct: bool = False,
     ) -> str:
         system = (
-            'Eres un tutor académico que explica errores de manera clara y '
-            'concisa. Responde en texto plano, máximo 150 palabras, sin '
-            'markdown, sin backticks, sin JSON.'
+            'Eres un tutor cercano que le habla directamente al estudiante en '
+            'español claro y cotidiano, como una persona real. Sin tecnicismos '
+            'ni jerga (nada de "BKT", "ICC", "metacognición", "nodo", '
+            '"calibración"), sin markdown, sin backticks, sin JSON. Máximo 120 '
+            'palabras.'
         )
 
-        user_prompt = (
-            f'Pregunta: {question_text}\n'
-            f'Respuesta seleccionada (incorrecta): {selected_answer}\n'
-            f'Respuesta correcta: {correct_answer}\n'
-            f'Contexto BKT: {json.dumps(bkt_context, ensure_ascii=False)}\n\n'
-            'Explica al estudiante por qué su respuesta es incorrecta y '
-            'cómo entender la respuesta correcta. Máximo 150 palabras.'
-        )
+        node = bkt_context.get('node', '') if isinstance(bkt_context, dict) else ''
+
+        if is_correct:
+            # Se dispara aunque el alumno ACIERTE (cuando su confianza no coincide
+            # con lo que sabe). No hay que tratarlo como un error.
+            user_prompt = (
+                f'Tema: {node}\n'
+                f'Pregunta: {question_text}\n'
+                f'Respuesta del estudiante: {selected_answer} — es CORRECTA.\n'
+                f'Respuesta correcta: {correct_answer}\n\n'
+                'El estudiante ACERTÓ, pero respondió con poca seguridad. '
+                'Confírmale con calidez que su respuesta fue correcta, explícale '
+                'en una o dos frases por qué lo es, y anímalo a confiar más en lo '
+                'que ya sabe. No digas ni insinúes que se equivocó ni menciones '
+                'ningún "error del sistema".'
+            )
+        else:
+            user_prompt = (
+                f'Tema: {node}\n'
+                f'Pregunta: {question_text}\n'
+                f'Respuesta del estudiante (incorrecta): {selected_answer}\n'
+                f'Respuesta correcta: {correct_answer}\n\n'
+                'Explícale con amabilidad y en lenguaje sencillo por qué su '
+                'respuesta no es correcta y cómo entender la respuesta correcta.'
+            )
 
         return self._message(system, user_prompt) or ''

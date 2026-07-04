@@ -703,3 +703,14 @@
     align-items: center;
   }
 }
+
+/* La revisión de sesión es una vista enfocada del estudiante: el selector
+   "Sala activa" del docente (topbar) no aplica aquí y solo muestra un "—". */
+.review-page .dashboard-shell__room { display: none; }
+
+/* Acertó pero con baja confianza: etiqueta en tono "subconfianza" (stone),
+   no en el ámbar de "Feedback IA" (que se usa cuando hay que corregir un fallo). */
+.rq__ai-tag[data-kind='confidence'] {
+  background: color-mix(in srgb, var(--stone) 16%, transparent);
+  color: var(--stone);
+}
