@@ -145,6 +145,19 @@ export const rooms = {
     blindSpots:  (roomId) => request(`/rooms/${roomId}/metrics/blind-spots/`),
     atRisk:      (roomId) => request(`/rooms/${roomId}/metrics/at-risk/`),
     heatmap:     (roomId) => request(`/rooms/${roomId}/metrics/heatmap/`),
+
+    // Autoinscripción por institución (alumno) + aprobación (docente).
+    // El alumno declara su paralelo (section_id); el docente puede corregirlo al aprobar.
+    discover:      () => request('/rooms/discover/'),
+    requestJoin:   (roomId, sectionId) => request(`/rooms/${roomId}/request-join/`, {
+        method: 'POST', body: sectionId != null ? { section_id: sectionId } : undefined,
+    }),
+    cancelJoin:    (roomId) => request(`/rooms/${roomId}/request-join/`, { method: 'DELETE' }),
+    joinRequests:  () => request('/rooms/join-requests/'),
+    approveJoin:   (reqId, sectionId) => request(`/rooms/join-requests/${reqId}/approve/`, {
+        method: 'POST', body: sectionId != null ? { section_id: sectionId } : undefined,
+    }),
+    rejectJoin:    (reqId) => request(`/rooms/join-requests/${reqId}/reject/`, { method: 'POST' }),
 };
 
 /* ---------- Sections (room-scoped) ---------- */

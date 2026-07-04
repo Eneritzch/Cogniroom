@@ -34,12 +34,49 @@
                 </ul>
             </div>
         </div>
-        <div class="dashboard-shell__profile">
-            <span class="dashboard-shell__profile-avatar" aria-hidden="true" id="user-initials"></span>
-            <div class="dashboard-shell__profile-meta">
-                <span class="dashboard-shell__profile-name" id="user-name"></span>
-                <span class="dashboard-shell__profile-role" id="user-role" data-role=""></span>
-            </div>
+        <div class="dashboard-shell__profile dropdown">
+            <button type="button" class="dashboard-shell__profile-trigger" id="profile-trigger"
+                    data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false" aria-label="Menú de cuenta">
+                <span class="dashboard-shell__profile-avatar" aria-hidden="true" id="user-initials"></span>
+                <div class="dashboard-shell__profile-meta">
+                    <span class="dashboard-shell__profile-name" id="user-name"></span>
+                    <span class="dashboard-shell__profile-role" id="user-role" data-role=""></span>
+                </div>
+                <svg class="icon-svg dashboard-shell__profile-caret" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end profile-menu" aria-labelledby="profile-trigger">
+                <li data-show-for="teacher" hidden>
+                    <a class="dropdown-item profile-menu__item" href="/app/teacher-profile/">
+                        <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        Perfil
+                    </a>
+                </li>
+                <li data-show-for="student" hidden>
+                    <a class="dropdown-item profile-menu__item" href="/app/profile/">
+                        <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        Perfil
+                    </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <button type="button" class="dropdown-item profile-menu__item profile-menu__logout" id="logout-btn">
+                        <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        Cerrar sesión
+                    </button>
+                </li>
+            </ul>
         </div>
     </div>
 </header>

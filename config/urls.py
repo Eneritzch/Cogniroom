@@ -73,6 +73,7 @@ html_routes = [
     path('app/dashboard/',                    TemplateView.as_view(template_name='app/shared/dashboard.html'),         name='dashboard'),
     path('app/diagnoses/',                    TemplateView.as_view(template_name='app/shared/diagnoses.html'),         name='diagnoses'),
     path('app/students/',                     TemplateView.as_view(template_name='app/teacher/students.html'),         name='teacher-students'),
+    path('app/requests/',                     TemplateView.as_view(template_name='app/teacher/requests.html'),         name='teacher-requests'),
     path('app/questions/',                    TemplateView.as_view(template_name='app/teacher/questions.html'),        name='teacher-questions'),
     path('app/pdfs/',                         TemplateView.as_view(template_name='app/teacher/pdfs.html'),             name='teacher-pdfs'),
     path('app/metrics/',                      TemplateView.as_view(template_name='app/teacher/metrics.html'),          name='teacher-metrics'),

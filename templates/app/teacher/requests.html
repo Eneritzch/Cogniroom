@@ -1,0 +1,56 @@
+{% load static %}<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Solicitudes de ingreso de estudiantes a tus salas.">
+    <title>Solicitudes · CogniRoom</title>
+    {% include 'app/partials/_styles.html' %}
+    <link rel="stylesheet" href="{% static 'css/app/shared/dashboard.css' %}?v={% now "U" %}">
+    <link rel="stylesheet" href="{% static 'css/app/teacher/room.css' %}?v={% now "U" %}">
+    <link rel="stylesheet" href="{% static 'css/app/teacher/requests.css' %}?v={% now "U" %}">
+</head>
+<body class="room-page dashboard-shell">
+
+    {% include 'app/partials/_app-sidebar.html' with active='requests' %}
+
+    <main class="dashboard-shell__main">
+
+        {% include 'app/partials/_app-topbar.html' %}
+
+        <span class="eyebrow">Solicitudes</span>
+        <div class="room-head">
+            <h1 class="room-title">Solicitudes de ingreso</h1>
+            <div class="room-meta">
+                <span><span id="requests-count">—</span> pendientes</span>
+                <span class="room-meta__sep">·</span>
+                <span>Alumnos de tu institución que pidieron unirse a tus salas</span>
+            </div>
+        </div>
+
+        <section class="room-panel" role="region" aria-label="Solicitudes de ingreso">
+            <ul class="join-requests__list" id="join-requests-list" aria-live="polite"></ul>
+
+            <div class="requests-empty" id="requests-empty" hidden>
+                <div class="requests-empty__icon" aria-hidden="true">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <polyline points="17 11 19 13 23 9"></polyline>
+                    </svg>
+                </div>
+                <h2 class="requests-empty__title">No tienes solicitudes pendientes.</h2>
+                <p class="requests-empty__body">
+                    Cuando un estudiante de tu institución pida unirse a una de tus salas, aparecerá aquí para que lo apruebes o rechaces.
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <div class="toast-host" id="toast-host" aria-live="polite" aria-atomic="true"></div>
+
+    {% include 'app/partials/_bootstrap-bundle.html' %}
+    <script type="module" src="{% static 'js/app/nav-auth.js' %}?v={% now "U" %}"></script>
+    <script type="module" src="{% static 'js/app/teacher/requests.js' %}?v={% now "U" %}"></script>
+</body>
+</html>

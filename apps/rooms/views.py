@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 from apps.notifications.models import Notification
 from apps.notifications.services import notify
 
-from .models import Room, RoomMembership, Section
+from .models import Room, RoomJoinRequest, RoomMembership, Section
 from .serializers import (
     AssignSectionSerializer,
     JoinRoomSerializer,
@@ -485,3 +485,186 @@ class RoomMemberView(APIView):
         )
         membership.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+def _join_request_data(req):
+    s = req.student
+    name = f'{s.first_name} {s.last_name}'.strip() or s.username
+    initials = ''.join(p[0] for p in name.split()[:2]).upper()
+    sec = req.section
+    return {
+        'id': req.id,
+        'room': {'id': req.room_id, 'name': req.room.name},
+        'student': {'name': name, 'email': s.email, 'initials': initials},
+        # Paralelo declarado por el alumno + los paralelos de la sala para que el
+        # docente pueda corregirlo antes de aprobar.
+        'section': {'id': sec.id, 'code': sec.code, 'name': sec.name} if sec else None,
+        'room_sections': [
+            {'id': x.id, 'code': x.code, 'name': x.name, 'schedule': x.schedule}
+            for x in req.room.sections.all()
+        ],
+        'created_at': req.created_at,
+    }
+
+
+class RoomDiscoverView(APIView):
+    """Salas grupales de la institucion del alumno para autoinscribirse."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        if user.role != 'student' or user.institution_id is None:
+            return Response([])
+
+        member_ids = set(
+            RoomMembership.objects.filter(student=user).values_list('room_id', flat=True)
+        )
+        requested = {
+            rjr.room_id: rjr.section_id
+            for rjr in RoomJoinRequest.objects.filter(student=user)
+        }
+        rooms = (
+            Room.objects.filter(
+                mode=Room.MODE_GROUP,
+                is_active=True,
+                teacher__institution_id=user.institution_id,
+            )
+            .exclude(id__in=member_ids)
+            .select_related('teacher')
+            .prefetch_related('sections')
+            .order_by('name')
+        )
+        data = [{
+            'id': r.id,
+            'name': r.name,
+            'subject': r.subject,
+            'teacher_name': f'{r.teacher.first_name} {r.teacher.last_name}'.strip() or r.teacher.username,
+            'member_count': RoomMembership.objects.filter(room=r).count(),
+            'requested': r.id in requested,
+            'requested_section_id': requested.get(r.id),
+            'sections': [
+                {'id': s.id, 'code': s.code, 'name': s.name, 'schedule': s.schedule}
+                for s in r.sections.all()
+            ],
+        } for r in rooms]
+        return Response(data)
+
+
+class RoomJoinRequestView(APIView):
+    """El alumno solicita (POST) o cancela (DELETE) su ingreso a una sala."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, room_id):
+        user = request.user
+        room = get_object_or_404(Room.objects.select_related('teacher'), id=room_id)
+        if user.role != 'student':
+            return Response({'detail': 'Solo los estudiantes pueden solicitar ingreso.'}, status=status.HTTP_403_FORBIDDEN)
+        if room.mode != Room.MODE_GROUP:
+            return Response({'detail': 'Solo las salas grupales aceptan solicitudes.'}, status=status.HTTP_400_BAD_REQUEST)
+        if user.institution_id is None or room.teacher.institution_id != user.institution_id:
+            return Response({'detail': 'La sala no pertenece a tu institucion.'}, status=status.HTTP_403_FORBIDDEN)
+        if RoomMembership.objects.filter(room=room, student=user).exists():
+            return Response({'detail': 'Ya eres miembro de esta sala.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Paralelo declarado por el alumno (opcional; el docente lo confirma/corrige).
+        section = None
+        section_id = request.data.get('section_id')
+        if section_id not in (None, '', 'null'):
+            try:
+                section = Section.objects.get(id=section_id, room=room)
+            except (Section.DoesNotExist, ValueError, TypeError):
+                return Response({'detail': 'El paralelo no pertenece a esta sala.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        _, created = RoomJoinRequest.objects.get_or_create(
+            room=room, student=user, defaults={'section': section}
+        )
+        if not created:
+            return Response({'detail': 'Ya enviaste una solicitud a esta sala.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        sname = f'{user.first_name} {user.last_name}'.strip() or user.username
+        notify(
+            room.teacher,
+            kind=Notification.KIND_JOIN_REQUEST,
+            title=f'{sname} quiere unirse a "{room.name}"',
+            body='Revisa la solicitud y apruebala o rechazala en Estudiantes.',
+            link='/app/students/',
+        )
+        return Response({'detail': 'Solicitud enviada.'}, status=status.HTTP_201_CREATED)
+
+    def delete(self, request, room_id):
+        RoomJoinRequest.objects.filter(room_id=room_id, student=request.user).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class JoinRequestListView(APIView):
+    """Bandeja del docente: solicitudes pendientes de todas sus salas."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        reqs = (
+            RoomJoinRequest.objects.filter(room__teacher=request.user)
+            .select_related('room', 'student')
+            .order_by('created_at')
+        )
+        return Response([_join_request_data(r) for r in reqs])
+
+
+class JoinRequestApproveView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, req_id):
+        req = get_object_or_404(
+            RoomJoinRequest.objects.select_related('room', 'student'), id=req_id
+        )
+        if req.room.teacher_id != request.user.id:
+            return Response({'detail': 'Solo el dueno de la sala puede aprobar.'}, status=status.HTTP_403_FORBIDDEN)
+
+        room, student = req.room, req.student
+
+        # El docente puede corregir el paralelo al aprobar; si no, se usa el que
+        # el alumno declaro.
+        section = req.section
+        override_id = request.data.get('section_id')
+        if override_id not in (None, '', 'null'):
+            try:
+                section = Section.objects.get(id=override_id, room=room)
+            except (Section.DoesNotExist, ValueError, TypeError):
+                return Response({'detail': 'El paralelo no pertenece a esta sala.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        membership, _ = RoomMembership.objects.get_or_create(room=room, student=student)
+        if section is not None and membership.section_id != section.id:
+            membership.section = section
+            membership.save(update_fields=['section'])
+        req.delete()
+
+        notify(
+            student,
+            kind=Notification.KIND_ROOM_JOINED,
+            title=f'Fuiste aceptado en "{room.name}"',
+            body='Ya puedes ver las preguntas y evaluarte en esta sala.',
+            link='/app/my-rooms/',
+        )
+        return Response({'detail': 'Solicitud aprobada.'})
+
+
+class JoinRequestRejectView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, req_id):
+        req = get_object_or_404(
+            RoomJoinRequest.objects.select_related('room', 'student'), id=req_id
+        )
+        if req.room.teacher_id != request.user.id:
+            return Response({'detail': 'Solo el dueno de la sala puede rechazar.'}, status=status.HTTP_403_FORBIDDEN)
+
+        room, student = req.room, req.student
+        req.delete()
+
+        notify(
+            student,
+            kind=Notification.KIND_JOIN_REJECTED,
+            title=f'Tu solicitud a "{room.name}" no fue aprobada',
+            body='Puedes consultar con tu docente o intentar con otra sala.',
+            link='/app/my-rooms/',
+        )
+        return Response({'detail': 'Solicitud rechazada.'})

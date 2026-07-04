@@ -797,7 +797,6 @@ function renderRoomsCompare(list) {
           <span class="d-rooms__name">${escapeHTML(String(r.name).split(' · ')[0])}</span>
           <span class="d-rooms__sub">${r.member_count ?? 0} est.</span>
         </div>
-        <span class="d-rooms__subject">${escapeHTML(r.subject || '')}</span>
       </li>
     `).join('');
 

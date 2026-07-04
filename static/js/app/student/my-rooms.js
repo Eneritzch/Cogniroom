@@ -1,5 +1,5 @@
 const _v = new URL(import.meta.url).searchParams.get('v') || '';
-const { rooms: roomsApi, sessions: sessionsApi, questions: questionsApi, tokens, ApiError } = await import(`../api.js?v=${_v}`);
+const { rooms: roomsApi, sessions: sessionsApi, questions: questionsApi, tokens, ApiError, apiErrorMessage } = await import(`../api.js?v=${_v}`);
 const { toast } = await import(`../toast.js?v=${_v}`);
 
 
@@ -450,8 +450,102 @@ async function loadRooms() {
 }
 
 
+/* ---- Descubrir salas de la institución (autoinscripción con aprobación) ---- */
+function renderDiscover(items) {
+    const $list = document.getElementById('discover-list');
+    if (!$list) return;
+    if (!items.length) {
+        $list.innerHTML = '<li class="discover-list__empty">No hay salas disponibles en tu institución por ahora.</li>';
+        return;
+    }
+    $list.innerHTML = items.map((r) => {
+        const sections = r.sections || [];
+        const hasSections = sections.length > 0;
+        const reqSec = sections.find((s) => s.id === r.requested_section_id);
+
+        const pending = `
+            ${reqSec ? `<span class="discover-row__paralelo">Paralelo ${escapeHTML(reqSec.code)}</span>` : ''}
+            <button type="button" class="ds-btn ds-btn--ghost discover-row__btn" data-cancel="${r.id}">Solicitud enviada · Cancelar</button>`;
+
+        const select = hasSections ? `
+            <select class="form-select discover-row__select" data-section-for="${r.id}" aria-label="Elige tu paralelo en ${escapeHTML(r.name)}">
+                <option value="" disabled selected>Elige tu paralelo</option>
+                ${sections.map((s) => `<option value="${s.id}">${escapeHTML(s.code)}${s.schedule ? ` · ${escapeHTML(s.schedule)}` : ''}</option>`).join('')}
+            </select>` : '';
+
+        const available = `
+            ${select}
+            <button type="button" class="ds-btn ds-btn--ink discover-row__btn" data-request="${r.id}">Solicitar unirse</button>`;
+
+        return `
+        <li class="discover-row">
+            <div class="discover-row__main">
+                <span class="discover-row__name">${escapeHTML(r.name)}</span>
+                <span class="discover-row__meta">${escapeHTML(r.teacher_name || '')} · <span class="num">${r.member_count ?? 0}</span> est.</span>
+            </div>
+            <div class="discover-row__action">
+                ${r.requested ? pending : available}
+            </div>
+        </li>`;
+    }).join('');
+}
+
+async function loadDiscover() {
+    const $list = document.getElementById('discover-list');
+    if ($list) $list.innerHTML = '<li class="discover-list__loading">Cargando salas…</li>';
+    try {
+        renderDiscover((await roomsApi.discover()) || []);
+    } catch (err) {
+        if (err instanceof ApiError && err.status === 401) { tokens.clear(); location.replace('/app/'); return; }
+        if ($list) $list.innerHTML = '<li class="discover-list__empty">No se pudieron cargar las salas.</li>';
+    }
+}
+
+function bindDiscover() {
+    const $modal = document.getElementById('discoverModal');
+    const $list = document.getElementById('discover-list');
+    if (!$modal || !$list) return;
+
+    $modal.addEventListener('shown.bs.modal', loadDiscover);
+
+    $list.addEventListener('click', async (e) => {
+        const btn = e.target.closest('[data-request], [data-cancel]');
+        if (!btn) return;
+        const requestId = btn.dataset.request;
+        const cancelId = btn.dataset.cancel;
+
+        if (requestId) {
+            const $sel = $list.querySelector(`[data-section-for="${requestId}"]`);
+            // Si la sala tiene paralelos, exigir que el alumno elija el suyo.
+            if ($sel && !$sel.value) {
+                toast('Elige tu paralelo antes de solicitar.', { kind: 'error' });
+                $sel.focus();
+                return;
+            }
+            var sectionId = $sel && $sel.value ? Number($sel.value) : null;
+        }
+
+        btn.disabled = true;
+        try {
+            if (requestId) {
+                await roomsApi.requestJoin(Number(requestId), sectionId);
+                toast('Solicitud enviada. Tu docente la revisará.', { kind: 'success' });
+            } else {
+                await roomsApi.cancelJoin(Number(cancelId));
+                toast('Solicitud cancelada.', { kind: 'success' });
+            }
+            await loadDiscover();
+        } catch (err) {
+            btn.disabled = false;
+            toast(apiErrorMessage(err, 'No se pudo procesar la solicitud.'), { kind: 'error' });
+        }
+    });
+}
+
+
 bindJoinModal();
 bindCreateStudyModal();
 bindStartEvalModal();
+bindDiscover();
 render();
 loadRooms();

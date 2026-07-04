@@ -306,6 +306,21 @@ async function setupNotifications() {
 }
 
 
+async function setupRequestsBadge() {
+    const $badge = document.getElementById('requests-badge');
+    if (!$badge) return;
+    try {
+        const reqs = (await rooms.joinRequests()) || [];
+        if (reqs.length > 0) {
+            $badge.textContent = String(reqs.length);
+            $badge.hidden = false;
+        } else {
+            $badge.hidden = true;
+        }
+    } catch (_) { /* best-effort: el badge simplemente no aparece */ }
+}
+
+
 async function updateNav() {
     setupSidebarToggle();
 
@@ -323,6 +338,7 @@ async function updateNav() {
         if (user.role === 'teacher') {
             setupRoomSelector();
             setupCreateRoomForm();
+            setupRequestsBadge();
         }
     } catch (_) {
         tokens.clear();

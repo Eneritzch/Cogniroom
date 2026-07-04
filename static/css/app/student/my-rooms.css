@@ -3,6 +3,19 @@
   flex-wrap: wrap;
   gap: var(--s-2);
   align-items: center;
+  justify-content: flex-end;
+}
+
+/* En desktop: el hint se encoge (envuelve su texto) y los 3 botones quedan
+   como un grupo alineado a la derecha, sin el wrap 2+1 desalineado. */
+@media (min-width: 768px) {
+  .my-rooms-toolbar .rooms-toolbar__hint {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .my-rooms-toolbar__actions {
+    flex: 0 0 auto;
+  }
 }
 
 
@@ -380,4 +393,85 @@
   letter-spacing: 0.32em;
   color: var(--ink-faint);
   font-weight: var(--fw-medium);
+}
+
+
+/* ---- Descubrir salas de la institución (modal) ---- */
+.discover-list {
+  list-style: none;
+  margin: var(--s-4) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  max-height: 340px;
+  overflow-y: auto;
+}
+
+.discover-list__loading,
+.discover-list__empty {
+  padding: var(--s-4);
+  text-align: center;
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+
+.discover-row {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  background: var(--paper-surface);
+  border: 1px solid var(--paper-border);
+  border-radius: var(--r-md);
+}
+
+@media (min-width: 768px) {
+  .discover-row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.discover-row__main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.discover-row__name {
+  font-size: 14px;
+  font-weight: var(--fw-semibold);
+  color: var(--ink);
+}
+
+.discover-row__meta {
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+
+.discover-row__btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.discover-row__action {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  flex-wrap: wrap;
+}
+
+.discover-row__select {
+  max-width: 190px;
+  font-size: 13px;
+}
+
+.discover-row__paralelo {
+  font-size: 12px;
+  font-weight: var(--fw-semibold);
+  color: var(--sage);
 }

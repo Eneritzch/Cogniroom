@@ -9,6 +9,8 @@ class Notification(models.Model):
     KIND_ROOM_JOINED = 'room_joined'
     KIND_QUESTIONS_ADDED = 'questions_added'
     KIND_PRACTICE_REMINDER = 'practice_reminder'
+    KIND_JOIN_REQUEST = 'join_request'
+    KIND_JOIN_REJECTED = 'join_rejected'
     KIND_CHOICES = [
         (KIND_QUESTION_PENDING, 'Preguntas por aprobar'),
         (KIND_STUDENT_AT_RISK, 'Estudiante en riesgo'),
@@ -16,6 +18,8 @@ class Notification(models.Model):
         (KIND_ROOM_JOINED, 'Te uniste a una sala'),
         (KIND_QUESTIONS_ADDED, 'Preguntas nuevas en tu sala'),
         (KIND_PRACTICE_REMINDER, 'Tienes práctica pendiente'),
+        (KIND_JOIN_REQUEST, 'Solicitud de ingreso a tu sala'),
+        (KIND_JOIN_REJECTED, 'Solicitud de ingreso rechazada'),
     ]
 
     recipient = models.ForeignKey(

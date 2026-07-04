@@ -63,6 +63,34 @@ class Section(models.Model):
         return f'{self.room.name} · {self.code}'
 
 
+class RoomJoinRequest(models.Model):
+    """Solicitud de autoinscripcion de un alumno a una sala grupal de su
+    institucion, pendiente de aprobacion del docente. Separada de
+    RoomMembership: no cuenta como miembro activo hasta ser aprobada."""
+    room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='join_requests')
+    student = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='join_requests',
+    )
+    # Paralelo que el alumno declara al solicitar; el docente lo confirma o
+    # corrige al aprobar. Null si la sala no tiene secciones definidas.
+    section = models.ForeignKey(
+        'Section',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='join_requests',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('room', 'student')
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f'{self.student.username} -> {self.room.name} (pendiente)'
+
+
 class RoomMembership(models.Model):
     room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='memberships')
     student = models.ForeignKey(

@@ -31,9 +31,15 @@
 
             <header class="rooms-toolbar my-rooms-toolbar">
                 <p class="rooms-toolbar__hint">
-                    Tus <strong>salas grupales</strong> las arma tu docente. Tus <strong>salas de estudio</strong> son tuyas y puede subir PDFs o generar preguntas.
                 </p>
                 <div class="my-rooms-toolbar__actions">
+                    <button type="button" class="ds-btn ds-btn--ghost" id="discover-open" data-bs-toggle="modal" data-bs-target="#discoverModal">
+                        <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        Descubrir salas
+                    </button>
                     <button type="button" class="ds-btn ds-btn--ghost" data-bs-toggle="modal" data-bs-target="#joinRoomModal">
                         <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
                             <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
@@ -135,6 +141,34 @@
                         Empezar
                     </button>
                 </footer>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="discoverModal" tabindex="-1" aria-labelledby="discoverModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content create-room-modal">
+                <header class="create-room-modal__head">
+                    <div>
+                        <span class="eyebrow">Tu institución</span>
+                        <h2 id="discoverModalTitle" class="create-room-modal__title">Salas disponibles</h2>
+                    </div>
+                    <button type="button" class="create-room-modal__close" data-bs-dismiss="modal" aria-label="Cerrar">
+                        <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </header>
+
+                <div class="create-room-modal__body">
+                    <p class="create-room-modal__hint">
+                        Estas son las salas de tu institución. Solicita unirte y tu docente aprobará tu ingreso —sin códigos.
+                    </p>
+                    <ul class="discover-list" id="discover-list" aria-live="polite">
+                        <li class="discover-list__loading">Cargando salas…</li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
