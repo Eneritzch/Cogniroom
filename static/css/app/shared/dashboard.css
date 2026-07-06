@@ -23,17 +23,6 @@
 
 .dashboard-view[hidden] { display: none; }
 
-/* Encabezado del perfil del estudiante: saludo a la izquierda, mascota a la
-   derecha (solo desktop; en móvil la mascota se oculta y el saludo ocupa todo). */
-.dashboard-hero-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--s-4);
-}
-
-.dashboard-hero-head__text { min-width: 0; }
-
 .dashboard-eyebrow {
   display: block;
   margin-bottom: var(--s-2);

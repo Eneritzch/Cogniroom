@@ -71,9 +71,6 @@ const $progress = document.getElementById('session-progress-fill');
 const $progressCurrent = document.getElementById('progress-current');
 const $progressTotal = document.getElementById('progress-total');
 const $progressCardFill = document.getElementById('progress-card-fill');
-const $mascot = document.getElementById('mascot');
-
-function setMascot(state) { if ($mascot) $mascot.dataset.state = state; }
 
 // La sesión termina cuando el backend responde `completed` (no se conoce el
 // total de preguntas de antemano).
@@ -131,7 +128,6 @@ function renderQuestion(q) {
     selectedIndices = [];
     resetConfidence();
     $submit.disabled = true;
-    setMascot('idle');
 
     const isMultiple = q.question_type === 'multiple';
 
@@ -198,7 +194,6 @@ function renderFeedback(result) {
     const partial = !correct && score > 0;
     const scorePct = Math.round(score * 100);
 
-    setMascot(correct ? 'happy' : (partial ? 'idle' : 'sad'));
     const declared = Math.round(confidenceDeclared * 100);
     const masteryRaw = result.bkt_mastery ?? result.bkt_mastery ?? 0;
     const mastery = Math.round(masteryRaw * 100);
