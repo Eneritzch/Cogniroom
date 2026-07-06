@@ -352,7 +352,7 @@ function renderRooms(items) {
     $list.innerHTML = items.map((r) => {
         const subject = r.subject || '';
         return `
-          <a href="/app/room/${r.id_room ?? r.id}/" class="room-card" style="text-decoration:none;color:inherit;">
+          <a href="/app/metrics/" class="room-card" data-room-id="${r.id_room ?? r.id}" style="text-decoration:none;color:inherit;">
             <header class="room-card__head">
               <div>
                 <h3 class="room-card__name">${escapeHTML(r.name)}</h3>
@@ -378,6 +378,14 @@ function renderRooms(items) {
           </a>
         `;
     }).join('');
+
+    // Al abrir una sala se fija como activa; las páginas dedicadas (Métricas,
+    // etc.) operan sobre esa sala.
+    $list.querySelectorAll('[data-room-id]').forEach((a) => {
+        a.addEventListener('click', () => {
+            localStorage.setItem('cogniroom.activeRoomId', String(a.dataset.roomId));
+        });
+    });
 }
 
 

@@ -3,7 +3,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.http import JsonResponse
 from django.urls import include, path
-from django.views.generic import TemplateView
+from django.views.generic import RedirectView, TemplateView
 
 
 def api_root(request):
@@ -82,7 +82,10 @@ html_routes = [
     path('app/pdfs/',                         TemplateView.as_view(template_name='app/teacher/pdfs.html'),             name='teacher-pdfs'),
     path('app/metrics/',                      TemplateView.as_view(template_name='app/teacher/metrics.html'),          name='teacher-metrics'),
     path('app/rooms/',                        TemplateView.as_view(template_name='app/teacher/rooms.html'),            name='teacher-rooms'),
-    path('app/room/<int:room_id>/',           TemplateView.as_view(template_name='app/teacher/room.html'),             name='room-detail'),
+    # La página-sala agregada se retiró: duplicaba las páginas dedicadas del menú
+    # (Estudiantes/Preguntas/PDFs/Métricas). Se redirige a Métricas para no romper
+    # enlaces antiguos (p. ej. notificaciones ya enviadas).
+    path('app/room/<int:room_id>/',           RedirectView.as_view(url='/app/metrics/', permanent=False), name='room-detail'),
     path('app/my-rooms/',                     TemplateView.as_view(template_name='app/student/my-rooms.html'),         name='student-my-rooms'),
     path('app/nodes/',                        TemplateView.as_view(template_name='app/student/nodes.html'),            name='student-nodes'),
     path('app/history/',                      TemplateView.as_view(template_name='app/student/history.html'),          name='student-history'),
