@@ -97,6 +97,18 @@
         </section>
     </main>
 
+    <div class="modal fade" id="studentDetailModal" tabindex="-1" aria-labelledby="student-detail-title" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title h5" id="student-detail-title">Resumen del estudiante</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body" id="student-detail-body"></div>
+            </div>
+        </div>
+    </div>
+
     <div class="toast-host" id="toast-host" aria-live="polite" aria-atomic="true"></div>
 
     {% include 'app/partials/_bootstrap-bundle.html' %}

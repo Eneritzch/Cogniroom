@@ -18,10 +18,26 @@ function escapeHTML(s) {
 
 // Cuadrante 2x2 (dominio real × confianza), en lenguaje claro.
 const QUAD_INFO = {
-    overconfident:  { label: 'No sabe y confía',      hint: 'Cree saber, pero no sabe', critical: true },
-    underconfident: { label: 'Sabe pero no confía',   hint: 'Sabe más de lo que cree' },
-    aware_gap:      { label: 'No sabe y lo reconoce', hint: 'Admite que no sabe' },
-    calibrated:     { label: 'Sabe y confía',         hint: 'Bien calibrado' },
+    overconfident: {
+        label: 'No sabe y confía', hint: 'Cree saber, pero no sabe', critical: true,
+        meaning: 'Cree dominar temas que en realidad no domina. Es el caso más riesgoso: no busca ayuda porque no percibe el vacío.',
+        action: 'Confróntalo con preguntas de aplicación y feedback inmediato; evita avanzar hasta consolidar la base.',
+    },
+    underconfident: {
+        label: 'Sabe pero no confía', hint: 'Sabe más de lo que cree',
+        meaning: 'Sabe más de lo que cree saber. Puede rendir por debajo de su nivel por inseguridad.',
+        action: 'Refuerzo positivo y evidencia de sus aciertos para recalibrar su autoconfianza.',
+    },
+    aware_gap: {
+        label: 'No sabe y lo reconoce', hint: 'Admite que no sabe',
+        meaning: 'No domina el tema y lo reconoce. Está bien calibrado; solo necesita estudiar.',
+        action: 'Material y práctica dirigida; su autoconocimiento juega a favor.',
+    },
+    calibrated: {
+        label: 'Sabe y confía', hint: 'Bien calibrado',
+        meaning: 'Su confianza coincide con lo que realmente sabe.',
+        action: 'Mantén el ritmo; buen candidato para retos mayores.',
+    },
 };
 function quadrantLabel(q) { return (QUAD_INFO[q] || {}).label || 'Sin datos'; }
 
@@ -272,7 +288,8 @@ function renderHeatmap() {
         const displayName = fullName(row);
         return `
         <div class="heatmap__row">
-            <div class="heatmap__row-name">
+            <div class="heatmap__row-name heatmap__row-name--click" data-student-id="${row.id ?? ''}"
+                 role="button" tabindex="0" aria-label="Ver resumen de ${escapeHTML(displayName)}">
                 <span class="heatmap__row-avatar" aria-hidden="true">${initials(displayName)}</span>
                 <span class="heatmap__row-id">
                     <span class="heatmap__row-name-text" title="${escapeHTML(displayName)}">${escapeHTML(displayName)}</span>
@@ -436,5 +453,94 @@ if ($search) {
 
 
 window.addEventListener('cogniroom:roomchange', load);
+
+
+/* ---- Resumen del estudiante (clic en su fila) ---- */
+function showModal(id) {
+    const $m = document.getElementById(id);
+    if ($m && window.bootstrap) {
+        (window.bootstrap.Modal.getInstance($m) || new window.bootstrap.Modal($m)).show();
+    }
+}
+
+async function openStudentDetail(studentId) {
+    if (!ROOM_INFO || !studentId) return;
+    const $body = document.getElementById('student-detail-body');
+    const $title = document.getElementById('student-detail-title');
+    if ($title) $title.textContent = 'Resumen del estudiante';
+    if ($body) $body.innerHTML = '<p class="sdq__msg">Cargando…</p>';
+    showModal('studentDetailModal');
+    try {
+        renderStudentDetail(await roomsApi.studentDetail(ROOM_INFO.id, studentId));
+    } catch (err) {
+        if (err instanceof ApiError && err.status === 401) { tokens.clear(); location.replace('/app/'); return; }
+        if ($body) $body.innerHTML = '<p class="sdq__msg">No se pudo cargar el resumen.</p>';
+    }
+}
+
+function renderStudentDetail(d) {
+    const st = d.student || {};
+    const name = `${st.first_name || ''} ${st.last_name || ''}`.trim() || st.username || 'Estudiante';
+    const sum = d.summary || {};
+    const q = sum.quadrant;
+    const info = QUAD_INFO[q] || {};
+    const conf = Math.round((sum.avg_confidence ?? 0) * 100);
+    const mast = Math.round((sum.bkt_mastery ?? 0) * 100);
+    const gap = Math.round((sum.metacognitive_gap ?? 0) * 100);
+
+    const $title = document.getElementById('student-detail-title');
+    if ($title) $title.textContent = name;
+
+    const nodes = d.nodes || [];
+    const nodesHTML = nodes.length === 0
+        ? '<li class="sdq__msg">Todavía no respondió en ningún tema.</li>'
+        : nodes.map((n) => {
+            const nm = Math.round((n.bkt_mastery ?? 0) * 100);
+            const nc = Math.round((n.avg_confidence ?? 0) * 100);
+            return `
+            <li class="sdq-node">
+                <span class="sdq-node__name">${escapeHTML(n.node_name)}</span>
+                <span class="sdq-node__track"><span class="sdq-node__fill" style="width:${nm}%"></span></span>
+                <span class="sdq-node__nums num">${nm}% / ${nc}%</span>
+            </li>`;
+        }).join('');
+
+    const $body = document.getElementById('student-detail-body');
+    $body.innerHTML = `
+      <div class="sdq">
+        <span class="pill sdq__pill" data-quadrant="${q || ''}">${escapeHTML(quadrantLabel(q))}</span>
+        <p class="sdq__meaning">${escapeHTML(info.meaning || 'Aún no hay datos suficientes de este estudiante.')}</p>
+
+        <div class="sdq__stats">
+          <div class="sdq__stat"><span class="sdq__stat-v num" data-tone="terracotta">${conf}%</span><span class="sdq__stat-k">Cree saber</span></div>
+          <div class="sdq__stat"><span class="sdq__stat-v num" data-tone="sage">${mast}%</span><span class="sdq__stat-k">Realmente sabe</span></div>
+          <div class="sdq__stat"><span class="sdq__stat-v num">${gap > 0 ? '+' : ''}${gap}</span><span class="sdq__stat-k">Diferencia (pts)</span></div>
+        </div>
+
+        ${info.action ? `
+        <div class="sdq__action">
+          <span class="eyebrow">Qué hacer</span>
+          <p>${escapeHTML(info.action)}</p>
+        </div>` : ''}
+
+        <div class="sdq__nodes">
+          <span class="eyebrow">Por tema · realmente sabe / cree saber</span>
+          <ul>${nodesHTML}</ul>
+        </div>
+      </div>`;
+}
+
+const $heatRows = document.getElementById('heatmap-rows');
+if ($heatRows) {
+    $heatRows.addEventListener('click', (e) => {
+        const el = e.target.closest('[data-student-id]');
+        if (el && el.dataset.studentId) openStudentDetail(Number(el.dataset.studentId));
+    });
+    $heatRows.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        const el = e.target.closest('[data-student-id]');
+        if (el && el.dataset.studentId) { e.preventDefault(); openStudentDetail(Number(el.dataset.studentId)); }
+    });
+}
 
 load();

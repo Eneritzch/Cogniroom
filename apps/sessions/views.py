@@ -217,7 +217,7 @@ def _run_ai_analysis(answer_id, new_mastery):
                 title=f'Estudiante en riesgo: {student_name}',
                 body=f'{student_name} muestra riesgo alto en "{question.node.name}" '
                      f'({session.room.name}).',
-                link='/app/students/',
+                link='/app/metrics/',
             )
     except Exception:
         # La IA es best-effort: ningún fallo aquí debe propagarse.
@@ -268,7 +268,7 @@ def _maybe_alert_teacher_critical(session):
             title=f'Alerta cognitiva: {student_name}',
             body=f'{student_name} está en el cuadrante crítico (no sabe y está confiado) '
                  f'en "{room.name}". Revisa sus métricas para intervenir a tiempo.',
-            link=f'/app/room/{room.id}/',
+            link='/app/metrics/',
             email=False,
         )
     except Exception:

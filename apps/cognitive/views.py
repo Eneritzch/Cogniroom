@@ -362,6 +362,7 @@ class RoomHeatmapView(APIView):
             else:
                 quadrant = classify_quadrant(agg['mastery'], agg['conf'])
             roster.append({
+                'id': m.student_id,
                 'first_name': m.student.first_name,
                 'last_name': m.student.last_name,
                 'profile': profile,
