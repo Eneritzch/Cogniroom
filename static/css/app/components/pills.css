@@ -16,9 +16,9 @@
   background: currentColor;
 }
 
-.pill[data-profile='calibrated']     { background: var(--moss-soft);  color: #2f4a2c; }
-.pill[data-profile='overconfident']  { background: var(--amber-soft); color: #6b4a25; }
-.pill[data-profile='underconfident'] { background: var(--stone-soft); color: #3d4759; }
+.pill[data-profile='calibrated']     { background: var(--moss-soft);  color: var(--moss); }
+.pill[data-profile='overconfident']  { background: var(--amber-soft); color: var(--amber); }
+.pill[data-profile='underconfident'] { background: var(--stone-soft); color: var(--stone); }
 
 /* Cuadrante cognitivo (dominio real × confianza). Separado de data-profile
    para no chocar con el perfil de 3 vías basado en la brecha. El crítico
@@ -32,16 +32,16 @@
 .pill[data-quadrant='overconfident']::before  { background: var(--rust); }
 .pill[data-quadrant='aware_gap']::before      { background: var(--amber); }
 
-.pill[data-risk='low']    { background: var(--moss-soft);  color: #2f4a2c; }
-.pill[data-risk='medium'] { background: var(--amber-soft); color: #6b4a25; }
-.pill[data-risk='high']   { background: var(--rust-soft);  color: #5e2b23; }
+.pill[data-risk='low']    { background: var(--moss-soft);  color: var(--moss); }
+.pill[data-risk='medium'] { background: var(--amber-soft); color: var(--amber); }
+.pill[data-risk='high']   { background: var(--rust-soft);  color: var(--rust); }
 
-.pill[data-status='approved']  { background: var(--moss-soft);  color: #2f4a2c; }
-.pill[data-status='processed'] { background: var(--moss-soft);  color: #2f4a2c; }
-.pill[data-status='pending']   { background: var(--amber-soft); color: #6b4a25; }
-.pill[data-status='uploaded']  { background: var(--amber-soft); color: #6b4a25; }
-.pill[data-status='rejected']  { background: var(--rust-soft);  color: #5e2b23; }
-.pill[data-status='failed']    { background: var(--rust-soft);  color: #5e2b23; }
+.pill[data-status='approved']  { background: var(--moss-soft);  color: var(--moss); }
+.pill[data-status='processed'] { background: var(--moss-soft);  color: var(--moss); }
+.pill[data-status='pending']   { background: var(--amber-soft); color: var(--amber); }
+.pill[data-status='uploaded']  { background: var(--amber-soft); color: var(--amber); }
+.pill[data-status='rejected']  { background: var(--rust-soft);  color: var(--rust); }
+.pill[data-status='failed']    { background: var(--rust-soft);  color: var(--rust); }
 
 .pill[data-problem] { background: var(--terracotta-soft); color: var(--terracotta); }
 
@@ -73,4 +73,4 @@
 
 .role-badge[data-role='teacher']     { background: var(--sage-soft);       color: var(--sage-strong); }
 .role-badge[data-role='student']     { background: var(--terracotta-soft); color: var(--terracotta); }
-.role-badge[data-role='coordinator'] { background: var(--amber-soft);      color: #6b4a25; }
+.role-badge[data-role='coordinator'] { background: var(--amber-soft);      color: var(--amber); }
