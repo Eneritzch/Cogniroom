@@ -249,6 +249,52 @@ function paintResponses(n) {
 }
 
 
+// Categorías cognitivas (nivel de Bloom) con etiqueta corta e icono, para un
+// feedback visual y sin jerga de en qué tipo de pregunta acierta el estudiante.
+const CATEGORY = {
+    recordar:   { label: 'Memoria',     icon: '<rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>' },
+    comprender: { label: 'Comprensión', icon: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>' },
+    aplicar:    { label: 'Aplicación',  icon: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>' },
+    analizar:   { label: 'Análisis',    icon: '<circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>' },
+    evaluar:    { label: 'Criterio',    icon: '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>' },
+    crear:      { label: 'Creación',    icon: '<path d="M12 3v18"></path><path d="M3 12h18"></path>' },
+};
+
+const CAT_STATUS = { rust: 'Repasa', amber: 'A medias', moss: 'Bien' };
+
+function catTone(acc) {
+    if (acc < 0.5) return 'rust';
+    if (acc < 0.8) return 'amber';
+    return 'moss';
+}
+
+function paintCategories(n) {
+    const $section = document.getElementById('node-cats');
+    const $grid = document.getElementById('node-cats-grid');
+    if (!$section || !$grid) return;
+
+    const cats = n.categories || [];
+    if (cats.length === 0) { $section.hidden = true; return; }
+    $section.hidden = false;
+
+    $grid.innerHTML = cats.map((c) => {
+        const acc = Math.round((c.accuracy ?? 0) * 100);
+        const tone = catTone(c.accuracy ?? 0);
+        const meta = CATEGORY[c.level] || { label: c.level, icon: '<circle cx="12" cy="12" r="9"></circle>' };
+        return `
+          <article class="catcard" data-tone="${tone}" title="${escapeHTML(meta.label)}: ${c.correct} de ${c.total} correctas">
+            <span class="catcard__icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${meta.icon}</svg>
+            </span>
+            <span class="catcard__pct num">${acc}%</span>
+            <span class="catcard__label">${escapeHTML(meta.label)}</span>
+            <div class="catcard__bar"><span class="catcard__fill" style="width:${acc}%"></span></div>
+            <span class="catcard__status">${CAT_STATUS[tone]}</span>
+          </article>`;
+    }).join('');
+}
+
+
 function paintNotFound() {
     document.getElementById('node-topic').textContent = '—';
     document.getElementById('node-name').textContent = 'Tema no encontrado';
@@ -287,6 +333,7 @@ async function init() {
     paintHeader(node);
     paintKpis(node);
     paintInsight(node);
+    paintCategories(node);
     paintBkt(node);
     paintAi(node);
     paintResponses(node);

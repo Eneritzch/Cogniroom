@@ -238,6 +238,9 @@ class MyNodeDetailView(APIView):
             'p_guess': round(bkt.p_guess, 4),
             'p_slip': round(bkt.p_slip, 4),
             'diagnosis': diagnosis,
+            'categories': _category_breakdown(
+                Answer.objects.filter(session__student=user, question__node_id=node_id)
+            ),
             'recentResponses': recent,
         })
 
