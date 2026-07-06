@@ -224,30 +224,36 @@
                     <div class="d-donut">
                         <svg class="d-donut__svg" viewBox="0 0 120 120" aria-hidden="true">
                             <circle class="d-donut__track" cx="60" cy="60" r="48"></circle>
-                            <circle class="d-donut__seg d-donut__seg--cal"  cx="60" cy="60" r="48"></circle>
-                            <circle class="d-donut__seg d-donut__seg--over" cx="60" cy="60" r="48"></circle>
-                            <circle class="d-donut__seg d-donut__seg--und"  cx="60" cy="60" r="48"></circle>
+                            <circle class="d-donut__seg d-donut__seg--cal"   cx="60" cy="60" r="48"></circle>
+                            <circle class="d-donut__seg d-donut__seg--over"  cx="60" cy="60" r="48"></circle>
+                            <circle class="d-donut__seg d-donut__seg--und"   cx="60" cy="60" r="48"></circle>
+                            <circle class="d-donut__seg d-donut__seg--aware" cx="60" cy="60" r="48"></circle>
                         </svg>
                         <div class="d-donut__center">
                             <div class="d-donut__pct num" id="donut-pct">—</div>
-                            <div class="d-donut__label">Confianza justa</div>
+                            <div class="d-donut__label">Bien calibrados</div>
                         </div>
                     </div>
                     <ul class="d-donut__legend">
                         <li>
                             <span class="d-donut__dot" data-tone="moss" aria-hidden="true"></span>
-                            <span class="d-donut__legend-label">Confianza justa</span>
+                            <span class="d-donut__legend-label">Sabe y confía</span>
                             <span class="d-donut__legend-val num" id="donut-cal">0</span>
                         </li>
                         <li>
-                            <span class="d-donut__dot" data-tone="amber" aria-hidden="true"></span>
-                            <span class="d-donut__legend-label">Confían de más</span>
+                            <span class="d-donut__dot" data-tone="rust" aria-hidden="true"></span>
+                            <span class="d-donut__legend-label">No sabe y confía</span>
                             <span class="d-donut__legend-val num" id="donut-over">0</span>
                         </li>
                         <li>
                             <span class="d-donut__dot" data-tone="stone" aria-hidden="true"></span>
-                            <span class="d-donut__legend-label">Confían de menos</span>
+                            <span class="d-donut__legend-label">Sabe pero no confía</span>
                             <span class="d-donut__legend-val num" id="donut-und">0</span>
+                        </li>
+                        <li>
+                            <span class="d-donut__dot" data-tone="amber" aria-hidden="true"></span>
+                            <span class="d-donut__legend-label">No sabe y lo reconoce</span>
+                            <span class="d-donut__legend-val num" id="donut-aware">0</span>
                         </li>
                     </ul>
                 </article>

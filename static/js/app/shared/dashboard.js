@@ -663,15 +663,19 @@ function bindData(key, value) {
 
 
 function countProfiles(roster) {
-    let cal = 0, over = 0, und = 0, nodata = 0;
+    // Se cuenta por CUADRANTE (dominio real × confianza), no por el perfil de 3
+    // vías basado en la brecha: así "Salud del grupo" coincide con las alertas.
+    let cal = 0, over = 0, und = 0, aware = 0, nodata = 0;
     (roster || []).forEach((s) => {
-        // Sin cuadrante = sin datos cognitivos: no cuenta como "confianza justa".
-        if (!s.quadrant) { nodata += 1; return; }
-        if (s.profile === 'overconfident') over += 1;
-        else if (s.profile === 'underconfident') und += 1;
-        else cal += 1;
+        switch (s.quadrant) {
+            case 'calibrated':     cal += 1;   break;
+            case 'overconfident':  over += 1;  break;
+            case 'underconfident': und += 1;   break;
+            case 'aware_gap':      aware += 1; break;
+            default:               nodata += 1;  // sin datos cognitivos aún
+        }
     });
-    return { cal, over, und, nodata };
+    return { cal, over, und, aware, nodata };
 }
 
 
@@ -748,7 +752,7 @@ bootstrap();
 function renderDonut(counts) {
     const R = 48;
     const C = 2 * Math.PI * R;
-    const total = (counts.cal || 0) + (counts.over || 0) + (counts.und || 0);
+    const total = (counts.cal || 0) + (counts.over || 0) + (counts.und || 0) + (counts.aware || 0);
 
     const set = (sel, len, offset) => {
         const el = document.querySelector(sel);
@@ -758,9 +762,11 @@ function renderDonut(counts) {
     };
 
     // La leyenda siempre refleja los conteos reales.
-    const $cal = document.getElementById('donut-cal');   if ($cal)  $cal.textContent  = counts.cal || 0;
-    const $over = document.getElementById('donut-over'); if ($over) $over.textContent = counts.over || 0;
-    const $und = document.getElementById('donut-und');   if ($und)  $und.textContent  = counts.und || 0;
+    const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v || 0; };
+    setVal('donut-cal', counts.cal);
+    setVal('donut-over', counts.over);
+    setVal('donut-und', counts.und);
+    setVal('donut-aware', counts.aware);
 
     const $pct = document.getElementById('donut-pct');
     const $label = document.querySelector('.d-donut__label');
@@ -770,22 +776,26 @@ function renderDonut(counts) {
         set('.d-donut__seg--cal',  0, 0);
         set('.d-donut__seg--over', 0, 0);
         set('.d-donut__seg--und',  0, 0);
+        set('.d-donut__seg--aware', 0, 0);
         if ($pct) $pct.textContent = '—';
         if ($label) $label.textContent = (counts.nodata || 0) > 0 ? 'Sin evaluaciones' : 'Sin estudiantes';
         return;
     }
 
-    const calArc  = (counts.cal  / total) * C;
-    const overArc = (counts.over / total) * C;
-    const undArc  = (counts.und  / total) * C;
+    const calArc   = (counts.cal   / total) * C;
+    const overArc  = (counts.over  / total) * C;
+    const undArc   = (counts.und   / total) * C;
+    const awareArc = (counts.aware / total) * C;
 
-    set('.d-donut__seg--cal',  calArc,  0);
-    set('.d-donut__seg--over', overArc, calArc);
-    set('.d-donut__seg--und',  undArc,  calArc + overArc);
+    set('.d-donut__seg--cal',   calArc,   0);
+    set('.d-donut__seg--over',  overArc,  calArc);
+    set('.d-donut__seg--und',   undArc,   calArc + overArc);
+    set('.d-donut__seg--aware', awareArc, calArc + overArc + undArc);
 
+    // El centro resume la salud: % del grupo "bien calibrado" (sabe y confía).
     const calPct = Math.round((counts.cal / total) * 100);
     if ($pct) $pct.textContent = `${calPct}%`;
-    if ($label) $label.textContent = 'Confianza justa';
+    if ($label) $label.textContent = 'Bien calibrados';
 }
 
 
@@ -793,9 +803,10 @@ function renderDotMatrix(counts) {
     const $matrix = document.getElementById('dot-matrix');
     if (!$matrix) return;
     const dots = [];
-    for (let i = 0; i < counts.cal; i++)  dots.push('moss');
-    for (let i = 0; i < counts.over; i++) dots.push('amber');
-    for (let i = 0; i < counts.und; i++)  dots.push('stone');
+    for (let i = 0; i < counts.cal; i++)   dots.push('moss');
+    for (let i = 0; i < counts.over; i++)  dots.push('rust');
+    for (let i = 0; i < counts.und; i++)   dots.push('stone');
+    for (let i = 0; i < (counts.aware || 0); i++) dots.push('amber');
 
     const cols = 14;
     const rows = Math.ceil(dots.length / cols);

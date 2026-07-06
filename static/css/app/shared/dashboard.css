@@ -708,11 +708,17 @@
   .at-risk__row {
     flex-direction: row;
     align-items: center;
-    gap: var(--s-4);
+    gap: var(--s-3);
   }
-  .at-risk__row > * { flex: 1 1 0; min-width: 0; }
-  .at-risk__row > .at-risk__student { flex: 2 1 0; }
+  /* El nombre crece; los indicadores (cuadrante, brecha, riesgo) se agrupan
+     compactos a la derecha en vez de repartirse en columnas anchas y vacías. */
+  .at-risk__student { flex: 1 1 auto; min-width: 0; }
+  .at-risk__row > *:not(.at-risk__student) { flex: 0 0 auto; }
+  .at-risk__gap { min-width: 56px; text-align: right; }
 }
+
+/* En la fila de alerta la pastilla del cuadrante no se parte en dos líneas. */
+.at-risk__row .pill { white-space: nowrap; }
 
 .at-risk__student {
   display: flex;
@@ -2740,9 +2746,10 @@
               stroke-dashoffset var(--dur-base) var(--ease-out);
 }
 
-.d-donut__seg--cal  { stroke: var(--moss); }
-.d-donut__seg--over { stroke: var(--amber); }
-.d-donut__seg--und  { stroke: var(--stone); }
+.d-donut__seg--cal   { stroke: var(--moss); }
+.d-donut__seg--over  { stroke: var(--rust); }
+.d-donut__seg--und   { stroke: var(--stone); }
+.d-donut__seg--aware { stroke: var(--amber); }
 
 .d-donut__center {
   position: absolute;
@@ -2794,6 +2801,7 @@
 .d-donut__dot[data-tone='moss']  { background: var(--moss); }
 .d-donut__dot[data-tone='amber'] { background: var(--amber); }
 .d-donut__dot[data-tone='stone'] { background: var(--stone); }
+.d-donut__dot[data-tone='rust']  { background: var(--rust); }
 
 .d-donut__legend-label { flex: 1; }
 
