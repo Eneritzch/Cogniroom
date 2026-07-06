@@ -47,6 +47,69 @@
 .metrics-hero__chip[data-tone='moss']  { background: var(--moss-soft);  color: var(--moss); }
 
 
+/* Resumen por cuadrante cognitivo: una tarjeta por grupo, clic filtra el heatmap */
+.metrics-quadrants {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+  margin-top: var(--s-5);
+}
+
+.mq-tile {
+  flex: 1 1 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--s-4);
+  text-align: left;
+  background: var(--paper-elevated);
+  border: 1px solid var(--paper-border);
+  border-left: 3px solid var(--paper-border-strong);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out),
+              background-color var(--dur-fast) var(--ease-out);
+}
+
+.mq-tile:hover { border-color: var(--paper-border-strong); }
+
+.mq-tile[data-quadrant='overconfident']  { border-left-color: var(--rust); }
+.mq-tile[data-quadrant='underconfident'] { border-left-color: var(--stone); }
+.mq-tile[data-quadrant='aware_gap']      { border-left-color: var(--amber); }
+.mq-tile[data-quadrant='calibrated']     { border-left-color: var(--moss); }
+
+/* El crítico (no sabe y confía) resalta siempre para que no pase desapercibido. */
+.mq-tile--critical { background: var(--rust-soft); }
+
+.mq-tile[aria-pressed='true'] { border-color: var(--paper-border-strong); background: var(--paper-surface); }
+.mq-tile--critical[aria-pressed='true'] { background: var(--rust-soft); border-color: var(--rust); }
+
+.mq-tile__count {
+  font-family: var(--font-mono);
+  font-size: 26px;
+  font-weight: var(--fw-medium);
+  line-height: 1;
+  color: var(--ink);
+}
+
+.mq-tile[data-quadrant='overconfident']  .mq-tile__count { color: var(--rust); }
+.mq-tile[data-quadrant='underconfident'] .mq-tile__count { color: var(--stone); }
+.mq-tile[data-quadrant='aware_gap']      .mq-tile__count { color: var(--amber); }
+.mq-tile[data-quadrant='calibrated']     .mq-tile__count { color: var(--moss); }
+
+.mq-tile__label {
+  margin-top: var(--s-1);
+  font-size: 13px;
+  font-weight: var(--fw-semibold);
+  color: var(--ink);
+}
+
+.mq-tile__hint {
+  font-size: 11.5px;
+  color: var(--ink-muted);
+}
+
+
 .metrics-insights {
   display: flex;
   flex-wrap: wrap;

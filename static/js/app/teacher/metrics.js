@@ -16,23 +16,14 @@ function escapeHTML(s) {
         .replaceAll('"', '&quot;');
 }
 
-function profileLabel(p) {
-    return ({
-        overconfident: 'Confía de más',
-        underconfident: 'Confía de menos',
-        calibrated: 'Confianza justa',
-    })[p] || '—';
-}
-
 // Cuadrante 2x2 (dominio real × confianza), en lenguaje claro.
-function quadrantLabel(q) {
-    return ({
-        calibrated: 'Sabe y confía',
-        underconfident: 'Sabe pero no confía',
-        overconfident: 'No sabe y confía',
-        aware_gap: 'No sabe y lo reconoce',
-    })[q] || 'Sin datos';
-}
+const QUAD_INFO = {
+    overconfident:  { label: 'No sabe y confía',      hint: 'Cree saber, pero no sabe', critical: true },
+    underconfident: { label: 'Sabe pero no confía',   hint: 'Sabe más de lo que cree' },
+    aware_gap:      { label: 'No sabe y lo reconoce', hint: 'Admite que no sabe' },
+    calibrated:     { label: 'Sabe y confía',         hint: 'Bien calibrado' },
+};
+function quadrantLabel(q) { return (QUAD_INFO[q] || {}).label || 'Sin datos'; }
 
 function activeRoomId() {
     return Number(localStorage.getItem('cogniroom.activeRoomId')) || null;
@@ -53,11 +44,6 @@ function cellTone(v) {
     if (v >= 0.7) return 'strong';
     if (v >= 0.5) return 'mid';
     return 'weak';
-}
-
-
-function profileShort(p) {
-    return ({ calibrated: 'Confianza justa', overconfident: 'Confía de más', underconfident: 'Confía de menos' })[p] || '—';
 }
 
 
@@ -120,7 +106,7 @@ function renderInsights(data) {
     const weakest = nodeAverages[0];
     const strongest = nodeAverages[nodeAverages.length - 1];
 
-    const studentAverages = data.roster.map((s) => ({ name: fullName(s), avg: rowAvg(s), profile: s.profile }));
+    const studentAverages = data.roster.map((s) => ({ name: fullName(s), avg: rowAvg(s), quadrant: s.quadrant }));
     studentAverages.sort((a, b) => a.avg - b.avg);
     const lowest = studentAverages[0];
     const highest = studentAverages[studentAverages.length - 1];
@@ -144,17 +130,62 @@ function renderInsights(data) {
             <span class="insight-card__k">Estudiante a apoyar</span>
             <strong class="insight-card__v">${escapeHTML(lowest.name)}</strong>
             <span class="insight-card__sub">
-                <span class="num">${Math.round(lowest.avg * 100)}%</span> · ${escapeHTML(profileLabel(lowest.profile))}
+                <span class="num">${Math.round(lowest.avg * 100)}%</span> · ${escapeHTML(quadrantLabel(lowest.quadrant))}
             </span>
         </article>
         <article class="insight-card insight-card--top">
             <span class="insight-card__k">Estudiante destacado</span>
             <strong class="insight-card__v">${escapeHTML(highest.name)}</strong>
             <span class="insight-card__sub">
-                <span class="num">${Math.round(highest.avg * 100)}%</span> · ${escapeHTML(profileLabel(highest.profile))}
+                <span class="num">${Math.round(highest.avg * 100)}%</span> · ${escapeHTML(quadrantLabel(highest.quadrant))}
             </span>
         </article>
     `;
+}
+
+
+// Setter compartido: sincroniza chips y tarjetas de resumen, y re-renderiza.
+function setQuadrantFilter(q) {
+    currentProfile = q;
+    currentPage = 1;
+    document.querySelectorAll('[data-profile-filter]').forEach((b) => {
+        b.setAttribute('aria-pressed', b.dataset.profileFilter === q ? 'true' : 'false');
+    });
+    document.querySelectorAll('[data-quadrant-tile]').forEach((t) => {
+        t.setAttribute('aria-pressed', t.dataset.quadrantTile === q ? 'true' : 'false');
+    });
+    renderHeatmap();
+}
+
+
+// Resumen visual por cuadrante: una tarjeta por grupo, con conteo y color;
+// clic filtra el heatmap a ese cuadrante (segundo clic quita el filtro).
+function renderQuadrantSummary(roster) {
+    const $wrap = document.getElementById('metrics-quadrants');
+    if (!$wrap) return;
+
+    const counts = { overconfident: 0, underconfident: 0, aware_gap: 0, calibrated: 0 };
+    (roster || []).forEach((s) => { if (counts[s.quadrant] != null) counts[s.quadrant] += 1; });
+
+    const order = ['overconfident', 'underconfident', 'aware_gap', 'calibrated'];
+    $wrap.innerHTML = order.map((q) => {
+        const info = QUAD_INFO[q];
+        return `
+        <button type="button" class="mq-tile${info.critical ? ' mq-tile--critical' : ''}"
+                data-quadrant="${q}" data-quadrant-tile="${q}"
+                aria-pressed="${currentProfile === q ? 'true' : 'false'}">
+            <span class="mq-tile__count num">${counts[q]}</span>
+            <span class="mq-tile__label">${info.label}</span>
+            <span class="mq-tile__hint">${info.hint}</span>
+        </button>`;
+    }).join('');
+
+    $wrap.querySelectorAll('[data-quadrant-tile]').forEach((t) => {
+        t.addEventListener('click', () => {
+            const q = t.dataset.quadrantTile;
+            setQuadrantFilter(currentProfile === q ? 'all' : q);
+        });
+    });
 }
 
 
@@ -346,9 +377,12 @@ function render() {
         if ($rows) $rows.innerHTML = `<div class="heatmap__empty">Aún no hay datos de evaluación en esta sala.</div>`;
         const $insights = document.getElementById('metrics-insights');
         if ($insights) $insights.innerHTML = '';
+        const $quads = document.getElementById('metrics-quadrants');
+        if ($quads) $quads.innerHTML = '';
         return;
     }
 
+    renderQuadrantSummary(DATA.roster);
     renderInsights(DATA);
     renderCursoChips(DATA.sections);
     renderHeatmap();
@@ -383,14 +417,7 @@ async function load() {
 
 
 document.querySelectorAll('[data-profile-filter]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-        currentProfile = btn.dataset.profileFilter;
-        currentPage = 1;
-        document.querySelectorAll('[data-profile-filter]').forEach((b) => {
-            b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
-        });
-        renderHeatmap();
-    });
+    btn.addEventListener('click', () => setQuadrantFilter(btn.dataset.profileFilter));
 });
 
 

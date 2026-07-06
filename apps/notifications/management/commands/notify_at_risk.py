@@ -13,11 +13,15 @@ from apps.cognitive.models import CognitiveIndex
 from apps.notifications.models import Notification
 from apps.notifications.services import notify
 from apps.rooms.models import Room, RoomMembership
-from services.cognitive_quadrant import QUADRANTS, classify_quadrant, is_critical
+from services.cognitive_quadrant import QUADRANTS, classify_quadrant
+
+# Cuadrantes que le importan al docente, en orden de urgencia. El calibrado
+# ("sabe y confía") no se reporta: es el estado sano.
+NOTABLE = ['overconfident', 'underconfident', 'aware_gap']
 
 
 class Command(BaseCommand):
-    help = 'Envía a cada docente un correo-resumen de sus estudiantes en alerta cognitiva.'
+    help = 'Envía a cada docente un resumen (in-app + correo) de sus estudiantes por cuadrante cognitivo.'
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -37,7 +41,7 @@ class Command(BaseCommand):
         sent = 0
         rooms = Room.objects.filter(mode=Room.MODE_GROUP, is_active=True).select_related('teacher')
         for room in rooms:
-            critical = []
+            groups = {q: [] for q in NOTABLE}
             members = RoomMembership.objects.filter(room=room).select_related('student')
             for m in members:
                 agg = (
@@ -47,10 +51,11 @@ class Command(BaseCommand):
                 if agg['mastery'] is None or agg['conf'] is None:
                     continue
                 quadrant = classify_quadrant(agg['mastery'], agg['conf'])
-                if is_critical(quadrant):
-                    critical.append(m.student)
+                if quadrant in groups:
+                    groups[quadrant].append(m.student)
 
-            if not critical:
+            total = sum(len(v) for v in groups.values())
+            if total == 0:
                 continue
 
             already = Notification.objects.filter(
@@ -65,16 +70,30 @@ class Command(BaseCommand):
             if dry_run:
                 continue
 
-            names = ', '.join(s.get_full_name() or s.username for s in critical)
-            n = len(critical)
-            label = QUADRANTS['overconfident']['label'].lower()
+            # Cuerpo agrupado por cuadrante, el crítico primero.
+            lines = []
+            for q in NOTABLE:
+                students = groups[q]
+                if not students:
+                    continue
+                names = ', '.join(s.get_full_name() or s.username for s in students)
+                lines.append(f'{QUADRANTS[q]["label"]} ({len(students)}): {names}')
+            body = (
+                f'Resumen cognitivo de "{room.name}". '
+                + ' · '.join(lines)
+                + '. Revisa la sección de Métricas para intervenir.'
+            )
+            crit = len(groups['overconfident'])
+            title = (
+                f'{crit} estudiante{"" if crit == 1 else "s"} que cree saber y no sabe en {room.name}'
+                if crit else f'{total} estudiante{"" if total == 1 else "s"} para revisar en {room.name}'
+            )
             notify(
                 room.teacher,
                 kind=Notification.KIND_STUDENT_AT_RISK,
-                title=f'{n} estudiante{"" if n == 1 else "s"} en alerta en {room.name}',
-                body=f'Detectamos {n} estudiante{"" if n == 1 else "s"} en el cuadrante crítico '
-                     f'({label}) en "{room.name}": {names}. Revisa sus métricas para intervenir a tiempo.',
-                link=f'/app/room/{room.id}/',
+                title=title,
+                body=body,
+                link='/app/metrics/',
                 email_async=False,
             )
 
