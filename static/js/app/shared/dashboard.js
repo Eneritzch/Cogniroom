@@ -522,6 +522,43 @@ const STUDENT_NOTE = {
 const STUDENT_NOTE_EMPTY = 'Aún no tienes datos. Responde una evaluación para descubrir qué tan bien te conoces.';
 
 
+const CATEGORY_LABEL = {
+    recordar:   'Memoria (hechos y fechas)',
+    comprender: 'Comprensión',
+    aplicar:    'Aplicación',
+    analizar:   'Análisis',
+    evaluar:    'Evaluación / criterio',
+    crear:      'Creación',
+};
+
+// En qué categoría cognitiva acierta más / menos el estudiante (nivel de Bloom
+// de las preguntas). Se oculta si aún no respondió preguntas categorizadas.
+function renderStudentCategories(categories) {
+    const $section = document.getElementById('student-categories-section');
+    const $wrap = document.getElementById('student-categories');
+    if (!$section || !$wrap) return;
+    if (!categories || categories.length === 0) {
+        $section.hidden = true;
+        return;
+    }
+    $section.hidden = false;
+    $wrap.innerHTML = categories.map((c) => {
+        const acc = Math.round((c.accuracy ?? 0) * 100);
+        const tone = c.weak ? 'rust' : acc >= 80 ? 'moss' : 'amber';
+        const label = CATEGORY_LABEL[c.level] || c.level;
+        return `
+          <div class="student-cat${c.weak ? ' student-cat--weak' : ''}">
+            <div class="student-cat__row">
+              <span class="student-cat__name">${escapeHTML(label)}</span>
+              <span class="student-cat__val num">${acc}%</span>
+            </div>
+            <div class="student-cat__track"><span class="student-cat__fill" data-tone="${tone}" style="width:${acc}%"></span></div>
+            <span class="student-cat__hint">${c.weak ? 'Es donde más fallas — dale prioridad.' : `${c.correct} de ${c.total} correctas`}</span>
+          </div>`;
+    }).join('');
+}
+
+
 async function bootstrapStudent(user) {
     $studentView.hidden = false;
     document.getElementById('student-greeting').textContent = user.first_name || user.username;
@@ -575,6 +612,8 @@ async function bootstrapStudent(user) {
     $mast.textContent = hasData ? fmt(masteryAvg) : '—';
     $gap.textContent = hasData ? `${gap >= 0 ? '+' : ''}${gap}` : '—';
     $gap.dataset.tone = hasData ? gapTone(gap) : '';
+
+    renderStudentCategories(profile.categories || []);
 
     const latestDiag = (diagnoses || [])[0];
     if (latestDiag) {

@@ -45,6 +45,34 @@ def _parse_section(request, room):
     return sid, None
 
 
+def _category_breakdown(answers):
+    """Aciertos por categoría cognitiva (nivel de Bloom de la pregunta) de un
+    queryset de Answer. Sirve para ver en qué tipo de razonamiento falla el
+    estudiante (análisis, aplicación, memoria/recordar…). Ignora preguntas sin
+    clasificar. Devuelve [{level, total, correct, accuracy, weak}] ordenado por
+    accuracy ascendente (lo más flojo primero)."""
+    from django.db.models import Count, Q as Qf
+    rows = (
+        answers.exclude(question__cognitive_level='')
+        .values('question__cognitive_level')
+        .annotate(total=Count('id'), correct=Count('id', filter=Qf(is_correct=True)))
+        .order_by()
+    )
+    result = []
+    for r in rows:
+        total = r['total']
+        acc = round(r['correct'] / total, 4) if total else 0.0
+        result.append({
+            'level': r['question__cognitive_level'],
+            'total': total,
+            'correct': r['correct'],
+            'accuracy': acc,
+            'weak': total >= 2 and acc < 0.6,
+        })
+    result.sort(key=lambda c: c['accuracy'])
+    return result
+
+
 class MyProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -89,6 +117,7 @@ class MyProfileView(APIView):
             'ai_diagnoses_count': ai_diagnoses_count,
             'last_diagnosis': AIDiagnosisSerializer(last_diag).data if last_diag else None,
             'bkt_states': BKTStateSerializer(bkt_states, many=True).data,
+            'categories': _category_breakdown(Answer.objects.filter(session__student=user)),
         })
 
 
@@ -487,5 +516,8 @@ class StudentDetailView(APIView):
                 ).count(),
             },
             'nodes': nodes_data,
+            'categories': _category_breakdown(
+                Answer.objects.filter(session__room=room, session__student=student)
+            ),
             'diagnoses': AIDiagnosisSerializer(diagnoses, many=True).data,
         })

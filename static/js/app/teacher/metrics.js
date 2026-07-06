@@ -41,6 +41,35 @@ const QUAD_INFO = {
 };
 function quadrantLabel(q) { return (QUAD_INFO[q] || {}).label || 'Sin datos'; }
 
+// Categoría cognitiva (nivel de Bloom de la pregunta), en lenguaje claro.
+const CATEGORY_LABEL = {
+    recordar:   'Memoria (hechos y fechas)',
+    comprender: 'Comprensión',
+    aplicar:    'Aplicación',
+    analizar:   'Análisis',
+    evaluar:    'Evaluación / criterio',
+    crear:      'Creación',
+};
+function categoryLabel(l) { return CATEGORY_LABEL[l] || l; }
+
+function categoriesHTML(categories) {
+    const cats = categories || [];
+    if (cats.length === 0) {
+        return '<p class="sdq__msg">Aún no hay preguntas categorizadas respondidas. Las preguntas generadas con IA traen su categoría automáticamente.</p>';
+    }
+    return `<ul class="sdcat">${cats.map((c) => {
+        const acc = Math.round((c.accuracy ?? 0) * 100);
+        const tone = c.weak ? 'rust' : acc >= 80 ? 'moss' : 'amber';
+        return `
+        <li class="sdcat__row${c.weak ? ' sdcat__row--weak' : ''}">
+            <span class="sdcat__name">${escapeHTML(categoryLabel(c.level))}</span>
+            <span class="sdcat__track"><span class="sdcat__fill" data-tone="${tone}" style="width:${acc}%"></span></span>
+            <span class="sdcat__val num">${acc}%</span>
+            <span class="sdcat__count num">${c.correct}/${c.total}</span>
+        </li>`;
+    }).join('')}</ul>`;
+}
+
 function activeRoomId() {
     return Number(localStorage.getItem('cogniroom.activeRoomId')) || null;
 }
@@ -526,6 +555,11 @@ function renderStudentDetail(d) {
         <div class="sdq__nodes">
           <span class="eyebrow">Por tema · realmente sabe / cree saber</span>
           <ul>${nodesHTML}</ul>
+        </div>
+
+        <div class="sdq__cats">
+          <span class="eyebrow">Errores por categoría · aciertos</span>
+          ${categoriesHTML(d.categories)}
         </div>
       </div>`;
 }
