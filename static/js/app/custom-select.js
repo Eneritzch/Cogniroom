@@ -51,7 +51,21 @@ function enhance(select) {
             const item = document.createElement('div');
             item.className = 'cselect__option';
             item.setAttribute('role', 'option');
-            item.textContent = opt.textContent;
+            // Con data-desc la opción muestra un subtítulo explicativo (el botón
+            // colapsado sigue mostrando solo la etiqueta corta).
+            const desc = opt.dataset.desc;
+            if (desc) {
+                item.classList.add('cselect__option--described');
+                const label = document.createElement('span');
+                label.className = 'cselect__option-label';
+                label.textContent = opt.textContent;
+                const sub = document.createElement('span');
+                sub.className = 'cselect__option-desc';
+                sub.textContent = desc;
+                item.append(label, sub);
+            } else {
+                item.textContent = opt.textContent;
+            }
             item.dataset.index = String(i);
             item.dataset.selected = i === select.selectedIndex ? 'true' : 'false';
             item.setAttribute('aria-selected', i === select.selectedIndex ? 'true' : 'false');

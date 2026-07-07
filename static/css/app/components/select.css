@@ -123,3 +123,25 @@
   color: var(--ink-faint);
   cursor: default;
 }
+
+/* Opción con subtítulo explicativo (data-desc): etiqueta + descripción apiladas */
+.cselect__option--described {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding-block: var(--s-3);
+}
+
+.cselect__option-label { font-weight: var(--fw-medium); }
+
+.cselect__option-desc {
+  font-size: var(--fs-xs);
+  line-height: var(--lh-snug);
+  color: var(--ink-muted);
+  font-weight: var(--fw-regular);
+}
+
+/* En la opción seleccionada, la descripción mantiene el tono neutro (no marca) */
+.cselect__option--described[data-selected="true"] .cselect__option-desc {
+  color: var(--ink-muted);
+}
