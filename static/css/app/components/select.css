@@ -73,11 +73,10 @@
   position: absolute;
   top: calc(100% + 4px);
   left: 0;
-  /* crece hasta el ancho de su contenido (sin atarse al botón) para no
-     cortar etiquetas largas; tope para no desbordar la pantalla */
-  min-width: 100%;
-  width: max-content;
-  max-width: min(360px, 90vw);
+  /* Tamaño definido y estándar: el menú siempre iguala el ancho del selector,
+     así todos los dropdowns tienen el mismo tamaño relativo (no se estiran con
+     el contenido). Las etiquetas largas se ajustan en varias líneas. */
+  width: 100%;
   z-index: 20;
   display: flex;
   flex-direction: column;
@@ -87,7 +86,8 @@
   border: 1px solid var(--paper-border-strong);
   border-radius: var(--r-sm);
   box-shadow: var(--shadow-lg);
-  max-height: 240px;
+  /* Altura tope: si hay muchas opciones aparece scroll en vez de estirarse. */
+  max-height: 260px;
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -107,6 +107,8 @@
   font-size: var(--fs-sm);
   line-height: var(--lh-snug);
   cursor: pointer;
+  /* Con el ancho fijo, el texto largo se ajusta en lugar de cortarse. */
+  overflow-wrap: anywhere;
 }
 
 .cselect__option:hover,
