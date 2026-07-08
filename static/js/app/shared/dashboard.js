@@ -839,8 +839,11 @@ function renderDonut(counts) {
     set('.d-donut__seg--und',   undArc,   calArc + overArc);
     set('.d-donut__seg--aware', awareArc, calArc + overArc + undArc);
 
-    // El centro resume la salud: % del grupo "bien calibrado" (sabe y confía).
-    const calPct = Math.round((counts.cal / total) * 100);
+    // El centro resume la salud metacognitiva: % del grupo cuya confianza coincide
+    // con lo que realmente sabe. Son DOS cuadrantes alineados: "sabe y confía" (cal)
+    // y "no sabe y lo reconoce" (aware) — ambos son "bien calibrados". Solo están
+    // descalibrados los que confían de más (over) o de menos (und).
+    const calPct = Math.round(((counts.cal + counts.aware) / total) * 100);
     if ($pct) $pct.textContent = `${calPct}%`;
     if ($label) $label.textContent = 'Bien calibrados';
 }

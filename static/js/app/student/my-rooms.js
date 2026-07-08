@@ -312,7 +312,7 @@ async function openStartEvalModal(roomId) {
             <label class="start-eval__node">
                 <input type="checkbox" class="start-eval__check" value="${n.id}" checked>
                 <span class="start-eval__node-name">${escapeHTML(n.name)}</span>
-                <span class="start-eval__node-count num">${n.approved_count} ${n.approved_count === 1 ? 'pregunta' : 'preguntas'}</span>
+                <span class="start-eval__node-count num">${n.eval_count ?? n.approved_count} ${(n.eval_count ?? n.approved_count) === 1 ? 'pregunta' : 'preguntas'}</span>
             </label>
         `).join('');
         if ($confirm) $confirm.disabled = false;

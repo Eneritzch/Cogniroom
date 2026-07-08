@@ -74,8 +74,10 @@ class RoomListCreateView(APIView):
         membership_room_ids = RoomMembership.objects.filter(
             student=user
         ).values_list('room_id', flat=True)
+        # Las salas grupales cerradas por el docente (is_active=False) se ocultan al
+        # estudiante; sus propias salas de estudio (individual) se muestran siempre.
         qs = Room.objects.filter(
-            Q(id__in=membership_room_ids) | Q(teacher=user, mode='individual')
+            Q(id__in=membership_room_ids, is_active=True) | Q(teacher=user, mode='individual')
         ).order_by('-created_at').distinct()
         return Response([_student_room_data(r, user, request) for r in qs])
 

@@ -7,14 +7,22 @@ class KnowledgeNodeSerializer(serializers.ModelSerializer):
     # Preguntas aprobadas (= contestables) del nodo. El estudiante usa esto para
     # elegir nodos con material y el docente para ver qué nodos ya tienen banco.
     approved_count = serializers.SerializerMethodField()
+    # Cuántas verá realmente el estudiante en una evaluación: el docente puede
+    # limitar por nodo con questions_per_session (0 = todas). Misma fórmula que la
+    # cuota en sessions.views (min(qps or approved, approved)).
+    eval_count = serializers.SerializerMethodField()
 
     class Meta:
         model = KnowledgeNode
-        fields = ['id', 'room', 'name', 'questions_per_session', 'created_at', 'approved_count']
+        fields = ['id', 'room', 'name', 'questions_per_session', 'created_at', 'approved_count', 'eval_count']
         read_only_fields = ['id', 'room', 'created_at']
 
     def get_approved_count(self, obj):
         return obj.questions.filter(status=Question.STATUS_APPROVED).count()
+
+    def get_eval_count(self, obj):
+        approved = self.get_approved_count(obj)
+        return min(obj.questions_per_session or approved, approved)
 
 
 class QuestionSerializer(serializers.ModelSerializer):

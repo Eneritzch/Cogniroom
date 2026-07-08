@@ -116,7 +116,9 @@ GENERATION_RULES = (
 
 
 class CognitiveAnalysisService:
-    MODEL_GENERATION = 'claude-opus-4-8'
+    # Generación con Sonnet (no Opus): para redactar MCQ a partir de material dado,
+    # Sonnet rinde de sobra y responde ~2-3x más rápido y barato que Opus.
+    MODEL_GENERATION = 'claude-sonnet-4-6'
     MODEL_ANALYSIS = 'claude-sonnet-4-6'
     MAX_TOKENS_GENERATION = 8000
     MAX_TOKENS_ANALYSIS = 1024
@@ -310,7 +312,9 @@ class CognitiveAnalysisService:
             max_tokens=self.MAX_TOKENS_GENERATION,
             thinking={'type': 'adaptive'},
             output_config={
-                'effort': 'high',
+                # 'medium' en vez de 'high': para MCQ sobre material dado, el esfuerzo
+                # alto solo añadía latencia sin mejorar preguntas de forma perceptible.
+                'effort': 'medium',
                 'format': {'type': 'json_schema', 'schema': QUESTION_SCHEMA},
             },
             system=GENERATION_RULES,

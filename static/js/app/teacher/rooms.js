@@ -69,7 +69,7 @@ function renderCard(r, isActive) {
                 <h3 class="rcard__name">${escapeHTML(d.name)}</h3>
                 <div class="rcard__submeta">
                     <span>Creada ${escapeHTML((d.created_at || '').slice(0, 10))}</span>
-                    ${archived ? '<span class="rcard__archived">Archivada</span>' : ''}
+                    ${archived ? '<span class="rcard__archived">Cerrada</span>' : ''}
                 </div>
             </div>
         </header>
@@ -181,10 +181,9 @@ function renderCard(r, isActive) {
                 <div class="rcard__menu-list" role="menu" hidden>
                     <button type="button" class="rcard__menu-item" role="menuitem" data-rename="${r.id}" data-name="${escapeHTML(d.name)}">Renombrar</button>
                     ${archived
-                        ? `<button type="button" class="rcard__menu-item" role="menuitem" data-reactivate="${r.id}">Reactivar sala</button>`
-                        : isActive
-                            ? ''
-                            : `<button type="button" class="rcard__menu-item" role="menuitem" data-activate="${r.id}">Hacer activa</button>`
+                        ? `<button type="button" class="rcard__menu-item" role="menuitem" data-reactivate="${r.id}">Reabrir sala</button>`
+                        : `${isActive ? '' : `<button type="button" class="rcard__menu-item" role="menuitem" data-activate="${r.id}">Hacer activa</button>`}
+                           <button type="button" class="rcard__menu-item" role="menuitem" data-close="${r.id}">Cerrar sala</button>`
                     }
                     <button type="button" class="rcard__menu-item rcard__menu-item--danger" role="menuitem" data-delete="${r.id}" data-name="${escapeHTML(d.name)}">Eliminar</button>
                 </div>
@@ -390,11 +389,26 @@ function bindActions() {
             btn.disabled = true;
             try {
                 await roomsApi.archive(id, false);
-                toast('Sala reactivada.', { kind: 'success' });
+                toast('Sala reabierta. Tus estudiantes ya pueden evaluarse de nuevo.', { kind: 'success' });
                 await loadRooms();
             } catch (err) {
                 btn.disabled = false;
-                toast(err?.body?.detail || err?.message || 'No se pudo reactivar la sala.', { kind: 'error' });
+                toast(err?.body?.detail || err?.message || 'No se pudo reabrir la sala.', { kind: 'error' });
+            }
+        });
+    });
+
+    document.querySelectorAll('[data-close]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+            const id = Number(btn.dataset.close);
+            btn.disabled = true;
+            try {
+                await roomsApi.archive(id, true);
+                toast('Sala cerrada. Se conserva el historial y los estudiantes no pueden iniciar evaluaciones; puedes reabrirla cuando quieras.', { kind: 'success' });
+                await loadRooms();
+            } catch (err) {
+                btn.disabled = false;
+                toast(err?.body?.detail || err?.message || 'No se pudo cerrar la sala.', { kind: 'error' });
             }
         });
     });
@@ -524,12 +538,12 @@ if ($deleteArchive) {
         $deleteArchive.disabled = true;
         try {
             await roomsApi.archive(DELETE_ID, true);
-            toast('Sala archivada. Ya no aparece para tus estudiantes.', { kind: 'success' });
+            toast('Sala cerrada. Ya no aparece para tus estudiantes; puedes reabrirla cuando quieras.', { kind: 'success' });
             const m = modalInstance('roomDeleteModal');
             if (m) m.hide();
             await loadRooms();
         } catch (err) {
-            toast(err?.body?.detail || err?.message || 'No se pudo archivar la sala.', { kind: 'error' });
+            toast(err?.body?.detail || err?.message || 'No se pudo cerrar la sala.', { kind: 'error' });
         } finally {
             $deleteArchive.disabled = false;
         }

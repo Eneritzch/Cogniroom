@@ -324,6 +324,14 @@ class SessionListCreateView(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
+        # Sala cerrada por el docente: no se admiten nuevas evaluaciones (el
+        # historial se conserva; el docente puede reabrirla cuando quiera).
+        if not room.is_active:
+            return Response(
+                {'detail': 'Esta sala está cerrada. No se pueden iniciar nuevas evaluaciones.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         # Nodos elegidos por el estudiante; deben pertenecer a la sala. Vacío =
         # todos (la selección adaptativa abarca toda la sala, como antes).
         node_ids = serializer.validated_data.get('node_ids') or []
