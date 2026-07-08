@@ -493,6 +493,9 @@
   margin: 0 0 var(--s-5);
   padding: 0;
   list-style: none;
+  /* Altura fija + scroll: el modal no se estira al sumar secciones. */
+  max-height: min(50vh, 340px);
+  overflow-y: auto;
 }
 
 .sections-admin__empty {

@@ -80,7 +80,7 @@
   z-index: 20;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 0;
   padding: var(--s-1);
   background: var(--paper-elevated);
   border: 1px solid var(--paper-border-strong);
@@ -109,6 +109,12 @@
   cursor: pointer;
   /* Con el ancho fijo, el texto largo se ajusta en lugar de cortarse. */
   overflow-wrap: anywhere;
+}
+
+/* Divisor entre opciones: con títulos largos que se parten en varias líneas se
+   distingue claramente dónde termina una opción y empieza la siguiente. */
+.cselect__option + .cselect__option {
+  border-top: 1px solid color-mix(in srgb, var(--paper-border) 45%, transparent);
 }
 
 .cselect__option:hover,

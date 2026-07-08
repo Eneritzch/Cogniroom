@@ -880,15 +880,22 @@ function renderRoomsCompare(list) {
     const $list = document.getElementById('rooms-compare');
     if (!$list) return;
 
-    $list.innerHTML = (list || []).map((r) => `
+    // Tamaño fijo: solo las 4 salas más recientes (la lista viene ordenada por
+    // -created_at). Para verlas todas está el enlace del encabezado a /app/rooms/.
+    $list.innerHTML = (list || []).slice(0, 4).map((r) => {
+        const n = r.member_count ?? 0;
+        const sub = n > 0
+            ? `<span class="d-rooms__sub">${n} ${n === 1 ? 'estudiante' : 'estudiantes'}</span>`
+            : '';
+        return `
       <li class="d-rooms__row" data-switch-room="${r.id}" tabindex="0">
         <span class="d-rooms__icon">${_roomIcon}</span>
         <div class="d-rooms__main">
           <span class="d-rooms__name">${escapeHTML(String(r.name).split(' · ')[0])}</span>
-          <span class="d-rooms__sub">${r.member_count ?? 0} est.</span>
+          ${sub}
         </div>
-      </li>
-    `).join('');
+      </li>`;
+    }).join('');
 
     $list.querySelectorAll('[data-switch-room]').forEach((row) => {
         const go = () => switchActiveRoom(Number(row.dataset.switchRoom));

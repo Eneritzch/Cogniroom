@@ -181,14 +181,25 @@ async function setupRoomSelector() {
     }
 
     $wrap.hidden = false;
-    $menu.innerHTML = _teacherRooms.map((r) => `
+    $menu.innerHTML = _teacherRooms.map((r) => {
+        const n = r.member_count ?? 0;
+        // Solo mostramos el contador cuando aporta información (>0): "0 est." en
+        // cada fila era ruido. Icono + número, consistente con las tarjetas.
+        const meta = n > 0
+            ? `<span class="topbar-room__menu-meta" title="${n} ${n === 1 ? 'estudiante' : 'estudiantes'}">
+                   <svg class="icon-svg" width="13" height="13" viewBox="0 0 24 24" aria-hidden="true">
+                       <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                       <circle cx="9" cy="7" r="4"></circle>
+                   </svg>${n}</span>`
+            : '';
+        return `
         <li>
             <button type="button" class="dropdown-item" data-room-id="${r.id}">
-                <span>${_esc(r.name)}</span>
-                <span class="topbar-room__menu-meta">${r.member_count ?? 0} est.</span>
+                <span class="topbar-room__menu-name">${_esc(r.name)}</span>
+                ${meta}
             </button>
-        </li>
-    `).join('');
+        </li>`;
+    }).join('');
 
     $menu.querySelectorAll('.dropdown-item').forEach((btn) => {
         btn.addEventListener('click', () => setActiveRoom(btn.dataset.roomId));

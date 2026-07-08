@@ -245,6 +245,221 @@ class MyNodeDetailView(APIView):
         })
 
 
+def _student_cognitive_rows(room, section_id=None):
+    """Por estudiante de la sala (opcional filtrado por sección): dominio real y
+    confianza promedio + cuadrante. Omite a quienes aún no tienen datos
+    cognitivos. Base compartida por el panel de métricas del docente."""
+    memberships = RoomMembership.objects.filter(room=room).select_related('student')
+    if section_id is not None:
+        memberships = memberships.filter(section_id=section_id)
+    rows = []
+    for m in memberships:
+        agg = (
+            CognitiveIndex.objects.filter(node__room=room, student=m.student)
+            .aggregate(gap=Avg('metacognitive_gap'), conf=Avg('avg_confidence'),
+                       mastery=Avg('bkt_mastery'), icc=Avg('icc_value'))
+        )
+        if agg['mastery'] is None or agg['conf'] is None:
+            continue
+        mastery = float(agg['mastery'])
+        conf = float(agg['conf'])
+        rows.append({
+            'student': m.student,
+            'mastery': round(mastery, 4),
+            'confidence': round(conf, 4),
+            'gap': round(float(agg['gap'] or 0.0), 4),
+            'icc': round(float(agg['icc'] or 0.0), 4),
+            'quadrant': classify_quadrant(mastery, conf),
+        })
+    return rows
+
+
+def _quadrant_counts(rows):
+    counts = {'calibrated': 0, 'underconfident': 0, 'overconfident': 0, 'aware_gap': 0}
+    for r in rows:
+        if r['quadrant'] in counts:
+            counts[r['quadrant']] += 1
+    return counts
+
+
+def _weak_category(answers):
+    """Categoría cognitiva más floja de un queryset de Answer (o None)."""
+    cats = _category_breakdown(answers)
+    if not cats:
+        return None
+    weak = [c for c in cats if c['weak']]
+    return (weak[0] if weak else cats[0])['level']
+
+
+def _room_blind_spots(room, section_id=None):
+    spots = []
+    for node in room.nodes.order_by('id'):
+        ci = CognitiveIndex.objects.filter(node=node)
+        if section_id is not None:
+            ci = ci.filter(
+                student__room_memberships__room=room,
+                student__room_memberships__section_id=section_id,
+            )
+        total = ci.values('student').distinct().count()
+        if total == 0:
+            continue
+        ipc = round(float(ci.aggregate(v=Avg('icc_value'))['v'] or 0.0), 4)
+        spots.append({
+            'node': node.id,
+            'node_name': node.name,
+            'ipc_value': ipc,
+            'total_student': total,
+            'alert': ipc < 0.5,
+        })
+    spots.sort(key=lambda s: s['ipc_value'])
+    return spots
+
+
+def _room_avg_icc(room):
+    return round(float(
+        CognitiveIndex.objects.filter(node__room=room).aggregate(v=Avg('icc_value'))['v'] or 0.0
+    ), 4)
+
+
+class RoomOverviewView(APIView):
+    """Panel consolidado de una sala para el docente: distribución de cuadrantes,
+    habilidades del grupo (categorías), estudiantes a atender primero (con su
+    categoría más floja y último diagnóstico), puntos ciegos y dispersión
+    dominio×confianza para el mapa de cuadrantes."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, room_id):
+        room = get_object_or_404(Room, id=room_id)
+        if room.teacher_id != request.user.id:
+            return Response(
+                {'detail': 'Only the room owner can view metrics.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        section_id, error = _parse_section(request, room)
+        if error:
+            return error
+
+        rows = _student_cognitive_rows(room, section_id)
+        counts = _quadrant_counts(rows)
+
+        answers = Answer.objects.filter(session__room=room)
+        if section_id is not None:
+            answers = answers.filter(
+                session__student__room_memberships__room=room,
+                session__student__room_memberships__section_id=section_id,
+            )
+        categories = _category_breakdown(answers)
+
+        # Atender primero: descalibrados (críticos primero, luego por brecha).
+        attend = [r for r in rows if r['quadrant'] in ('overconfident', 'underconfident')]
+        attend.sort(key=lambda r: (r['quadrant'] != 'overconfident', -abs(r['gap'])))
+        attend_first = []
+        for r in attend[:8]:
+            s = r['student']
+            diag = (
+                AIDiagnosis.objects.filter(session__room=room, student=s)
+                .order_by('-generated_at').first()
+            )
+            attend_first.append({
+                'id': s.id,
+                'first_name': s.first_name,
+                'last_name': s.last_name,
+                'quadrant': r['quadrant'],
+                'quadrant_label': QUADRANTS[r['quadrant']]['label'],
+                'critical': is_critical(r['quadrant']),
+                'metacognitive_gap': r['gap'],
+                'bkt_mastery': r['mastery'],
+                'avg_confidence': r['confidence'],
+                'weak_category': _weak_category(
+                    Answer.objects.filter(session__room=room, session__student=s)
+                ),
+                'diagnosis': (diag.recommendation or diag.reasoning) if diag else None,
+            })
+
+        scatter = [{
+            'id': r['student'].id,
+            'first_name': r['student'].first_name,
+            'last_name': r['student'].last_name,
+            'mastery': r['mastery'],
+            'confidence': r['confidence'],
+            'quadrant': r['quadrant'],
+        } for r in rows]
+
+        total_students = (
+            RoomMembership.objects.filter(room=room).count()
+            if section_id is None
+            else RoomMembership.objects.filter(room=room, section_id=section_id).count()
+        )
+
+        return Response({
+            'room': {'id': room.id, 'name': room.name, 'mode': room.mode},
+            'students': total_students,
+            'evaluated': len(rows),
+            'avg_icc': _room_avg_icc(room),
+            'quadrants': counts,
+            'categories': categories,
+            'attend_first': attend_first,
+            'blind_spots': _room_blind_spots(room, section_id),
+            'scatter': scatter,
+        })
+
+
+class RoomsMetricsSummaryView(APIView):
+    """Vista "todas mis salas": una fila por sala del docente con su estado de
+    grupo (calibración, distribución de cuadrantes, en riesgo, categoría floja)
+    + totales agregados, para comparar salas de un vistazo."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if request.user.role != 'teacher':
+            return Response({'rooms': [], 'totals': {}})
+
+        rooms = Room.objects.filter(teacher=request.user).order_by('-created_at')
+        result = []
+        agg_students = agg_at_risk = agg_critical = 0
+        icc_sum = 0.0
+        icc_n = 0
+        for room in rooms:
+            rows = _student_cognitive_rows(room)
+            counts = _quadrant_counts(rows)
+            at_risk = counts['overconfident'] + counts['underconfident']
+            students = RoomMembership.objects.filter(room=room).count()
+            avg_icc = _room_avg_icc(room)
+            sessions = EvaluationSession.objects.filter(
+                room=room, status=EvaluationSession.STATUS_COMPLETED
+            ).count()
+            result.append({
+                'id': room.id,
+                'name': room.name,
+                'mode': room.mode,
+                'students': students,
+                'evaluated': len(rows),
+                'sessions': sessions,
+                'avg_icc': avg_icc,
+                'quadrants': counts,
+                'at_risk_count': at_risk,
+                'critical_count': counts['overconfident'],
+                'weak_category': _weak_category(Answer.objects.filter(session__room=room)),
+            })
+            agg_students += students
+            agg_at_risk += at_risk
+            agg_critical += counts['overconfident']
+            if rows:
+                icc_sum += avg_icc
+                icc_n += 1
+
+        return Response({
+            'rooms': result,
+            'totals': {
+                'rooms': len(result),
+                'students': agg_students,
+                'at_risk': agg_at_risk,
+                'critical': agg_critical,
+                'avg_icc': round(icc_sum / icc_n, 4) if icc_n else 0.0,
+            },
+        })
+
+
 class BlindSpotsView(APIView):
     permission_classes = [IsAuthenticated]
 

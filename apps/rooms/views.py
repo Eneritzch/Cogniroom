@@ -127,9 +127,55 @@ class RoomDetailView(APIView):
             room.subject = subject.strip()
             fields.append('subject')
 
+        # Archivar / reactivar: is_active=False saca la sala del descubrimiento
+        # del alumno y bloquea nuevas inscripciones, conservando el historial.
+        archived = request.data.get('archived')
+        if archived is not None:
+            room.is_active = not bool(archived)
+            fields.append('is_active')
+
         if fields:
             room.save(update_fields=fields)
         return Response(_teacher_room_data(room))
+
+    def delete(self, request, room_id):
+        room = get_object_or_404(Room, id=room_id)
+        if room.teacher_id != request.user.id:
+            return Response(
+                {'detail': 'Solo el dueño puede eliminar esta sala.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        from apps.sessions.models import EvaluationSession
+
+        member_count = RoomMembership.objects.filter(room=room).count()
+        session_count = EvaluationSession.objects.filter(room=room).count()
+
+        # Salas de estudio (individual) solo contienen datos del propio dueño; las
+        # grupales vacías no arrastran historial ajeno → borrado directo.
+        if room.mode == Room.MODE_INDIVIDUAL or (member_count == 0 and session_count == 0):
+            room.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        # Sala grupal con datos de estudiantes: el CASCADE arrastraría el historial
+        # cognitivo (BKT/ICC/diagnósticos) de cada alumno. Se exige confirmar con el
+        # nombre exacto; sin eso, se sugiere archivar.
+        confirm = (request.data.get('confirm') or request.query_params.get('confirm') or '').strip()
+        if confirm != room.name:
+            return Response(
+                {
+                    'detail': 'Esta sala tiene datos de estudiantes. Confírma con el '
+                              'nombre exacto para eliminarla, o archívala para conservar el historial.',
+                    'requires_confirmation': True,
+                    'member_count': member_count,
+                    'session_count': session_count,
+                    'room_name': room.name,
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        room.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class JoinRoomView(APIView):

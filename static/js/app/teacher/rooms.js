@@ -26,6 +26,9 @@ let currentPage = 1;
 let ROOMS = [];
 let LOADED = false;
 let RENAME_ID = null;
+let DELETE_ID = null;
+let DELETE_NAME = '';
+let DELETE_HASDATA = false;
 
 function modalInstance(id) {
     const $m = document.getElementById(id);
@@ -56,15 +59,17 @@ function renderCard(r, isActive) {
     const alerts = { pendingAI: d.pending_ai_count || 0, atRisk: d.at_risk_count || 0 };
     const sectionCount = d.section_count || 0;
     const tone = healthTone(d.icc || 0);
+    const archived = d.is_active === false;
 
     return `
-    <li class="rcard ${isActive ? 'rcard--active' : ''}" data-open="${r.id}">
-        ${isActive ? '<span class="rcard__activedot" aria-label="Sala activa"></span>' : ''}
+    <li class="rcard ${isActive ? 'rcard--active' : ''} ${archived ? 'rcard--archived' : ''}" data-open="${r.id}">
+        ${isActive && !archived ? '<span class="rcard__activedot" aria-label="Sala activa"></span>' : ''}
         <header class="rcard__head">
             <div class="rcard__id">
                 <h3 class="rcard__name">${escapeHTML(d.name)}</h3>
                 <div class="rcard__submeta">
                     <span>Creada ${escapeHTML((d.created_at || '').slice(0, 10))}</span>
+                    ${archived ? '<span class="rcard__archived">Archivada</span>' : ''}
                 </div>
             </div>
         </header>
@@ -165,18 +170,35 @@ function renderCard(r, isActive) {
         ` : ''}
 
         <footer class="rcard__foot">
-            <button type="button" class="rcard__link" data-rename="${r.id}" data-name="${escapeHTML(d.name)}">Renombrar</button>
-            ${isActive
-                ? '<span class="rcard__activelabel">Activa</span>'
-                : `<button type="button" class="rcard__link" data-activate="${r.id}">Hacer activa</button>`
-            }
-            <a class="rcard__cta" href="/app/questions/" data-activate="${r.id}">
-                Ver preguntas
-                <svg class="icon-svg" width="11" height="11" viewBox="0 0 24 24" aria-hidden="true">
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                    <polyline points="12 5 19 12 12 19"></polyline>
-                </svg>
-            </a>
+            <div class="rcard__menu" data-menu>
+                <button type="button" class="rcard__menu-btn" data-menu-btn aria-haspopup="true" aria-expanded="false" aria-label="Más acciones">
+                    <svg class="rcard__menu-dots" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="12" cy="5" r="1.7"></circle>
+                        <circle cx="12" cy="12" r="1.7"></circle>
+                        <circle cx="12" cy="19" r="1.7"></circle>
+                    </svg>
+                </button>
+                <div class="rcard__menu-list" role="menu" hidden>
+                    <button type="button" class="rcard__menu-item" role="menuitem" data-rename="${r.id}" data-name="${escapeHTML(d.name)}">Renombrar</button>
+                    ${archived
+                        ? `<button type="button" class="rcard__menu-item" role="menuitem" data-reactivate="${r.id}">Reactivar sala</button>`
+                        : isActive
+                            ? ''
+                            : `<button type="button" class="rcard__menu-item" role="menuitem" data-activate="${r.id}">Hacer activa</button>`
+                    }
+                    <button type="button" class="rcard__menu-item rcard__menu-item--danger" role="menuitem" data-delete="${r.id}" data-name="${escapeHTML(d.name)}">Eliminar</button>
+                </div>
+            </div>
+            <div class="rcard__foot-right">
+                ${isActive && !archived ? '<span class="rcard__activelabel">Activa</span>' : ''}
+                <a class="rcard__cta" href="/app/questions/" data-activate="${r.id}">
+                    Ver preguntas
+                    <svg class="icon-svg" width="11" height="11" viewBox="0 0 24 24" aria-hidden="true">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </a>
+            </div>
         </footer>
     </li>
     `;
@@ -221,7 +243,7 @@ function render() {
         return;
     }
 
-    if ($count) $count.textContent = String(ROOMS.length);
+    if ($count) $count.textContent = String(ROOMS.filter((r) => r.is_active !== false).length);
 
     if (ROOMS.length === 0) {
         if ($meta) $meta.textContent = '';
@@ -281,7 +303,32 @@ function renderPager(total, totalPages) {
 }
 
 
+function closeAllMenus(except) {
+    document.querySelectorAll('.rcard__menu-list').forEach((list) => {
+        if (list === except) return;
+        list.hidden = true;
+        const btn = list.parentElement.querySelector('[data-menu-btn]');
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+    });
+}
+
+// Cierre del menú al hacer clic fuera o con Escape (una sola vez, no por render).
+document.addEventListener('click', () => closeAllMenus());
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAllMenus(); });
+
+
 function bindActions() {
+    document.querySelectorAll('[data-menu-btn]').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const list = btn.parentElement.querySelector('.rcard__menu-list');
+            const willOpen = list.hidden;
+            closeAllMenus();
+            list.hidden = !willOpen;
+            btn.setAttribute('aria-expanded', String(willOpen));
+        });
+    });
+
     document.querySelectorAll('[data-copy]').forEach((btn) => {
         btn.addEventListener('click', async () => {
             const code = btn.dataset.copy;
@@ -321,7 +368,7 @@ function bindActions() {
     // Clic en la tarjeta (fuera de botones/enlaces) → abre las preguntas de esa sala.
     document.querySelectorAll('.rcard[data-open]').forEach((card) => {
         card.addEventListener('click', (e) => {
-            if (e.target.closest('button, a, [data-copy], [data-share], [data-rename], [data-activate]')) return;
+            if (e.target.closest('button, a')) return;
             localStorage.setItem('cogniroom.activeRoomId', String(Number(card.dataset.open)));
             location.href = '/app/questions/';
         });
@@ -334,6 +381,29 @@ function bindActions() {
             if ($input) $input.value = btn.dataset.name || '';
             const m = modalInstance('roomRenameModal');
             if (m) m.show();
+        });
+    });
+
+    document.querySelectorAll('[data-reactivate]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+            const id = Number(btn.dataset.reactivate);
+            btn.disabled = true;
+            try {
+                await roomsApi.archive(id, false);
+                toast('Sala reactivada.', { kind: 'success' });
+                await loadRooms();
+            } catch (err) {
+                btn.disabled = false;
+                toast(err?.body?.detail || err?.message || 'No se pudo reactivar la sala.', { kind: 'error' });
+            }
+        });
+    });
+
+    document.querySelectorAll('[data-delete]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const id = Number(btn.dataset.delete);
+            const room = ROOMS.find((r) => r.id === id);
+            if (room) openDeleteModal(room);
         });
     });
 }
@@ -375,6 +445,93 @@ if ($roomRenameForm) {
             toast(err?.body?.detail || err?.message || 'No se pudo renombrar la sala.', { kind: 'error' });
         } finally {
             if ($submit) $submit.disabled = false;
+        }
+    });
+}
+
+
+function openDeleteModal(room) {
+    DELETE_ID = room.id;
+    DELETE_NAME = room.name || '';
+    const members = room.member_count || 0;
+    const sessions = room.session_count || 0;
+    DELETE_HASDATA = room.mode === 'group' && (members > 0 || sessions > 0);
+
+    const $body = document.getElementById('room-delete-body');
+    const $danger = document.getElementById('room-delete-danger');
+    const $confirm = document.getElementById('room-delete-confirm');
+    const $btn = document.getElementById('room-delete-submit');
+
+    if ($body) {
+        $body.innerHTML = DELETE_HASDATA
+            ? `«${escapeHTML(DELETE_NAME)}» tiene <strong>${members} ${members === 1 ? 'estudiante' : 'estudiantes'}</strong> y `
+              + `<strong>${sessions} ${sessions === 1 ? 'sesión' : 'sesiones'}</strong>. Al eliminarla se borrará todo su `
+              + `historial cognitivo (calibración, dominio y diagnósticos). Esta acción no se puede deshacer.`
+            : `Vas a eliminar «${escapeHTML(DELETE_NAME)}». Esta acción no se puede deshacer.`;
+    }
+    if ($danger) $danger.hidden = !DELETE_HASDATA;
+    if ($confirm) $confirm.value = '';
+    if ($btn) $btn.disabled = DELETE_HASDATA;   // con datos: se habilita al escribir el nombre
+
+    const m = modalInstance('roomDeleteModal');
+    if (m) m.show();
+}
+
+const $deleteConfirmInput = document.getElementById('room-delete-confirm');
+if ($deleteConfirmInput) {
+    $deleteConfirmInput.addEventListener('input', () => {
+        const $btn = document.getElementById('room-delete-submit');
+        if ($btn) $btn.disabled = $deleteConfirmInput.value.trim() !== DELETE_NAME;
+    });
+}
+
+const $deleteSubmit = document.getElementById('room-delete-submit');
+if ($deleteSubmit) {
+    $deleteSubmit.addEventListener('click', async () => {
+        if (!DELETE_ID) return;
+        $deleteSubmit.disabled = true;
+        try {
+            await roomsApi.remove(DELETE_ID, DELETE_HASDATA ? DELETE_NAME : undefined);
+            toast('Sala eliminada.', { kind: 'success' });
+            const m = modalInstance('roomDeleteModal');
+            if (m) m.hide();
+            if (activeRoomId() === DELETE_ID) localStorage.removeItem('cogniroom.activeRoomId');
+            await loadRooms();
+        } catch (err) {
+            $deleteSubmit.disabled = false;
+            // El backend detectó datos que la tarjeta no reflejaba (p. ej. una
+            // sesión en curso): pasa el modal a modo confirmación por nombre.
+            if (err?.status === 409 && err?.body?.requires_confirmation && !DELETE_HASDATA) {
+                DELETE_HASDATA = true;
+                openDeleteModal({
+                    id: DELETE_ID,
+                    name: DELETE_NAME,
+                    mode: 'group',
+                    member_count: err.body.member_count,
+                    session_count: err.body.session_count,
+                });
+                return;
+            }
+            toast(err?.body?.detail || err?.message || 'No se pudo eliminar la sala.', { kind: 'error' });
+        }
+    });
+}
+
+const $deleteArchive = document.getElementById('room-delete-archive');
+if ($deleteArchive) {
+    $deleteArchive.addEventListener('click', async () => {
+        if (!DELETE_ID) return;
+        $deleteArchive.disabled = true;
+        try {
+            await roomsApi.archive(DELETE_ID, true);
+            toast('Sala archivada. Ya no aparece para tus estudiantes.', { kind: 'success' });
+            const m = modalInstance('roomDeleteModal');
+            if (m) m.hide();
+            await loadRooms();
+        } catch (err) {
+            toast(err?.body?.detail || err?.message || 'No se pudo archivar la sala.', { kind: 'error' });
+        } finally {
+            $deleteArchive.disabled = false;
         }
     });
 }

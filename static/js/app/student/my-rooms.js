@@ -169,6 +169,7 @@ function renderCard(r) {
                 ${!isGroup ? `
                     <a class="rcard__link" href="/app/questions/" data-action="manage-questions" data-room-id="${rid}" title="Gestionar preguntas">Preguntas</a>
                     <a class="rcard__link" href="/app/pdfs/" data-action="manage-pdfs" data-room-id="${rid}" title="Gestionar PDFs">PDFs</a>
+                    <button type="button" class="rcard__link rcard__link--danger" data-action="delete" data-room-id="${rid}" data-room-name="${escapeHTML(r.name)}" title="Eliminar sala">Eliminar</button>
                 ` : ''}
                 ${primaryCta}
             </div>
@@ -268,6 +269,11 @@ document.getElementById('my-rooms-list').addEventListener('click', (e) => {
     if (action === 'start') {
         e.preventDefault();
         if (roomId) openStartEvalModal(roomId);
+        return;
+    }
+    if (action === 'delete') {
+        e.preventDefault();
+        if (roomId) openDeleteStudyModal(roomId, el.dataset.roomName || '');
         return;
     }
     // "Preguntas" / "PDFs" / "Generar preguntas": fijamos la sala activa para que
@@ -594,9 +600,46 @@ function bindDiscover() {
 }
 
 
+/* ---- Eliminar sala de estudio (solo afecta datos propios) ---- */
+let deleteStudyId = null;
+
+function openDeleteStudyModal(roomId, roomName) {
+    deleteStudyId = roomId;
+    const $name = document.getElementById('delete-study-name');
+    if ($name) $name.textContent = roomName;
+    const $modal = document.getElementById('deleteStudyModal');
+    if ($modal && window.bootstrap) {
+        const instance = window.bootstrap.Modal.getInstance($modal) || new window.bootstrap.Modal($modal);
+        instance.show();
+    }
+}
+
+function bindDeleteStudyModal() {
+    const $btn = document.getElementById('delete-study-confirm');
+    if (!$btn || $btn.dataset.bound) return;
+    $btn.dataset.bound = '1';
+    $btn.addEventListener('click', async () => {
+        if (!deleteStudyId) return;
+        $btn.disabled = true;
+        try {
+            await roomsApi.remove(deleteStudyId);
+            toast('Sala eliminada.', { kind: 'success' });
+            hideModal('deleteStudyModal');
+            await loadRooms();
+        } catch (err) {
+            if (err instanceof ApiError && err.status === 401) { tokens.clear(); location.replace('/app/'); return; }
+            toast(apiErrorMessage(err, 'No se pudo eliminar la sala.'), { kind: 'error' });
+        } finally {
+            $btn.disabled = false;
+        }
+    });
+}
+
+
 bindJoinModal();
 bindCreateStudyModal();
 bindStartEvalModal();
 bindDiscover();
+bindDeleteStudyModal();
 render();
 loadRooms();

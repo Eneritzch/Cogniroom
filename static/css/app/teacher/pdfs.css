@@ -256,7 +256,7 @@
   background: var(--paper-elevated);
   border: 1px solid var(--paper-border);
   border-radius: var(--r-sm);
-  color: var(--ink-muted);
+  color: var(--ink);
   cursor: pointer;
   flex-shrink: 0;
   transition: color var(--dur-fast) var(--ease-out),

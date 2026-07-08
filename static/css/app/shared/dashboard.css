@@ -1739,9 +1739,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--ink-muted);
+  color: var(--ink);
   cursor: pointer;
-  transition: background-color var(--dur-fast) var(--ease-out);
+  transition: background-color var(--dur-fast) var(--ease-out),
+              color var(--dur-fast) var(--ease-out);
 }
 
 .create-room-modal__close:hover {
@@ -2076,12 +2077,16 @@
 .topbar-room[aria-expanded='true'] .topbar-room__caret { transform: rotate(180deg); }
 
 .topbar-room__menu {
-  min-width: 240px;
+  min-width: 260px;
   padding: var(--s-2);
   background: var(--paper-elevated);
   border: 1px solid var(--paper-border);
   border-radius: var(--r-md);
   box-shadow: var(--shadow-md);
+  /* Altura fija: el menú no crece indefinidamente al sumar salas; a partir de
+     su tope aparece scroll. */
+  max-height: min(58vh, 340px);
+  overflow-y: auto;
 }
 
 .topbar-room__menu .dropdown-item {
@@ -2089,12 +2094,14 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--s-3);
-  padding: 8px 12px;
+  padding: 9px 12px;
   border-radius: var(--r-sm);
   font-size: 13px;
-  color: var(--ink);
+  color: var(--ink-muted);
   white-space: normal;
 }
+
+.topbar-room__menu-name { min-width: 0; }
 
 .topbar-room__menu .dropdown-item:hover {
   background: var(--paper-surface);
@@ -2103,14 +2110,21 @@
 
 .topbar-room__menu .dropdown-item[aria-current='true'] {
   background: var(--paper-surface);
-  color: var(--ink);
+  color: var(--sage);
+  font-weight: var(--fw-semibold);
 }
 
 .topbar-room__menu-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
   font-family: var(--font-mono);
-  font-size: 10px;
-  color: var(--ink-muted);
+  font-size: 11px;
+  color: var(--ink-faint);
 }
+
+.topbar-room__menu-meta .icon-svg { color: var(--ink-faint); }
 
 .topbar-room__menu-empty {
   padding: var(--s-3);

@@ -8,6 +8,8 @@ from .views import (
     MyNodesView,
     MyProfileView,
     RoomHeatmapView,
+    RoomOverviewView,
+    RoomsMetricsSummaryView,
     StudentDetailView,
 )
 
@@ -21,6 +23,8 @@ urlpatterns = [
 
 
 room_urlpatterns = [
+    path('metrics/summary/',                   RoomsMetricsSummaryView.as_view(), name='rooms-metrics-summary'),
+    path('<int:room_id>/metrics/overview/',    RoomOverviewView.as_view(), name='room-metrics-overview'),
     path('<int:room_id>/metrics/blind-spots/', BlindSpotsView.as_view(),  name='room-metrics-blind-spots'),
     path('<int:room_id>/metrics/at-risk/',     AtRiskView.as_view(),      name='room-metrics-at-risk'),
     path('<int:room_id>/metrics/heatmap/',     RoomHeatmapView.as_view(), name='room-metrics-heatmap'),

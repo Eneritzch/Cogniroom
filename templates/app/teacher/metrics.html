@@ -20,80 +20,158 @@
 
         <span class="eyebrow">Métricas</span>
         <div class="room-head">
-            <h1 class="room-title" id="room-name">—</h1>
-            <div class="room-meta">
-                <span><span id="room-students">—</span> estudiantes</span>
-                <span class="room-meta__sep">·</span>
-                <span>Lo que cada estudiante realmente sabe por tema</span>
-            </div>
+            <h1 class="room-title" id="metrics-heading">Panel de métricas</h1>
         </div>
 
-        <section class="room-panel" role="region" aria-labelledby="metrics-title">
-            <header class="metrics-hero">
-                <h2 id="metrics-title" class="metrics-hero__title">¿Quién domina qué tema?</h2>
-                <p class="metrics-hero__sub">
-                    Cada celda muestra <strong>cuánto domina realmente</strong> ese tema cada estudiante.
-                    <span class="metrics-hero__legend">
-                        <span class="metrics-hero__chip" data-tone="rust">Necesita refuerzo</span>
-                        <span class="metrics-hero__chip" data-tone="amber">En progreso</span>
-                        <span class="metrics-hero__chip" data-tone="moss">Domina</span>
-                    </span>
-                </p>
-            </header>
+        <nav class="metrics-roombar" aria-label="Elegir sala">
+            <span class="metrics-roombar__label">Sala</span>
+            <button type="button" class="metrics-roomchip" id="metrics-all-btn" data-room-select="all" aria-pressed="true">
+                <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+                    <rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect>
+                </svg>
+                Todas mis salas
+            </button>
+            <select class="form-select metrics-roomselect" id="metrics-room-select" aria-label="Ir a una sala específica">
+                <option value="">Ver una sala…</option>
+            </select>
+        </nav>
 
-            <section class="metrics-quadrants" id="metrics-quadrants" aria-label="Resumen por cuadrante cognitivo"></section>
+        <!-- ===== Vista: todas mis salas ===== -->
+        <section id="view-all" class="metrics-view" hidden aria-label="Resumen de todas las salas">
+            <div class="mkpis" id="mall-kpis"></div>
 
-            <div class="metrics-insights" id="metrics-insights"></div>
+            <div class="mlegend" id="mall-legend" hidden>
+                <span class="mlegend__title">Cada barra es una sala; los colores son los cuadrantes cognitivos:</span>
+                <span class="mlegend__items">
+                    <span class="mlegend__item"><span class="mlegend__dot" data-quadrant="calibrated"></span>Sabe y confía</span>
+                    <span class="mlegend__item"><span class="mlegend__dot" data-quadrant="underconfident"></span>Sabe pero no confía</span>
+                    <span class="mlegend__item"><span class="mlegend__dot" data-quadrant="aware_gap"></span>No sabe y lo reconoce</span>
+                    <span class="mlegend__item"><span class="mlegend__dot" data-quadrant="overconfident"></span>No sabe y confía</span>
+                </span>
+            </div>
 
-            <div class="metrics-controls">
-                <div class="metrics-controls__group" id="metrics-curso-group" hidden>
-                    <span class="metrics-controls__label">Curso</span>
-                    <div class="metrics-controls__chips" id="metrics-curso-chips"></div>
+            <div class="mall-empty" id="mall-empty" hidden></div>
+
+            <div class="mall-charts" id="mall-charts" hidden>
+                <figure class="mchart mchart--donut">
+                    <figcaption class="mchart__head">
+                        <h2 class="mchart__title">Distribución cognitiva global</h2>
+                        <p class="mchart__sub">Cómo se reparten <strong>todos</strong> tus estudiantes evaluados entre los cuatro cuadrantes.</p>
+                    </figcaption>
+                    <div class="donut" id="mall-donut"></div>
+                </figure>
+
+                <figure class="mchart mchart--cols">
+                    <figcaption class="mchart__head">
+                        <h2 class="mchart__title">Calibración por sala</h2>
+                        <p class="mchart__sub">Qué tan alineada está la confianza con el dominio real en cada sala. <strong>Toca una columna</strong> para entrar.</p>
+                    </figcaption>
+                    <div class="mall-cols" id="mall-cols"></div>
+                </figure>
+            </div>
+        </section>
+
+        <!-- ===== Vista: sala en foco ===== -->
+        <section id="view-room" class="metrics-view" hidden aria-label="Métricas de la sala">
+
+            <div class="mkpis" id="mroom-kpis"></div>
+
+            <div class="mroom-empty" id="mroom-empty" hidden></div>
+
+            <div class="mroom-body" id="mroom-body">
+                <div class="mcharts">
+                    <figure class="mchart mchart--map">
+                        <figcaption class="mchart__head">
+                            <h2 class="mchart__title">Mapa de cuadrantes</h2>
+                            <p class="mchart__sub">Cada punto es un estudiante: <strong>lo que cree saber</strong> (eje horizontal) contra <strong>lo que realmente sabe</strong> (eje vertical).</p>
+                        </figcaption>
+                        <div class="quadmap" id="quad-map"></div>
+                    </figure>
+
+                    <figure class="mchart mchart--skills">
+                        <figcaption class="mchart__head">
+                            <h2 class="mchart__title">Habilidades del grupo</h2>
+                            <p class="mchart__sub">En qué tipo de razonamiento acierta más y en cuál menos el grupo.</p>
+                        </figcaption>
+                        <div class="gskills" id="group-skills"></div>
+                    </figure>
                 </div>
 
-                <div class="metrics-controls__group">
-                    <span class="metrics-controls__label">Cuadrante</span>
-                    <div class="metrics-controls__chips">
-                        <button type="button" class="metrics-chip" data-profile-filter="all" aria-pressed="true">Todos</button>
-                        <button type="button" class="metrics-chip" data-profile-filter="overconfident" aria-pressed="false">
-                            <span class="metrics-chip__dot" data-quadrant="overconfident"></span>
-                            No sabe y confía
-                        </button>
-                        <button type="button" class="metrics-chip" data-profile-filter="underconfident" aria-pressed="false">
-                            <span class="metrics-chip__dot" data-quadrant="underconfident"></span>
-                            Sabe pero no confía
-                        </button>
-                        <button type="button" class="metrics-chip" data-profile-filter="aware_gap" aria-pressed="false">
-                            <span class="metrics-chip__dot" data-quadrant="aware_gap"></span>
-                            No sabe y lo reconoce
-                        </button>
-                        <button type="button" class="metrics-chip" data-profile-filter="calibrated" aria-pressed="false">
-                            <span class="metrics-chip__dot" data-quadrant="calibrated"></span>
-                            Sabe y confía
-                        </button>
+                <section class="attend" aria-labelledby="attend-title">
+                    <header class="attend__head">
+                        <h2 id="attend-title" class="attend__title">Atender primero</h2>
+                        <p class="attend__sub">Estudiantes descalibrados, los críticos arriba.</p>
+                    </header>
+                    <ul class="attend__list" id="attend-list"></ul>
+                </section>
+
+                <section class="blindspots" aria-labelledby="blind-title">
+                    <header class="blindspots__head">
+                        <h2 id="blind-title" class="blindspots__title">Puntos ciegos del grupo</h2>
+                        <p class="blindspots__sub">Temas donde el grupo colectivamente se conoce peor (calibración por tema).</p>
+                    </header>
+                    <ul class="blindspots__list" id="blindspots-list"></ul>
+                </section>
+
+                <details class="mheat" id="heatmap-details">
+                    <summary class="mheat__summary">
+                        <span class="mheat__summary-text">
+                            <span class="mheat__summary-title">¿Quién domina qué tema?</span>
+                            <span class="mheat__summary-hint">Matriz de dominio real por estudiante y tema</span>
+                        </span>
+                        <svg class="icon-svg mheat__chev" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </summary>
+
+                    <div class="mheat__body">
+                        <div class="metrics-controls">
+                            <div class="metrics-controls__group" id="metrics-curso-group" hidden>
+                                <span class="metrics-controls__label">Curso</span>
+                                <div class="metrics-controls__chips" id="metrics-curso-chips"></div>
+                            </div>
+
+                            <div class="metrics-controls__group">
+                                <span class="metrics-controls__label">Cuadrante</span>
+                                <div class="metrics-controls__chips">
+                                    <button type="button" class="metrics-chip" data-profile-filter="all" aria-pressed="true">Todos</button>
+                                    <button type="button" class="metrics-chip" data-profile-filter="overconfident" aria-pressed="false">
+                                        <span class="metrics-chip__dot" data-quadrant="overconfident"></span> No sabe y confía
+                                    </button>
+                                    <button type="button" class="metrics-chip" data-profile-filter="underconfident" aria-pressed="false">
+                                        <span class="metrics-chip__dot" data-quadrant="underconfident"></span> Sabe pero no confía
+                                    </button>
+                                    <button type="button" class="metrics-chip" data-profile-filter="aware_gap" aria-pressed="false">
+                                        <span class="metrics-chip__dot" data-quadrant="aware_gap"></span> No sabe y lo reconoce
+                                    </button>
+                                    <button type="button" class="metrics-chip" data-profile-filter="calibrated" aria-pressed="false">
+                                        <span class="metrics-chip__dot" data-quadrant="calibrated"></span> Sabe y confía
+                                    </button>
+                                </div>
+                            </div>
+
+                            <label class="metrics-search" aria-label="Buscar estudiante">
+                                <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+                                    <circle cx="11" cy="11" r="7"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                                <input type="search" id="metrics-search" placeholder="Buscar estudiante…">
+                            </label>
+                        </div>
+
+                        <div class="metrics-meta" id="metrics-meta"></div>
+
+                        <div class="heatmap" id="heatmap">
+                            <div class="heatmap__inner" id="heatmap-inner">
+                                <div class="heatmap__header" id="heatmap-header"></div>
+                                <div id="heatmap-rows"></div>
+                                <div class="heatmap__footer" id="heatmap-footer"></div>
+                            </div>
+                        </div>
+
+                        <nav class="metrics-pager" id="metrics-pager" aria-label="Paginación de estudiantes"></nav>
                     </div>
-                </div>
-
-                <label class="metrics-search" aria-label="Buscar estudiante">
-                    <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
-                        <circle cx="11" cy="11" r="7"></circle>
-                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                    </svg>
-                    <input type="search" id="metrics-search" placeholder="Buscar estudiante…">
-                </label>
+                </details>
             </div>
-
-            <div class="metrics-meta" id="metrics-meta"></div>
-
-            <div class="heatmap" id="heatmap">
-                <div class="heatmap__inner" id="heatmap-inner">
-                    <div class="heatmap__header" id="heatmap-header"></div>
-                    <div id="heatmap-rows"></div>
-                    <div class="heatmap__footer" id="heatmap-footer"></div>
-                </div>
-            </div>
-
-            <nav class="metrics-pager" id="metrics-pager" aria-label="Paginación de estudiantes"></nav>
         </section>
     </main>
 
@@ -113,6 +191,7 @@
 
     {% include 'app/partials/_bootstrap-bundle.html' %}
     <script type="module" src="{% static 'js/app/nav-auth.js' %}?v={{ ASSET_V }}"></script>
+    <script type="module" src="{% static 'js/app/custom-select.js' %}?v={{ ASSET_V }}"></script>
     <script type="module" src="{% static 'js/app/teacher/metrics.js' %}?v={{ ASSET_V }}"></script>
 </body>
 </html>

@@ -134,6 +134,8 @@ export const rooms = {
     list:        () => request('/rooms/'),
     create:      (data) => request('/rooms/', { method: 'POST', body: data }),
     update:      (roomId, data) => request(`/rooms/${roomId}/`, { method: 'PATCH', body: data }),
+    archive:     (roomId, archived = true) => request(`/rooms/${roomId}/`, { method: 'PATCH', body: { archived } }),
+    remove:      (roomId, confirm) => request(`/rooms/${roomId}/`, { method: 'DELETE', body: confirm ? { confirm } : undefined }),
     join:        (access_code, section_id) => request('/rooms/join/', {
         method: 'POST',
         body: section_id != null ? { access_code, section_id } : { access_code },
@@ -152,6 +154,8 @@ export const rooms = {
     blindSpots:  (roomId) => request(`/rooms/${roomId}/metrics/blind-spots/`),
     atRisk:      (roomId) => request(`/rooms/${roomId}/metrics/at-risk/`),
     heatmap:     (roomId) => request(`/rooms/${roomId}/metrics/heatmap/`),
+    metricsSummary: () => request('/rooms/metrics/summary/'),
+    metricsOverview: (roomId, sectionId) => request(`/rooms/${roomId}/metrics/overview/${sectionId && sectionId !== 'all' ? `?section_id=${sectionId}` : ''}`),
 
     // Autoinscripción por institución (alumno) + aprobación (docente).
     // El alumno declara su paralelo (section_id); el docente puede corregirlo al aprobar.
