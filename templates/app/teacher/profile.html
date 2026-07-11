@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="{% static 'css/app/student/profile.css' %}?v={{ ASSET_V }}">
     <link rel="stylesheet" href="{% static 'css/app/teacher/profile.css' %}?v={{ ASSET_V }}">
 </head>
-<body class="profile-page teacher-profile-page dashboard-shell">
+<body class="profile-page teacher-profile-page dashboard-shell clay-theme">
 
     {% include 'app/partials/_app-sidebar.html' with active='profile' %}
 
@@ -20,12 +20,21 @@
 
         {% include 'app/partials/_app-topbar.html' %}
 
-        <span class="eyebrow">Perfil</span>
-        <div class="room-head">
-            <h1 class="room-title">Tu cuenta</h1>
-            <div class="room-meta">
+        <header class="clay-header" data-accent="primary">
+            <div class="clay-header__lead">
+                <span class="clay-header__icon" aria-hidden="true">
+                    <svg class="icon-svg" width="24" height="24" viewBox="0 0 24 24">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                </span>
+                <div class="clay-header__text">
+                    <span class="clay-header__eyebrow">Perfil</span>
+                    <h1 class="clay-header__title">Tu cuenta</h1>
+                    <p class="clay-header__meta">Datos personales, estadísticas y seguridad</p>
+                </div>
             </div>
-        </div>
+        </header>
 
         <section class="profile-hero teacher-profile-hero" aria-label="Resumen de identidad">
             <div class="profile-hero__avatar" id="profile-avatar" aria-hidden="true">—</div>

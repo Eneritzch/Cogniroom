@@ -232,10 +232,10 @@
   width: 100%;
   max-width: 56rem;
   height: 90vh;
-  background: var(--paper-elevated);
-  border: 1px solid var(--paper-border-strong);
-  border-radius: var(--r-lg);
-  box-shadow: var(--shadow-lg, var(--shadow-sm));
+  background: var(--color-bg-elevated);
+  border: 0;
+  border-radius: var(--r-clay-lg);
+  box-shadow: var(--clay-raised), var(--shadow-lg);
   overflow: hidden;
 }
 
@@ -244,11 +244,23 @@
   align-items: center;
   gap: var(--s-3);
   padding: var(--s-3) var(--s-4);
-  background: var(--paper-surface);
-  border-bottom: 1px solid var(--paper-border);
+  background: var(--color-bg-elevated);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
 }
 
-.pdfview__icon { display: inline-flex; color: var(--terracotta); flex-shrink: 0; }
+/* Icono como chip clay petróleo (mismo criterio que .modal-icon). */
+.pdfview__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: var(--r-clay-sm);
+  background: var(--color-secondary);
+  color: var(--color-text-on-accent);
+  box-shadow: var(--clay-tile);
+}
 
 .pdfview__title {
   flex: 1;
@@ -267,25 +279,31 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  background: var(--paper-elevated);
-  border: 1px solid var(--paper-border);
-  border-radius: var(--r-sm);
+  width: 34px;
+  height: 34px;
+  background: var(--color-bg-elevated);
+  border: 0;
+  border-radius: 50%;
+  box-shadow: var(--clay-tile);
   color: var(--ink);
   cursor: pointer;
   flex-shrink: 0;
-  transition: color var(--dur-fast) var(--ease-out),
-              border-color var(--dur-fast) var(--ease-out);
+  transition: transform var(--dur-base) var(--ease-spring),
+              box-shadow var(--dur-base) var(--ease-out),
+              color var(--dur-fast) var(--ease-out);
 }
 
 .pdfview__action:hover,
-.pdfview__close:hover { color: var(--ink); border-color: var(--ink); }
+.pdfview__close:hover {
+  color: var(--ink);
+  transform: translateY(-1px);
+  box-shadow: var(--clay-raised-hover);
+}
 
 .pdfview__body {
   flex: 1;
   min-height: 0;
-  background: var(--paper-surface);
+  background: var(--color-bg);
 }
 
 .pdfview__frame {

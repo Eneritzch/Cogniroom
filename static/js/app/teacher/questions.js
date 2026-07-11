@@ -107,6 +107,7 @@ function formatDate(iso) {
 
 
 const TYPE_LABEL = { single: 'Opción única', true_false: 'Verdadero / Falso', multiple: 'Opción múltiple' };
+const TYPE_SHORT = { single: 'Única', true_false: 'V/F', multiple: 'Múltiple' };
 const TYPE_ORDER = { single: 0, true_false: 1, multiple: 2 };
 
 const BLOOM_LABEL = {
@@ -152,8 +153,8 @@ function renderList() {
         qs.forEach((q) => { const t = qType(q); counts[t] = (counts[t] || 0) + 1; });
         const breakdown = Object.keys(counts)
             .sort((a, b) => TYPE_ORDER[a] - TYPE_ORDER[b])
-            .map((t) => `${counts[t]} ${TYPE_LABEL[t]}`)
-            .join(' · ');
+            .map((t) => `<span class="qsection__typecount" data-type="${t}">${counts[t]} ${TYPE_SHORT[t]}</span>`)
+            .join('');
 
         // El sub-encabezado por tipo solo aporta cuando el tema mezcla tipos;
         // con un solo tipo es ruido (el encabezado del tema ya lo indica).
@@ -728,13 +729,15 @@ function renderManualOptions(values, correct) {
 
     const removable = !fixed && opts.length > MANUAL_MIN_OPTS;
     $box.innerHTML = opts.map((val, i) => `
-        <div class="qmodal__option" data-opt-row="${i}">
-            <input type="${inputType}" name="manual-correct" value="${i}" ${correctSet.has(i) ? 'checked' : ''}
-                   aria-label="Opción ${String.fromCharCode(65 + i)} correcta">
-            <span class="qmodal__option-letter num">${String.fromCharCode(65 + i)}</span>
-            <input class="form-control" type="text" data-opt-input="${i}" required
+        <div class="qopt" data-opt-row="${i}">
+            <label class="qopt__pick">
+                <input class="qopt__mark" type="${inputType}" name="manual-correct" value="${i}" ${correctSet.has(i) ? 'checked' : ''}
+                       aria-label="Marcar opción ${String.fromCharCode(65 + i)} como correcta">
+                <span class="qopt__letter num" aria-hidden="true">${String.fromCharCode(65 + i)}</span>
+            </label>
+            <input class="qopt__input" type="text" data-opt-input="${i}" required
                    placeholder="Opción ${String.fromCharCode(65 + i)}" value="${escapeHTML(val)}" ${fixed ? 'readonly' : ''}>
-            ${removable ? `<button type="button" class="qmodal__option-remove" data-opt-remove="${i}" aria-label="Quitar opción">
+            ${removable ? `<button type="button" class="qopt__remove" data-opt-remove="${i}" aria-label="Quitar opción ${String.fromCharCode(65 + i)}">
                 <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>` : ''}
         </div>

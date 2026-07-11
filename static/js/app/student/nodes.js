@@ -210,7 +210,7 @@ function renderKnowledgeGraph(graphNodes) {
         x: KG_CX, y: KG_CY + 5.6, 'text-anchor': 'middle', 'font-size': 1.5,
         'letter-spacing': 0.3, fill: 'var(--ink-muted)', 'font-family': 'JetBrains Mono',
     });
-    coreLabel.textContent = 'VOS';
+    coreLabel.textContent = 'TÚ';
     $svg.appendChild(coreLabel);
 
     // Nodos: cada uno es un grupo; el float traslada el grupo entero.

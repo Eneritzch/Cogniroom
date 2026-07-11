@@ -474,6 +474,7 @@ async function startSession(roomId, $btn) {
 function renderStudentRooms(items) {
     const $list = document.getElementById('student-rooms-list');
     const $count = document.getElementById('student-rooms-count');
+    if (!$list) return;  // la sección de salas se quitó del dashboard del estudiante
 
     if (!items || items.length === 0) {
         $list.innerHTML = `<p class="empty">No estás inscrito en ninguna sala todavía</p>`;
@@ -546,14 +547,12 @@ function renderStudentCategories(categories) {
         const acc = Math.round((c.accuracy ?? 0) * 100);
         const tone = c.weak ? 'rust' : acc >= 80 ? 'moss' : 'amber';
         const label = CATEGORY_LABEL[c.level] || c.level;
+        const hint = c.weak ? 'Es donde más fallas — dale prioridad.' : `${c.correct} de ${c.total} correctas`;
         return `
-          <div class="student-cat${c.weak ? ' student-cat--weak' : ''}">
-            <div class="student-cat__row">
-              <span class="student-cat__name">${escapeHTML(label)}</span>
-              <span class="student-cat__val num">${acc}%</span>
-            </div>
+          <div class="student-cat${c.weak ? ' student-cat--weak' : ''}" title="${escapeHTML(hint)}">
+            <span class="student-cat__name">${escapeHTML(label)}</span>
             <div class="student-cat__track"><span class="student-cat__fill" data-tone="${tone}" style="width:${acc}%"></span></div>
-            <span class="student-cat__hint">${c.weak ? 'Es donde más fallas — dale prioridad.' : `${c.correct} de ${c.total} correctas`}</span>
+            <span class="student-cat__val num">${acc}%</span>
           </div>`;
     }).join('');
 }

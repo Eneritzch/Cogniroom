@@ -2,6 +2,93 @@
    Consumen exclusivamente tokens de tokens.css (--clay-*, --r-clay-*).
    Base = móvil. Único breakpoint: 768px. Solo Flexbox. */
 
+/* ========================================================================
+   CLAY CLARO — tema NEUTRO MULTICOLOR. Re-declara la paleta base Y los aliases
+   --color-* dentro de .clay-theme. Vive aquí (clay.css se carga en TODAS las
+   páginas vía _styles.html) para que auth y landing también tomen el tema.
+   ======================================================================== */
+
+.clay-theme {
+  --font-sans: 'Nunito', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* Superficies — neutro claro (tipo infografía) */
+  --paper:               #eceef1;
+  --paper-elevated:      #ffffff;
+  --paper-surface:       #f4f6f8;
+  --paper-border:        #e2e6eb;
+  --paper-border-strong: #ccd2da;
+
+  /* Tinta slate neutra */
+  --ink:       #1f2733;
+  --ink-muted: #5b6672;
+  --ink-faint: #98a2ae;
+
+  /* Paleta MONOCROMÁTICA teal (Pantone 630 · 7716 · 3165): cian claro · teal ·
+     petróleo. Coral SOLO para alertas reales. */
+  --sage:            #009490;
+  --sage-strong:     #007571;
+  --sage-soft:       #dcf0ef;
+  --terracotta:        #114b5f;
+  --terracotta-strong: #0b3846;
+  --terracotta-soft:   #dde9ec;
+  --moss:      #12938f;  --moss-soft:  #dcf0ef;
+  --amber:     #0f8a86;  --amber-soft: #dcefee;
+  --rust:      #e0604f;  --rust-soft:  #fbe5e1;
+  --stone:     #62c4d3;  --stone-soft: #e2f4f7;
+
+  /* Re-resolución de la capa semántica contra la paleta clara */
+  --color-bg:            var(--paper);
+  --color-bg-elevated:   var(--paper-elevated);
+  --color-surface:       var(--paper-surface);
+  --color-surface-2:     var(--paper-elevated);
+  --color-border:        var(--paper-border);
+  --color-border-strong: var(--paper-border-strong);
+  --color-text:           var(--ink);
+  --color-text-muted:     var(--ink-muted);
+  --color-text-faint:     var(--ink-faint);
+  --color-text-on-accent: #ffffff;
+  --color-primary:        var(--sage);
+  --color-primary-strong: var(--sage-strong);
+  --color-primary-glow:   var(--sage-soft);
+  --color-secondary:      var(--terracotta);
+  --color-secondary-glow: var(--terracotta-soft);
+  --color-success: var(--moss);  --color-success-bg: var(--moss-soft);
+  --color-warning: var(--amber); --color-warning-bg: var(--amber-soft);
+  --color-danger:  var(--rust);  --color-danger-bg:  var(--rust-soft);
+  --color-info:    var(--stone); --color-info-bg:    var(--stone-soft);
+  --color-calibrated:     var(--color-success); --color-calibrated-bg:     var(--color-success-bg);
+  --color-overconfident:  var(--color-warning); --color-overconfident-bg:  var(--color-warning-bg);
+  --color-underconfident: var(--color-info);    --color-underconfident-bg: var(--color-info-bg);
+  --color-risk-high:   var(--color-danger);
+  --color-risk-medium: var(--color-warning);
+  --color-risk-low:    var(--color-success);
+
+  /* Sombras clásicas suavizadas */
+  --shadow-sm: 0 1px 2px rgba(42,54,72,.10), 0 1px 1px rgba(42,54,72,.08);
+  --shadow-md: 0 6px 18px rgba(42,54,72,.14), 0 2px 6px rgba(42,54,72,.10);
+  --shadow-lg: 0 20px 44px rgba(42,54,72,.18), 0 6px 16px rgba(42,54,72,.12);
+
+  /* Clay invertido: rim blanco arriba, sombra neutra abajo */
+  --clay-highlight: rgba(255,255,255,.9);
+  --clay-raised:
+    inset 0 2px 0 rgba(255,255,255,.9),
+    inset 0 -12px 18px -12px rgba(42,54,72,.15),
+    0 16px 30px -12px rgba(42,54,72,.18),
+    0 6px 12px -6px rgba(42,54,72,.13);
+  --clay-raised-hover:
+    inset 0 2px 0 rgba(255,255,255,.95),
+    inset 0 -14px 22px -12px rgba(42,54,72,.19),
+    0 24px 44px -12px rgba(42,54,72,.24),
+    0 10px 18px -6px rgba(42,54,72,.16);
+  --clay-pressed:
+    inset 0 3px 7px rgba(42,54,72,.16),
+    inset 0 -1.5px 0 rgba(255,255,255,.8);
+  --clay-tile:
+    inset 0 2px 1px rgba(255,255,255,.55),
+    inset 0 -6px 10px -4px rgba(42,54,72,.16),
+    0 10px 18px -6px rgba(42,54,72,.2);
+}
+
 /* En tema claro, la X de Bootstrap NO debe invertirse (base.css la vuelve
    blanca para el tema oscuro; sobre superficies claras quedaría invisible). */
 .clay-theme .btn-close { filter: none; }
@@ -475,6 +562,31 @@
   box-shadow: var(--clay-raised-hover);
 }
 
+/* Chip de icono de cabecera de modal — COMPONENTE REUTILIZABLE.
+   Da identidad de color a cada modal (primary por defecto · secondary =
+   petróleo). Sirve tanto en modales Bootstrap (.modal-header) como en los
+   custom (.create-room-modal__head). Emparéjalo con .modal-heading. */
+.clay-theme .modal-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-width: 0;
+}
+.clay-theme .modal-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-clay-sm);
+  background: var(--color-primary);
+  color: var(--color-text-on-accent);
+  box-shadow: var(--clay-tile);
+}
+.clay-theme .modal-icon[data-accent='secondary'] { background: var(--color-secondary); }
+.clay-theme .modal-icon .icon-svg { width: 20px; height: 20px; }
+
 /* Inputs / textareas / selects hundidos (como el kit .clay-input) */
 .clay-theme .form-control,
 .clay-theme .form-select {
@@ -490,6 +602,23 @@
   border-color: transparent;
   box-shadow: var(--clay-pressed), 0 0 0 2px var(--color-primary);
 }
+
+/* Custom-select (.cselect): el botón hereda el mismo aspecto hundido que los
+   .form-select para que filtros y selects de modal sean coherentes en clay. */
+.clay-theme .cselect__button {
+  border: 0;
+  border-radius: var(--r-clay-sm);
+  background: var(--color-bg);
+  box-shadow: var(--clay-pressed);
+  color: var(--color-text);
+}
+.clay-theme .cselect__button:focus-visible,
+.clay-theme .cselect[data-open="true"] .cselect__button {
+  border: 0;
+  box-shadow: var(--clay-pressed), 0 0 0 2px var(--color-primary);
+}
+.clay-theme .cselect__chevron { color: var(--color-primary); }
+.clay-theme .cselect__option[data-selected="true"] { color: var(--color-primary); }
 
 /* Botones de acción del modal en clay (la primaria pasa a turquesa) */
 .clay-theme .ds-btn { border: 0; border-radius: var(--r-clay-sm); }
@@ -511,3 +640,129 @@
   box-shadow: var(--clay-pressed);
 }
 .clay-theme .ds-btn--danger { box-shadow: var(--clay-tile); }
+
+
+/* ---- Figuras decorativas de fondo (bg-decor) ---------------------------
+   Washes ambientales de color. Vive aquí (clay.css se carga en todas las
+   páginas) para poder usarse también en auth/landing, no solo el dashboard. */
+.clay-theme .bg-decor {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.clay-theme .bg-decor__shape {
+  position: absolute;
+  opacity: 0.16;
+  filter: blur(1px);
+  will-change: transform;
+}
+.clay-theme .bg-decor--calm .bg-decor__shape {
+  opacity: 0.09;
+  filter: blur(60px);
+}
+.clay-theme .bg-decor__shape--circle {
+  width: 190px; height: 190px; border-radius: 50%;
+  top: 9%; left: 6%;
+  background: radial-gradient(circle at 34% 30%, var(--clay-sheen), transparent 58%), var(--color-primary);
+  animation: figure-float 22s ease-in-out infinite alternate;
+}
+.clay-theme .bg-decor__shape--ring {
+  width: 150px; height: 150px; border-radius: 50%;
+  top: 58%; left: 13%;
+  border: 26px solid var(--color-warning);
+  background: transparent;
+  animation: figure-drift 28s ease-in-out infinite alternate;
+}
+.clay-theme .bg-decor__shape--tri {
+  width: 170px; height: 150px;
+  top: 13%; right: 9%;
+  background: var(--color-secondary);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  animation: figure-spin 26s ease-in-out infinite alternate;
+}
+.clay-theme .bg-decor__shape--blob {
+  width: 210px; height: 210px;
+  bottom: 5%; right: 11%;
+  background: radial-gradient(circle at 34% 30%, var(--clay-sheen), transparent 58%), var(--color-danger);
+  border-radius: 42% 58% 63% 37% / 45% 38% 62% 55%;
+  animation: figure-float 32s ease-in-out infinite alternate-reverse;
+}
+.clay-theme .bg-decor__shape--dot {
+  width: 96px; height: 96px; border-radius: 50%;
+  bottom: 24%; left: 47%;
+  background: radial-gradient(circle at 34% 30%, var(--clay-sheen), transparent 58%), var(--color-info);
+  animation: figure-drift 24s ease-in-out infinite alternate;
+}
+
+@keyframes figure-float {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  100% { transform: translate3d(4%, -6%, 0) scale(1.08); }
+}
+@keyframes figure-drift {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  100% { transform: translate3d(-5%, 5%, 0) scale(1.06); }
+}
+@keyframes figure-spin {
+  0%   { transform: translate3d(0, 0, 0) rotate(0deg); }
+  100% { transform: translate3d(3%, 4%, 0) rotate(14deg); }
+}
+
+
+/* ---- Estudiante: tarjetas de stat y chips alineados a clay -------------- */
+.clay-theme .history-stat,
+.clay-theme .profile-stat,
+.clay-theme .review-stat,
+.clay-theme .node-kpi,
+.clay-theme .nodes-hero__metric {
+  border: 0;
+  border-radius: var(--r-clay);
+  background: var(--color-bg-elevated);
+  box-shadow: var(--clay-tile);
+}
+
+.clay-theme .history-chip,
+.clay-theme .my-rooms-chip,
+.clay-theme .review-chip,
+.clay-theme .diagnoses-chip {
+  border-color: transparent;
+  box-shadow: var(--clay-tile);
+}
+.clay-theme .history-chip[aria-pressed='true'],
+.clay-theme .my-rooms-chip[aria-pressed='true'],
+.clay-theme .review-chip[aria-pressed='true'],
+.clay-theme .diagnoses-chip[aria-pressed='true'] {
+  background: var(--color-primary);
+  border-color: transparent;
+  color: var(--color-text-on-accent);
+}
+
+/* CTA de tarjeta de sala ("Empezar evaluación" / acciones) → teal clay */
+.clay-theme .rcard__cta {
+  background: var(--color-primary);
+  color: var(--color-text-on-accent);
+  border: 0;
+  box-shadow: var(--clay-tile);
+  transition: transform var(--dur-base) var(--ease-spring),
+              box-shadow var(--dur-base) var(--ease-out);
+}
+.clay-theme .rcard__cta:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--clay-raised-hover);
+}
+
+/* Diagnóstico IA / Tutor cognitivo (.ai-diagnosis) → superficie clay en todo
+   el app (diagnósticos, sesión del estudiante, modal de métricas). */
+.clay-theme .ai-diagnosis {
+  border: 0;
+  border-radius: var(--r-clay-lg);
+  background: var(--color-bg-elevated);
+  box-shadow: var(--clay-raised);
+}
+.clay-theme .ai-diagnosis__suggestion {
+  border: 0;
+  border-radius: var(--r-clay-sm);
+  background: var(--color-bg);
+  box-shadow: var(--clay-pressed);
+}

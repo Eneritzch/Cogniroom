@@ -122,9 +122,17 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content create-room-modal">
             <header class="create-room-modal__head">
-                <div>
-                    <span class="eyebrow">Nueva sala</span>
-                    <h2 id="createRoomModalTitle" class="create-room-modal__title">Crear sala</h2>
+                <div class="modal-heading">
+                    <span class="modal-icon" aria-hidden="true">
+                        <svg class="icon-svg" width="20" height="20" viewBox="0 0 24 24">
+                            <path d="M3 21V8l9-5 9 5v13"></path>
+                            <path d="M9 21V12h6v9"></path>
+                        </svg>
+                    </span>
+                    <div>
+                        <span class="eyebrow">Nueva sala</span>
+                        <h2 id="createRoomModalTitle" class="create-room-modal__title">Crear sala</h2>
+                    </div>
                 </div>
                 <button type="button" class="create-room-modal__close" data-bs-dismiss="modal" aria-label="Cerrar">
                     <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
@@ -170,9 +178,18 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content create-room-modal">
             <header class="create-room-modal__head">
-                <div>
-                    <span class="eyebrow">Unirme a una sala</span>
-                    <h2 id="joinRoomModalTitle" class="create-room-modal__title">Introduce el código</h2>
+                <div class="modal-heading">
+                    <span class="modal-icon" data-accent="secondary" aria-hidden="true">
+                        <svg class="icon-svg" width="20" height="20" viewBox="0 0 24 24">
+                            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                            <polyline points="10 17 15 12 10 7"></polyline>
+                            <line x1="15" y1="12" x2="3" y2="12"></line>
+                        </svg>
+                    </span>
+                    <div>
+                        <span class="eyebrow">Unirme a una sala</span>
+                        <h2 id="joinRoomModalTitle" class="create-room-modal__title">Introduce el código</h2>
+                    </div>
                 </div>
                 <button type="button" class="create-room-modal__close" data-bs-dismiss="modal" aria-label="Cerrar">
                     <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">

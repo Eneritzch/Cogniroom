@@ -466,9 +466,11 @@
 
 /* Barra selector de sala + su chip */
 .metrics-roombar {
-  border-color: transparent;
+  padding: var(--s-3) var(--s-5);
+  border: 0;
   border-radius: var(--r-clay);
-  box-shadow: var(--clay-raised);
+  background: var(--color-bg-elevated);
+  box-shadow: var(--clay-tile);
 }
 .metrics-roomchip {
   border-color: transparent;
@@ -810,8 +812,8 @@
 
 .metrics-roomchip:hover { color: var(--ink); border-color: var(--paper-border-strong); }
 .metrics-roomchip .icon-svg { color: var(--ink-faint); }
-.metrics-roomchip[aria-pressed='true'] { background: var(--ink); border-color: var(--ink); color: var(--paper-surface); }
-.metrics-roomchip[aria-pressed='true'] .icon-svg { color: var(--paper-surface); }
+.metrics-roomchip[aria-pressed='true'] { background: var(--color-primary); border-color: transparent; color: var(--color-text-on-accent); }
+.metrics-roomchip[aria-pressed='true'] .icon-svg { color: var(--color-text-on-accent); }
 
 
 /* ---- Contenedor de vista ---- */
@@ -836,9 +838,9 @@
   flex-direction: column;
   gap: 3px;
   padding: var(--s-4) var(--s-5);
-  background: var(--paper-elevated);
-  border: 1px solid var(--paper-border);
-  border-radius: var(--r-lg);
+  background: var(--color-bg-elevated);
+  border: 0;
+  border-radius: var(--r-clay);
 }
 
 .mkpi__v {
@@ -859,10 +861,11 @@
   display: flex;
   flex-direction: column;
   gap: var(--s-2);
-  padding: var(--s-3) var(--s-4);
-  background: var(--paper-elevated);
-  border: 1px solid var(--paper-border);
-  border-radius: var(--r-md);
+  padding: var(--s-3) var(--s-5);
+  background: var(--color-bg-elevated);
+  border: 0;
+  border-radius: var(--r-clay-sm);
+  box-shadow: var(--clay-tile);
 }
 .mlegend__title { font-size: 12px; color: var(--ink-muted); }
 .mlegend__items { display: flex; flex-wrap: wrap; gap: var(--s-2) var(--s-4); }
@@ -992,9 +995,9 @@
   flex-direction: column;
   gap: var(--s-4);
   padding: var(--s-5);
-  background: var(--paper-elevated);
-  border: 1px solid var(--paper-border);
-  border-radius: var(--r-lg);
+  background: var(--color-bg-elevated);
+  border: 0;
+  border-radius: var(--r-clay);
   min-width: 0;
 }
 .mchart__head { display: flex; flex-direction: column; gap: 4px; }
@@ -1178,9 +1181,9 @@
 
 /* ---- Heatmap plegable (detalle) ---- */
 .mheat {
-  background: var(--paper-elevated);
-  border: 1px solid var(--paper-border);
-  border-radius: var(--r-lg);
+  background: var(--color-bg-elevated);
+  border: 0;
+  border-radius: var(--r-clay);
   overflow: hidden;
 }
 .mheat__summary {

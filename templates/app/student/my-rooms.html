@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="{% static 'css/app/teacher/rooms.css' %}?v={{ ASSET_V }}">
     <link rel="stylesheet" href="{% static 'css/app/student/my-rooms.css' %}?v={{ ASSET_V }}">
 </head>
-<body class="rooms-page my-rooms-page dashboard-shell">
+<body class="rooms-page my-rooms-page dashboard-shell clay-theme">
 
     {% include 'app/partials/_app-sidebar.html' with active='my-rooms' %}
 
@@ -19,45 +19,48 @@
 
         {% include 'app/partials/_app-topbar.html' %}
 
-        <span class="eyebrow">Mis salas</span>
-        <div class="room-head">
-            <h1 class="room-title">Tus salas</h1>
-            <div class="room-meta">
-                <span><span id="my-rooms-count">—</span> activas</span>
+        <header class="clay-header" data-accent="primary">
+            <div class="clay-header__lead">
+                <span class="clay-header__icon" aria-hidden="true">
+                    <svg class="icon-svg" width="24" height="24" viewBox="0 0 24 24">
+                        <path d="M3 21V8l9-5 9 5v13"></path>
+                        <path d="M9 21V12h6v9"></path>
+                    </svg>
+                </span>
+                <div class="clay-header__text">
+                    <span class="clay-header__eyebrow">Mis salas</span>
+                    <h1 class="clay-header__title">Tus salas</h1>
+                    <p class="clay-header__meta"><span id="my-rooms-count">—</span> activas</p>
+                </div>
             </div>
-        </div>
+            <div class="clay-header__actions">
+                <button type="button" class="clay-btn clay-btn--ghost" id="discover-open" data-bs-toggle="modal" data-bs-target="#discoverModal">
+                    <svg class="icon-svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    Descubrir salas
+                </button>
+                <button type="button" class="clay-btn clay-btn--ghost" data-bs-toggle="modal" data-bs-target="#joinRoomModal">
+                    <svg class="icon-svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <line x1="19" y1="8" x2="19" y2="14"></line>
+                        <line x1="22" y1="11" x2="16" y2="11"></line>
+                    </svg>
+                    Unirme con código
+                </button>
+                <button type="button" class="clay-btn" data-bs-toggle="modal" data-bs-target="#createStudyRoomModal">
+                    <svg class="icon-svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Crear sala de estudio
+                </button>
+            </div>
+        </header>
 
         <section class="room-panel" role="region" aria-label="Tus salas">
-
-            <header class="rooms-toolbar my-rooms-toolbar">
-                <p class="rooms-toolbar__hint">
-                </p>
-                <div class="my-rooms-toolbar__actions">
-                    <button type="button" class="ds-btn ds-btn--ghost" id="discover-open" data-bs-toggle="modal" data-bs-target="#discoverModal">
-                        <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
-                            <circle cx="11" cy="11" r="8"></circle>
-                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                        </svg>
-                        Descubrir salas
-                    </button>
-                    <button type="button" class="ds-btn ds-btn--ghost" data-bs-toggle="modal" data-bs-target="#joinRoomModal">
-                        <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="9" cy="7" r="4"></circle>
-                            <line x1="19" y1="8" x2="19" y2="14"></line>
-                            <line x1="22" y1="11" x2="16" y2="11"></line>
-                        </svg>
-                        Unirme con código
-                    </button>
-                    <button type="button" class="ds-btn ds-btn--ink" data-bs-toggle="modal" data-bs-target="#createStudyRoomModal">
-                        <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
-                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                        </svg>
-                        Crear sala de estudio
-                    </button>
-                </div>
-            </header>
 
             <div class="my-rooms-filter" role="tablist" aria-label="Filtro por tipo de sala">
                 <button type="button" class="my-rooms-chip" data-mode-filter="all" aria-pressed="true">

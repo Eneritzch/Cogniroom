@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Creá tu cuenta en CogniRoom — plataforma de evaluación cognitiva para docentes y estudiantes.">
+    <meta name="description" content="Crea tu cuenta en CogniRoom — plataforma de evaluación cognitiva para docentes y estudiantes.">
     <title>Crear cuenta · CogniRoom</title>
     {% include 'app/partials/_styles.html' %}
     <link rel="stylesheet" href="{% static 'css/app/public/auth.css' %}?v={{ ASSET_V }}">
 </head>
-<body class="auth-page">
+<body class="auth-page clay-theme">
     <main class="auth-shell">
 
         <svg class="auth-grid-backdrop" aria-hidden="true">
@@ -23,6 +23,13 @@
         {% include 'app/partials/_auth-instrument.html' %}
 
         <section class="auth-form-shell" aria-labelledby="register-heading">
+            <div class="bg-decor" aria-hidden="true">
+                <span class="bg-decor__shape bg-decor__shape--circle"></span>
+                <span class="bg-decor__shape bg-decor__shape--ring"></span>
+                <span class="bg-decor__shape bg-decor__shape--tri"></span>
+                <span class="bg-decor__shape bg-decor__shape--blob"></span>
+                <span class="bg-decor__shape bg-decor__shape--dot"></span>
+            </div>
             <div class="auth-form auth-form--wide">
                 <h2 id="register-heading" class="auth-form__title">Crear cuenta</h2>
 
@@ -253,7 +260,7 @@
                 </form>
 
                 <p class="auth-form__switch">
-                    ¿Ya tenés cuenta? <a class="auth-form__switch-link" href="/app/">Entrar →</a>
+                    ¿Ya tienes cuenta? <a class="auth-form__switch-link" href="/app/">Entrar →</a>
                 </p>
             </div>
         </section>

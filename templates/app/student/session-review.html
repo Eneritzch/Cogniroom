@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="{% static 'css/app/teacher/rooms.css' %}?v={{ ASSET_V }}">
     <link rel="stylesheet" href="{% static 'css/app/student/session-review.css' %}?v={{ ASSET_V }}">
 </head>
-<body class="review-page dashboard-shell">
+<body class="review-page dashboard-shell clay-theme">
 
     {% include 'app/partials/_app-sidebar.html' with active='history' %}
 
@@ -26,15 +26,21 @@
             Volver al historial
         </a>
 
-        <span class="eyebrow">Revisión de sesión</span>
-        <div class="room-head">
-            <h1 class="room-title" id="review-room-name">—</h1>
-            <div class="room-meta">
-                <span id="review-date">—</span>
-                <span class="room-meta__sep">·</span>
-                <span id="review-duration">—</span>
+        <header class="clay-header" data-accent="primary">
+            <div class="clay-header__lead">
+                <span class="clay-header__icon" aria-hidden="true">
+                    <svg class="icon-svg" width="24" height="24" viewBox="0 0 24 24">
+                        <path d="M9 11l3 3L22 4"></path>
+                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                    </svg>
+                </span>
+                <div class="clay-header__text">
+                    <span class="clay-header__eyebrow">Revisión de sesión</span>
+                    <h1 class="clay-header__title" id="review-room-name">—</h1>
+                    <p class="clay-header__meta"><span id="review-date">—</span> · <span id="review-duration">—</span></p>
+                </div>
             </div>
-        </div>
+        </header>
 
         <section class="review-stats" aria-label="Resumen de la sesión">
             <article class="review-stat">

@@ -75,50 +75,57 @@
 
 
 /* Habilidades cognitivas del estudiante (aciertos por categoría de pregunta) */
+/* Habilidades cognitivas como gráfica de barras compacta (nombre | barra | %)
+   en un panel clay, para que quepa en la primera plana. */
 .student-cats {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: var(--s-3);
   margin-top: var(--s-4);
+  padding: var(--s-5) var(--s-6);
+  background: var(--color-bg-elevated);
+  border-radius: var(--r-clay);
+  box-shadow: var(--clay-tile);
 }
 
 .student-cat {
-  flex: 1 1 240px;
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: var(--s-4);
-  background: var(--paper-elevated);
-  border: 1px solid var(--paper-border);
-  border-left: 3px solid var(--paper-border-strong);
-  border-radius: var(--r-md);
+  align-items: center;
+  gap: var(--s-4);
 }
 
-.student-cat--weak { border-left-color: var(--rust); }
-
-.student-cat__row {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--s-2);
+.student-cat__name {
+  flex: 0 0 auto;
+  width: 132px;
+  font-size: 13px;
+  font-weight: var(--fw-medium);
+  color: var(--ink);
 }
-
-.student-cat__name { font-size: 13px; font-weight: var(--fw-medium); color: var(--ink); }
-.student-cat__val { font-family: var(--font-mono); font-size: 15px; color: var(--ink); }
+.student-cat--weak .student-cat__name { color: var(--rust); }
 
 .student-cat__track {
-  height: 8px;
-  background: var(--paper-surface);
+  flex: 1;
+  min-width: 0;
+  height: 12px;
+  background: var(--color-bg);
+  box-shadow: var(--clay-pressed);
   border-radius: var(--r-pill);
   overflow: hidden;
 }
 
-.student-cat__fill { display: block; height: 100%; }
+.student-cat__fill { display: block; height: 100%; border-radius: var(--r-pill); }
 .student-cat__fill[data-tone='rust']  { background: var(--rust); }
-.student-cat__fill[data-tone='amber'] { background: var(--amber); }
-.student-cat__fill[data-tone='moss']  { background: var(--moss); }
+.student-cat__fill[data-tone='amber'] { background: var(--stone); }
+.student-cat__fill[data-tone='moss']  { background: var(--sage); }
 
-.student-cat__hint { font-size: 11.5px; color: var(--ink-muted); }
+.student-cat__val {
+  flex: 0 0 auto;
+  width: 46px;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--ink);
+}
 
 .dashboard-section__title {
   display: inline-flex;
@@ -144,8 +151,16 @@
 }
 
 @media (min-width: 768px) {
-  .student-hero { flex-direction: row; gap: var(--s-10); }
+  .student-hero { flex-direction: row; gap: var(--s-8); align-items: stretch; }
+  /* El CTA absorbe el espacio sobrante para que la columna derecha (gráfico +
+     CTA) termine al mismo nivel que el perfil. */
+  .student-hero__side .student-cta { flex: 1; }
 }
+
+/* La gráfica de habilidades vive en la columna derecha del hero; sin margen
+   extra. */
+.student-hero__side .dashboard-section { margin: 0; }
+.student-hero__side { justify-content: flex-start; }
 
 .student-hero__profile {
   display: flex;
@@ -1231,6 +1246,11 @@
   letter-spacing: var(--tracking-tight);
   color: var(--ink);
 }
+
+/* Con el chip de icono, el bloque eyebrow+título va compacto para que el icono
+   quede centrado con el texto (si no, el margin del título lo descentra). */
+.create-room-modal__head .modal-heading .create-room-modal__title { margin-top: 0; }
+.create-room-modal__head .modal-heading .eyebrow { line-height: 1.1; }
 
 .create-room-modal__close {
   background: 0;
@@ -2431,75 +2451,9 @@
 
 /* Figuras dinámicas del fondo (colores del sistema, sutiles, en movimiento).
    Viven en .bg-decor (markup), fijas y detrás del contenido (z-index 0). */
-.clay-theme .bg-decor {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-.clay-theme .bg-decor__shape {
-  position: absolute;
-  opacity: 0.16;
-  filter: blur(1px);
-  will-change: transform;
-}
-
-/* Variante calmada: figuras muy difuminadas y tenues → washes ambientales,
-   sin formas duras que distraigan (para páginas de contenido/listas). */
-.clay-theme .bg-decor--calm .bg-decor__shape {
-  opacity: 0.09;
-  filter: blur(60px);
-}
-.clay-theme .bg-decor__shape--circle {
-  width: 190px; height: 190px; border-radius: 50%;
-  top: 9%; left: 6%;
-  background: radial-gradient(circle at 34% 30%, var(--clay-sheen), transparent 58%), var(--color-primary);
-  animation: figure-float 22s ease-in-out infinite alternate;
-}
-.clay-theme .bg-decor__shape--ring {
-  width: 150px; height: 150px; border-radius: 50%;
-  top: 58%; left: 13%;
-  border: 26px solid var(--color-warning);
-  background: transparent;
-  animation: figure-drift 28s ease-in-out infinite alternate;
-}
-.clay-theme .bg-decor__shape--tri {
-  width: 170px; height: 150px;
-  top: 13%; right: 9%;
-  background: var(--color-secondary);
-  clip-path: polygon(50% 0, 100% 100%, 0 100%);
-  animation: figure-spin 26s ease-in-out infinite alternate;
-}
-.clay-theme .bg-decor__shape--blob {
-  width: 210px; height: 210px;
-  bottom: 5%; right: 11%;
-  background: radial-gradient(circle at 34% 30%, var(--clay-sheen), transparent 58%), var(--color-danger);
-  border-radius: 42% 58% 63% 37% / 45% 38% 62% 55%;
-  animation: figure-float 32s ease-in-out infinite alternate-reverse;
-}
-.clay-theme .bg-decor__shape--dot {
-  width: 96px; height: 96px; border-radius: 50%;
-  bottom: 24%; left: 47%;
-  background: radial-gradient(circle at 34% 30%, var(--clay-sheen), transparent 58%), var(--color-info);
-  animation: figure-drift 24s ease-in-out infinite alternate;
-}
-
-/* El contenido y el sidebar quedan por encima de las figuras */
+/* bg-decor (figuras de fondo) y sus keyframes figure-* se movieron a clay.css
+   para poder reutilizarse en auth/landing. El contenido queda por encima: */
 .clay-theme .dashboard-shell__main { position: relative; z-index: 1; }
-
-@keyframes figure-float {
-  0%   { transform: translate3d(0, 0, 0) scale(1); }
-  100% { transform: translate3d(4%, -6%, 0) scale(1.08); }
-}
-@keyframes figure-drift {
-  0%   { transform: translate3d(0, 0, 0) scale(1); }
-  100% { transform: translate3d(-5%, 5%, 0) scale(1.06); }
-}
-@keyframes figure-spin {
-  0%   { transform: translate3d(0, 0, 0) rotate(0deg); }
-  100% { transform: translate3d(3%, 4%, 0) rotate(14deg); }
-}
 
 /* Destello que recorre la tarjeta destacada */
 .dashboard-page .d-kpi--accent { position: relative; overflow: hidden; }
@@ -2531,99 +2485,72 @@
 }
 
 
-/* ========================================================================
-   CLAY CLARO — tema NEUTRO MULTICOLOR (SOLO dashboard).
-   Re-declara la paleta base Y la capa de aliases --color-* dentro del <body>.
-   Es imprescindible re-declarar los aliases: si solo cambiáramos --paper,
-   los aliases (--color-bg, --color-secondary-glow…) ya están resueltos en
-   :root con los tonos oscuros y se heredan resueltos → el fondo quedaría
-   oscuro. Reversible: borrar este bloque restaura el clay oscuro.
-   ======================================================================== */
+/* La paleta clay-theme (superficies claras + aliases --color-* + sombras clay)
+   se movió a components/clay.css, que se carga en TODAS las páginas vía
+   _styles.html (incluidas auth y landing). No re-declarar aquí. */
 
-/* Fuente clay — cualquier página con .clay-theme */
-.clay-theme {
-  --font-sans: 'Nunito', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+
+/* Fila inferior del dashboard del estudiante: tutor cognitivo + foco en dos
+   columnas de igual altura. */
+.student-duo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-6);
+  margin-top: var(--s-6);
 }
 
-/* Tema clay claro reutilizable (neutro multicolor).
-   Activar en cualquier página añadiendo la clase .clay-theme al <body>. */
-.clay-theme {
-  /* Superficies — neutro claro (tipo infografía) */
-  --paper:               #eceef1;  /* fondo gris muy suave */
-  --paper-elevated:      #ffffff;  /* tarjetas */
-  --paper-surface:       #f4f6f8;  /* chips / superficie secundaria */
-  --paper-border:        #e2e6eb;
-  --paper-border-strong: #ccd2da;
-
-  /* Tinta slate neutra */
-  --ink:       #1f2733;
-  --ink-muted: #5b6672;
-  --ink-faint: #98a2ae;
-
-  /* Acentos recalibrados para leer sobre claro */
-  /* Paleta MONOCROMÁTICA teal (Pantone 630 · 7716 · 3165): cian claro · teal · petróleo.
-     Toda la UI en la familia teal; coral SOLO para alertas reales. */
-  --sage:            #009490;  /* teal 7716 — primario / marca */
-  --sage-strong:     #007571;
-  --sage-soft:       #dcf0ef;
-  --terracotta:        #114b5f;  /* petróleo 3165 — secundario / hero */
-  --terracotta-strong: #0b3846;
-  --terracotta-soft:   #dde9ec;
-  --moss:      #12938f;  --moss-soft:  #dcf0ef;  /* teal (éxito) */
-  --amber:     #0f8a86;  --amber-soft: #dcefee;  /* teal (aviso) */
-  --rust:      #e0604f;  --rust-soft:  #fbe5e1;  /* coral — solo alertas */
-  --stone:     #62c4d3;  --stone-soft: #e2f4f7;  /* cian claro 630 (info) */
-
-  /* Re-resolución de la capa semántica contra la paleta clara */
-  --color-bg:            var(--paper);
-  --color-bg-elevated:   var(--paper-elevated);
-  --color-surface:       var(--paper-surface);
-  --color-surface-2:     var(--paper-elevated);
-  --color-border:        var(--paper-border);
-  --color-border-strong: var(--paper-border-strong);
-  --color-text:           var(--ink);
-  --color-text-muted:     var(--ink-muted);
-  --color-text-faint:     var(--ink-faint);
-  --color-text-on-accent: #ffffff;
-  --color-primary:        var(--sage);
-  --color-primary-strong: var(--sage-strong);
-  --color-primary-glow:   var(--sage-soft);
-  --color-secondary:      var(--terracotta);
-  --color-secondary-glow: var(--terracotta-soft);
-  --color-success: var(--moss);  --color-success-bg: var(--moss-soft);
-  --color-warning: var(--amber); --color-warning-bg: var(--amber-soft);
-  --color-danger:  var(--rust);  --color-danger-bg:  var(--rust-soft);
-  --color-info:    var(--stone); --color-info-bg:    var(--stone-soft);
-  --color-calibrated:     var(--color-success); --color-calibrated-bg:     var(--color-success-bg);
-  --color-overconfident:  var(--color-warning); --color-overconfident-bg:  var(--color-warning-bg);
-  --color-underconfident: var(--color-info);    --color-underconfident-bg: var(--color-info-bg);
-  --color-risk-high:   var(--color-danger);
-  --color-risk-medium: var(--color-warning);
-  --color-risk-low:    var(--color-success);
-
-  /* Sombras clásicas suavizadas (topbar, dropdowns, notif-panel) */
-  --shadow-sm: 0 1px 2px rgba(42,54,72,.10), 0 1px 1px rgba(42,54,72,.08);
-  --shadow-md: 0 6px 18px rgba(42,54,72,.14), 0 2px 6px rgba(42,54,72,.10);
-  --shadow-lg: 0 20px 44px rgba(42,54,72,.18), 0 6px 16px rgba(42,54,72,.12);
-
-  /* Clay invertido: rim blanco arriba, sombra neutra abajo */
-  --clay-highlight: rgba(255,255,255,.9);
-  --clay-raised:
-    inset 0 2px 0 rgba(255,255,255,.9),
-    inset 0 -12px 18px -12px rgba(42,54,72,.15),
-    0 16px 30px -12px rgba(42,54,72,.18),
-    0 6px 12px -6px rgba(42,54,72,.13);
-  --clay-raised-hover:
-    inset 0 2px 0 rgba(255,255,255,.95),
-    inset 0 -14px 22px -12px rgba(42,54,72,.19),
-    0 24px 44px -12px rgba(42,54,72,.24),
-    0 10px 18px -6px rgba(42,54,72,.16);
-  --clay-pressed:
-    inset 0 3px 7px rgba(42,54,72,.16),
-    inset 0 -1.5px 0 rgba(255,255,255,.8);
-  --clay-tile:
-    inset 0 2px 1px rgba(255,255,255,.55),
-    inset 0 -6px 10px -4px rgba(42,54,72,.16),
-    0 10px 18px -6px rgba(42,54,72,.2);
+@media (min-width: 768px) {
+  .student-duo { flex-direction: row; align-items: stretch; }
+  .student-duo > * { flex: 1; min-width: 0; }
 }
 
+
+/* Card de acción rápida (dashboard del estudiante): llena el espacio junto a
+   las habilidades y empuja a la siguiente evaluación. */
+.student-cta {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--s-4) var(--s-5);
+  padding: var(--s-6) var(--s-8);
+  border-radius: var(--r-clay);
+  background:
+    radial-gradient(circle at 8% 0%, var(--color-primary-glow), transparent 60%),
+    var(--color-bg-elevated);
+  box-shadow: var(--clay-raised);
+}
+.student-cta__icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--r-clay-sm);
+  background: var(--color-primary);
+  color: var(--color-text-on-accent);
+  box-shadow: var(--clay-tile);
+}
+.student-cta__text {
+  flex: 1;
+  min-width: 180px;
+}
+.student-cta__title {
+  margin: 2px 0 4px;
+  font-size: 19px;
+  font-weight: var(--fw-bold);
+  color: var(--ink);
+}
+.student-cta__body {
+  margin: 0;
+  font-size: 13px;
+  line-height: var(--lh-snug);
+  color: var(--ink-muted);
+}
+.student-cta__btn {
+  flex: 0 0 auto;
+  margin: 0;
+  white-space: nowrap;
+}

@@ -132,7 +132,7 @@
 }
 
 @media (min-width: 768px) {
-  .landing-hero { padding-block: var(--s-16) var(--s-20); }
+  .landing-hero { padding-block: var(--s-12) var(--s-12); }
 }
 
 .landing-hero__canvas {
@@ -353,8 +353,8 @@
 .landing-pillars__inner {
   display: flex;
   flex-direction: column;
-  gap: var(--s-12);
-  padding-block: var(--s-20);
+  gap: var(--s-8);
+  padding-block: var(--s-12);
 }
 
 .landing-pillars__head {
@@ -438,7 +438,7 @@
 
 
 .landing-how {
-  padding-block: var(--s-20);
+  padding-block: var(--s-12);
 }
 
 .landing-how__head {
@@ -522,7 +522,7 @@
 
 
 .landing-cta {
-  padding-block: 0 var(--s-20);
+  padding-block: 0 var(--s-12);
 }
 
 .landing-cta__inner {
@@ -623,12 +623,16 @@
 
 
 .landing-system-tab {
+  /* Herramienta interna (showcase del sistema de diseño): oculta en el landing
+     público para no romper la coherencia. El modal sigue disponible por si se
+     re-habilita. */
+  display: none;
   position: fixed;
   top: 50%;
   right: 0;
   transform: translateY(-50%);
   z-index: 30;
-  display: inline-flex;
+  align-items: center;
   align-items: center;
   gap: 8px;
   padding: 10px 14px 10px 12px;
@@ -1053,4 +1057,337 @@
   align-items: center;
   justify-content: space-around;
   gap: var(--s-5);
+}
+
+
+/* ========================================================================
+   CLAYMORPHISM — superficies infladas y táctiles para la landing.
+   Convierte las tarjetas educativas (bordes + shadow plano) en superficies
+   clay (sin borde, radios grandes, sombras clay). Reemplaza el look anterior.
+   ======================================================================== */
+
+/* Tarjetas grandes: métrica en vivo, pilares, callout del tutor y CTA final */
+.landing-hero__metric,
+.landing-pillar,
+.landing-how__diagnosis,
+.landing-cta__inner {
+  border: 0;
+  border-radius: var(--r-clay-lg);
+  background: var(--color-bg-elevated);
+  box-shadow: var(--clay-raised);
+}
+
+/* Pasos del flujo "Cómo funciona": tiles clay */
+.landing-how__step {
+  border: 0;
+  border-radius: var(--r-clay);
+  background: var(--color-bg-elevated);
+  box-shadow: var(--clay-tile);
+}
+
+/* Interactivas: se inflan un poco al pasar el puntero */
+.landing-pillar,
+.landing-how__step {
+  transition: transform var(--dur-base) var(--ease-spring),
+              box-shadow var(--dur-base) var(--ease-out);
+}
+.landing-pillar:hover,
+.landing-how__step:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--clay-raised-hover);
+}
+
+/* Diagramas y mini-tarjetas internas → tiles clay hundidos/elevados */
+.landing-pillar__diagram,
+.ds-card {
+  border: 0;
+  border-radius: var(--r-clay-sm);
+  background: var(--color-bg);
+  box-shadow: var(--clay-pressed);
+}
+.node-card {
+  border: 0;
+  border-radius: var(--r-clay-sm);
+  background: var(--color-bg-elevated);
+  box-shadow: var(--clay-tile);
+}
+
+/* Botones del hero: la primaria pasa a botón clay teal, la secundaria a clay claro */
+.landing-btn {
+  border-radius: var(--r-clay-sm);
+  transition: transform var(--dur-base) var(--ease-spring),
+              box-shadow var(--dur-base) var(--ease-out);
+}
+.landing-btn--primary {
+  border: 0;
+  background: var(--color-primary);
+  color: var(--color-text-on-accent);
+  box-shadow: var(--clay-tile);
+}
+.landing-btn--primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--clay-raised-hover);
+}
+.landing-btn--secondary {
+  border: 0;
+  background: var(--color-bg-elevated);
+  color: var(--color-text);
+  box-shadow: var(--clay-tile);
+}
+.landing-btn--secondary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--clay-raised-hover);
+}
+
+/* La barra dual (firma del producto) sobre pista hundida clay */
+.dual-bar__track {
+  border: 0;
+  box-shadow: var(--clay-pressed);
+}
+
+
+/* ---- Reveal al hacer scroll: tarjetas y diagramas entran al verse ------
+   Solo se ocultan si el JS marcó .reveal-on en <html> (si el JS falla, el
+   contenido queda visible). */
+.reveal-on .landing-pillar {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity 0.6s var(--ease-out), transform 0.6s var(--ease-out);
+}
+.reveal-on .landing-pillar.is-visible {
+  opacity: 1;
+  transform: none;
+}
+.reveal-on .landing-pillars__list .landing-pillar:nth-child(2) { transition-delay: 0.1s; }
+.reveal-on .landing-pillars__list .landing-pillar:nth-child(3) { transition-delay: 0.2s; }
+
+/* El mini-diagrama "se dibuja": entra con un pop al revelarse la tarjeta */
+.reveal-on .landing-pillar__diagram {
+  transform: scale(0.92);
+  opacity: 0.4;
+  transition: transform 0.7s var(--ease-spring) 0.18s, opacity 0.5s var(--ease-out) 0.18s;
+}
+.reveal-on .landing-pillar.is-visible .landing-pillar__diagram {
+  transform: scale(1);
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-on .landing-pillar,
+  .reveal-on .landing-pillar__diagram {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+
+/* ---- Figuras clay de color contenidas en las secciones ----------------- */
+.landing-pillars,
+.landing-cta {
+  position: relative;
+  overflow: hidden;
+}
+.landing-pillars .bg-decor,
+.landing-cta .bg-decor {
+  position: absolute;
+}
+.landing-pillars > .landing-container,
+.landing-cta > .landing-container {
+  position: relative;
+  z-index: 1;
+}
+
+
+/* ========================================================================
+   "Cómo funciona" como STEPPER con colores: badge numerado + barra superior
+   de color, secuencia teal → cian → petróleo → coral.
+   ======================================================================== */
+.landing-how__steps {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+  gap: var(--s-4);
+}
+.landing-how__step {
+  position: relative;
+  overflow: hidden;
+  padding-top: var(--s-5);
+}
+
+/* Segmento de color en el borde superior de cada paso */
+.landing-how__step::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+}
+
+/* Badge numerado circular, relleno del color del paso */
+.landing-how__step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: var(--fw-bold);
+  color: var(--color-text-on-accent);
+  box-shadow: var(--clay-tile);
+}
+.landing-how__step-title { margin-top: var(--s-4); }
+
+.landing-how__step:nth-child(1)::before { background: var(--sage); }
+.landing-how__step:nth-child(1) .landing-how__step-num { background: var(--sage); }
+.landing-how__step:nth-child(2)::before { background: var(--stone); }
+.landing-how__step:nth-child(2) .landing-how__step-num { background: var(--stone); color: var(--terracotta); }
+.landing-how__step:nth-child(3)::before { background: var(--terracotta); }
+.landing-how__step:nth-child(3) .landing-how__step-num { background: var(--terracotta); }
+.landing-how__step:nth-child(4)::before { background: var(--rust); }
+.landing-how__step:nth-child(4) .landing-how__step-num { background: var(--rust); }
+
+/* Conector de flujo entre pasos (solo desktop, en el gap a la altura del badge) */
+@media (min-width: 768px) {
+  .landing-how__step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: calc(var(--s-5) + 21px);
+    right: calc(-1 * var(--s-4) / 2 - 4px);
+    width: 8px;
+    height: 8px;
+    border-top: 2px solid var(--paper-border-strong);
+    border-right: 2px solid var(--paper-border-strong);
+    transform: rotate(45deg);
+  }
+}
+
+
+/* ========================================================================
+   Sección EMPEZAR (CTA) — más educativa y bonita: tarjeta clay con degradado
+   de marca + 3 puntos de valor con iconos de color.
+   ======================================================================== */
+.landing-cta__inner {
+  gap: var(--s-8);
+  background:
+    radial-gradient(circle at 8% -10%, var(--color-primary-glow), transparent 42%),
+    radial-gradient(circle at 104% 120%, var(--color-secondary-glow), transparent 46%),
+    var(--color-bg-elevated);
+}
+
+@media (min-width: 768px) {
+  .landing-cta__inner {
+    align-items: center;
+    gap: var(--s-16);
+  }
+  .landing-cta__text { flex: 1.1; }
+  .landing-cta__points { flex: 1; }
+}
+
+.landing-cta__text .landing-btn { margin-top: var(--s-6); }
+
+.landing-cta__points {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+
+.landing-cta__point {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-3);
+  font-size: 13px;
+  line-height: var(--lh-snug);
+  color: var(--ink-muted);
+}
+.landing-cta__point strong {
+  display: block;
+  margin-bottom: 2px;
+  font-weight: var(--fw-semibold);
+  color: var(--ink);
+}
+
+.landing-cta__point-icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  box-shadow: var(--clay-tile);
+  color: var(--color-text-on-accent);
+}
+.landing-cta__point-icon[data-tone='sage']       { background: var(--sage); }
+.landing-cta__point-icon[data-tone='terracotta'] { background: var(--terracotta); }
+.landing-cta__point-icon[data-tone='stone']      { background: var(--stone); color: var(--terracotta); }
+
+
+/* ---- Nav de secciones: scroll suave y desplazamiento bajo el header ----- */
+html { scroll-behavior: smooth; }
+
+.landing-pillars,
+.landing-how,
+.landing-cta {
+  scroll-margin-top: 76px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+
+/* ---- Nav de secciones en CLAYMORPHISM: contenedor hundido + pills; la
+   sección activa es una pastilla teal (mismo lenguaje que el control
+   segmentado y los chips del sistema). ---------------------------------- */
+.landing-nav {
+  gap: 2px;
+  padding: 4px;
+  border-radius: var(--r-pill);
+  background: var(--color-bg);
+  box-shadow: var(--clay-pressed);
+}
+.landing-nav__link {
+  padding: 7px 16px;
+  border-radius: var(--r-pill);
+  font-size: 13px;
+  font-weight: var(--fw-medium);
+  color: var(--ink-muted);
+  transition: color var(--dur-fast) var(--ease-out),
+              background-color var(--dur-base) var(--ease-out),
+              box-shadow var(--dur-base) var(--ease-out);
+}
+.landing-nav__link:hover { color: var(--ink); }
+.landing-nav__link[aria-current='page'] {
+  background: var(--color-primary);
+  color: var(--color-text-on-accent);
+  box-shadow: var(--clay-tile);
+}
+
+
+/* ---- Tutor cognitivo alineado al lenguaje clay (evita card-in-card y el
+   borde plano de la caja de sugerencia). Scopeado al landing. ------------ */
+.landing-how__diagnosis {
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+}
+.landing-how__diagnosis .ai-diagnosis {
+  border: 0;
+  border-radius: var(--r-clay-lg);
+  background: var(--color-bg-elevated);
+  box-shadow: var(--clay-raised);
+}
+.landing-how__diagnosis .ai-diagnosis__suggestion {
+  border: 0;
+  border-radius: var(--r-clay-sm);
+  background: var(--color-bg);
+  box-shadow: var(--clay-pressed);
 }

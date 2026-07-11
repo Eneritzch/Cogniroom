@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="{% static 'css/app/shared/dashboard.css' %}?v={{ ASSET_V }}">
     <link rel="stylesheet" href="{% static 'css/app/student/nodes.css' %}?v={{ ASSET_V }}">
 </head>
-<body class="nodes-page dashboard-shell">
+<body class="nodes-page dashboard-shell clay-theme">
 
     {% include 'app/partials/_app-sidebar.html' with active='nodes' %}
 
@@ -17,10 +17,20 @@
 
         {% include 'app/partials/_app-topbar.html' %}
 
-        <span class="eyebrow">Mi conocimiento</span>
-        <div class="room-head">
-            <h1 class="room-title">Mapa de conocimiento</h1>
-        </div>
+        <header class="clay-header" data-accent="primary">
+            <div class="clay-header__lead">
+                <span class="clay-header__icon" aria-hidden="true">
+                    <svg class="icon-svg" width="24" height="24" viewBox="0 0 24 24">
+                        <circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle>
+                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                    </svg>
+                </span>
+                <div class="clay-header__text">
+                    <span class="clay-header__eyebrow">Mi conocimiento</span>
+                    <h1 class="clay-header__title">Mapa de conocimiento</h1>
+                </div>
+            </div>
+        </header>
 
         <aside class="nodes-insight" id="nodes-insight" hidden>
             <span class="nodes-insight__icon" aria-hidden="true">

@@ -144,8 +144,10 @@
   flex-shrink: 0;
 }
 
-.questions-chip__dot[data-tone='moss']  { background: var(--moss); }
-.questions-chip__dot[data-tone='amber'] { background: var(--amber); }
+/* Estados con hues distintos de la paleta para diferenciarlos de un vistazo:
+   por revisar = cian (en espera) · activas = verde-teal (éxito). */
+.questions-chip__dot[data-tone='active'] { background: var(--moss); }
+.questions-chip__dot[data-tone='review'] { background: var(--stone); }
 
 .questions-chip__count {
   padding: 1px 6px;
@@ -278,7 +280,7 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--s-8);
+  gap: var(--s-5);
 }
 
 /* Sección por nodo */
@@ -288,13 +290,19 @@
   gap: var(--s-3);
 }
 
+/* Cabecera de tema como barra clay: al colapsar un tema es lo único visible,
+   así que debe leer como superficie clay coherente con las cards. */
 .qsection__head {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--s-3);
-  padding-bottom: var(--s-2);
-  border-bottom: 1px solid var(--paper-border-strong);
+  align-items: center;
+  gap: var(--s-2) var(--s-3);
+  padding: var(--s-3) var(--s-5);
+  border-radius: var(--r-clay-sm);
+  background: var(--color-bg-elevated);
+  box-shadow: var(--clay-tile);
+  transition: box-shadow var(--dur-fast) var(--ease-out),
+              transform var(--dur-fast) var(--ease-out);
 }
 
 .qsection__title {
@@ -306,21 +314,68 @@
   font-weight: var(--fw-semibold);
   color: var(--ink);
 }
-.qsection__title .icon-svg { color: var(--sage); }
+.qsection__title .icon-svg { color: var(--terracotta); }
 
 .qsection__count {
   font-size: var(--fs-sm);
   color: var(--ink-muted);
 }
 
+/* Desglose por tipo como chips de conteo compactos (reemplaza el texto largo).
+   Base (móvil): línea propia; desktop: a la derecha del título. */
 .qsection__breakdown {
-  margin-left: auto;
+  flex-basis: 100%;
+  order: 3;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+@media (min-width: 768px) {
+  .qsection__breakdown {
+    flex-basis: auto;
+    order: 0;
+    margin-left: auto;
+    justify-content: flex-end;
+  }
+}
+
+.qsection__typecount {
+  padding: 2px 10px;
+  border-radius: var(--r-pill);
+  font-family: var(--font-mono);
   font-size: var(--fs-xs);
-  color: var(--ink-faint);
+  font-weight: var(--fw-medium);
+  white-space: nowrap;
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
+  color: var(--ink-muted);
+}
+.qsection__typecount[data-type='true_false'] {
+  background: color-mix(in srgb, var(--stone) 20%, transparent);
+  color: color-mix(in srgb, var(--stone) 45%, var(--ink));
+}
+.qsection__typecount[data-type='multiple'] {
+  background: color-mix(in srgb, var(--terracotta) 12%, transparent);
+  color: var(--terracotta);
 }
 
 /* Cabecera de nodo colapsable */
 .qsection__head { cursor: pointer; user-select: none; }
+.qsection__head:hover { transform: translateY(-1px); box-shadow: var(--clay-raised-hover); }
+.qsection--collapsed .qsection__head { box-shadow: var(--clay-tile); }
+
+/* Tinte suave que cicla por sección: al aumentar los temas la lista no queda
+   toda blanca. Tonos muy diluidos de la paleta (teal · petróleo · cian). */
+.questions-list > .qsection:nth-child(3n+1) .qsection__head {
+  background: color-mix(in srgb, var(--sage) 14%, var(--color-bg-elevated));
+}
+.questions-list > .qsection:nth-child(3n+2) .qsection__head {
+  background: color-mix(in srgb, var(--terracotta) 15%, var(--color-bg-elevated));
+}
+.questions-list > .qsection:nth-child(3n+3) .qsection__head {
+  background: color-mix(in srgb, var(--stone) 22%, var(--color-bg-elevated));
+}
 
 .qsection__chevron {
   flex: 0 0 auto;
@@ -338,7 +393,7 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--s-3);
+  gap: var(--s-4);
 }
 
 /* Sub-encabezado por tipo dentro de un tema (solo si mezcla tipos) */
@@ -367,8 +422,8 @@
 .qcard {
   display: flex;
   flex-direction: column;
-  gap: var(--s-3);
-  padding: var(--s-4) var(--s-5);
+  gap: var(--s-4);
+  padding: var(--s-5) var(--s-6);
   background: var(--paper-elevated);
   border: 1px solid var(--paper-border);
   border-left: 3px solid var(--paper-border-strong);
@@ -379,8 +434,9 @@
 
 .qcard:hover { box-shadow: var(--shadow-sm); }
 
-.qcard[data-status='pending']  { border-left-color: var(--amber); }
+.qcard[data-status='pending']  { border-left-color: var(--stone); }
 .qcard[data-status='approved'] { border-left-color: var(--moss); }
+.qcard[data-status='rejected'] { border-left-color: var(--rust); }
 
 
 .qcard__select {
@@ -453,7 +509,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--s-2);
+  gap: var(--s-2) var(--s-3);
 }
 
 .qcard__source {
@@ -470,22 +526,24 @@
 .qcard__source[data-source='ai']     { background: var(--sage); color: var(--paper-surface); }
 .qcard__source[data-source='manual'] { background: var(--paper-surface); color: var(--ink); border: 1px solid var(--paper-border-strong); }
 
+/* Tipo: dato secundario (la sección ya agrupa por tipo) → texto plano y
+   tenue, sin caja, para no competir con los chips de origen y Bloom. */
 .qcard__type {
-  padding: 2px 8px;
-  border-radius: var(--r-xs);
+  padding: 0;
   font-family: var(--font-mono);
   font-size: 9px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   font-weight: var(--fw-medium);
   flex-shrink: 0;
-  background: var(--paper-surface);
-  color: var(--ink-muted);
-  border: 1px solid var(--paper-border-strong);
+  background: transparent;
+  border: 0;
+  color: var(--ink-faint);
 }
-.qcard__type[data-type='multiple']   { color: var(--terracotta); }
-.qcard__type[data-type='true_false'] { color: var(--stone); }
 
+/* Escala Bloom como chips rellenos: orden inferior en cian, orden superior
+   (analizar/evaluar/crear) en petróleo. Codifica la exigencia cognitiva de
+   claro→oscuro y aporta color visible sin repetir el teal de marca. */
 .qcard__bloom {
   padding: 2px 8px;
   border-radius: var(--r-xs);
@@ -493,18 +551,17 @@
   font-size: 9px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-semibold);
   flex-shrink: 0;
-  background: color-mix(in srgb, var(--stone) 16%, transparent);
-  color: var(--stone);
+  background: var(--stone);
+  color: var(--terracotta-strong);
 }
 
-/* Orden cognitivo superior (analizar/evaluar/crear) resaltado en cálido. */
 .qcard__bloom[data-bloom='analizar'],
 .qcard__bloom[data-bloom='evaluar'],
 .qcard__bloom[data-bloom='crear'] {
-  background: color-mix(in srgb, var(--amber) 16%, transparent);
-  color: var(--amber);
+  background: var(--terracotta);
+  color: var(--color-text-on-accent);
 }
 
 .qcard__node,
@@ -517,15 +574,18 @@
 }
 
 .qcard__node {
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
   font-family: var(--font-mono);
   letter-spacing: 0.04em;
-  color: var(--sage);
+  color: var(--terracotta-strong);
+  background: color-mix(in srgb, var(--terracotta) 12%, transparent);
 }
 
 .qcard__pdf {
   font-family: var(--font-mono);
   font-size: 10.5px;
-  color: var(--terracotta);
+  color: var(--stone);
   cursor: help;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -551,19 +611,19 @@
    añadir su propia numeración. */
 .qcard__options {
   list-style: none;
-  margin: var(--s-3) 0 0;
+  margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--s-2);
+  gap: var(--s-3);
 }
 
 .qcard__option {
   display: flex;
   align-items: baseline;
-  gap: var(--s-3);
+  gap: var(--s-4);
   font-size: 14px;
-  line-height: 1.45;
+  line-height: 1.5;
   color: var(--ink);
 }
 
@@ -576,10 +636,17 @@
 
 .qcard__option-text { flex: 1; min-width: 0; }
 
+.qcard__option--correct {
+  padding: 4px 8px;
+  margin: 0 -8px;
+  background: var(--moss-soft);
+  border-radius: var(--r-sm);
+}
+
 .qcard__option--correct .qcard__option-letter,
 .qcard__option--correct .qcard__option-text {
-  color: var(--moss);
-  font-weight: var(--fw-medium);
+  color: var(--sage-strong);
+  font-weight: var(--fw-semibold);
 }
 
 
@@ -588,8 +655,8 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--s-3);
-  padding-top: var(--s-2);
-  border-top: 1px dashed var(--paper-border);
+  padding-top: var(--s-4);
+  border-top: 1px solid color-mix(in srgb, var(--paper-border) 60%, transparent);
 }
 
 .qcard__status {
@@ -603,7 +670,8 @@
 }
 
 .qcard__status[data-status='approved'] { background: var(--moss-soft);  color: var(--moss); }
-.qcard__status[data-status='pending']  { background: var(--amber-soft); color: var(--amber); }
+.qcard__status[data-status='pending']  { background: var(--stone-soft); color: color-mix(in srgb, var(--stone) 45%, var(--ink)); }
+.qcard__status[data-status='rejected'] { background: var(--rust-soft);  color: var(--rust); }
 
 
 .qcard__stat {
@@ -738,6 +806,13 @@
 
 
 /* ---- Modales de creación de preguntas ---- */
+
+/* El chip de icono de cabecera es ahora un componente reutilizable (.modal-icon
+   + .modal-heading en clay.css). La primaria del modal manual pasa a petróleo
+   para coincidir con su icono y su botón disparador; generar se queda en teal. */
+.clay-theme #manual-submit,
+.clay-theme #manual-submit:hover { background: var(--color-secondary); }
+
 .qmodal__row {
   display: flex;
   flex-direction: column;
@@ -786,47 +861,117 @@
   border: 0;
 }
 
-.qmodal__option {
+/* Fila de opción como componente clay: superficie plana en reposo; la
+   opción marcada como correcta se tiñe de turquesa (fondo glow + anillo +
+   chip de letra relleno). El input de texto va plano dentro de la fila para
+   no encadenar 4 pastillas "hundidas" que chocarían entre sí. */
+.qopt {
   display: flex;
   align-items: center;
-  gap: var(--s-3);
+  gap: var(--s-2);
+  padding: var(--s-1) var(--s-2);
+  border-radius: var(--r-clay-sm);
+  background: var(--color-surface);
+  box-shadow: inset 0 0 0 1px var(--color-border);
+  transition: background-color var(--dur-fast) var(--ease-out),
+              box-shadow var(--dur-fast) var(--ease-out);
 }
 
-.qmodal__option-letter {
-  flex: 0 0 24px;
-  text-align: center;
-  font-size: var(--fs-sm);
-  color: var(--ink-muted);
+.qopt:hover { box-shadow: inset 0 0 0 1px var(--color-border-strong); }
+
+.qopt:has(.qopt__mark:checked) {
+  background: var(--color-primary-glow);
+  box-shadow: inset 0 0 0 2px var(--color-primary);
 }
 
-.qmodal__option input[type="radio"],
-.qmodal__option input[type="checkbox"] {
+/* Zona de selección (radio oculto + chip de letra). El chip actúa de
+   indicador: gris en reposo, turquesa relleno cuando es correcta. */
+.qopt__pick {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex: 0 0 auto;
-  width: 18px;
-  height: 18px;
-  accent-color: var(--sage);
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  cursor: pointer;
 }
 
-.qmodal__option .form-control {
+.qopt__mark {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.qopt__letter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-bold);
+  color: var(--ink-muted);
+  background: var(--color-bg-elevated);
+  box-shadow: var(--clay-tile);
+  transition: color var(--dur-fast) var(--ease-out),
+              background-color var(--dur-fast) var(--ease-out);
+}
+
+.qopt:has(.qopt__mark:checked) .qopt__letter {
+  color: var(--color-text-on-accent);
+  background: var(--color-primary);
+}
+
+.qopt__pick:has(.qopt__mark:focus-visible) .qopt__letter {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.qopt__input {
   flex: 1;
   min-width: 0;
+  padding: var(--s-2) var(--s-3);
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: var(--fs-base);
 }
+.qopt__input::placeholder { color: var(--ink-faint); }
+.qopt__input:focus {
+  outline: none;
+  background: var(--color-bg-elevated);
+  box-shadow: inset 0 0 0 1.5px var(--color-primary);
+}
+.qopt__input:read-only { cursor: default; }
 
-.qmodal__option-remove {
+.qopt__remove {
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   padding: 0;
   border: 0;
-  border-radius: var(--r-xs);
+  border-radius: 50%;
   background: transparent;
   color: var(--ink-faint);
   cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-out),
+              background-color var(--dur-fast) var(--ease-out);
 }
-.qmodal__option-remove:hover { color: var(--rust); background: var(--paper-surface); }
+.qopt__remove:hover { color: var(--rust); background: var(--color-danger-bg); }
 
 .qmodal__add-option {
   align-self: flex-start;

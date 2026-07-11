@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="{% static 'css/app/teacher/rooms.css' %}?v={{ ASSET_V }}">
     <link rel="stylesheet" href="{% static 'css/app/student/history.css' %}?v={{ ASSET_V }}">
 </head>
-<body class="history-page dashboard-shell">
+<body class="history-page dashboard-shell clay-theme">
 
     {% include 'app/partials/_app-sidebar.html' with active='history' %}
 
@@ -19,15 +19,21 @@
 
         {% include 'app/partials/_app-topbar.html' %}
 
-        <span class="eyebrow">Historial</span>
-        <div class="room-head">
-            <h1 class="room-title">Tus sesiones</h1>
-            <div class="room-meta">
-                <span><span id="history-count">—</span> sesiones</span>
-                <span class="room-meta__sep">·</span>
-                <span>Ordenadas de la más reciente a la más antigua</span>
+        <header class="clay-header" data-accent="primary">
+            <div class="clay-header__lead">
+                <span class="clay-header__icon" aria-hidden="true">
+                    <svg class="icon-svg" width="24" height="24" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="9"></circle>
+                        <polyline points="12 7 12 12 15 14"></polyline>
+                    </svg>
+                </span>
+                <div class="clay-header__text">
+                    <span class="clay-header__eyebrow">Historial</span>
+                    <h1 class="clay-header__title">Tus sesiones</h1>
+                    <p class="clay-header__meta"><span id="history-count">—</span> sesiones · Ordenadas de la más reciente a la más antigua</p>
+                </div>
             </div>
-        </div>
+        </header>
 
         <section class="room-panel" role="region" aria-label="Historial de sesiones">
 

@@ -1,5 +1,7 @@
+// Lee desde <body> (no :root): el tema clay-theme vive en el body, así el
+// plexus toma los colores claros correctos en vez de los del :root oscuro.
 const cssVar = (name) =>
-    getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    getComputedStyle(document.body).getPropertyValue(name).trim();
 
 const hexToRgbTuple = (hex) => {
     const m = hex.match(/^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i);
@@ -126,3 +128,55 @@ class Plexus {
 document.addEventListener('DOMContentLoaded', () => {
     new Plexus('plexus-canvas');
 });
+
+
+// Reveal educativo: los pilares y sus mini-diagramas entran al hacer scroll.
+// Solo se ocultan si marcamos .reveal-on; si algo falla, el contenido queda visible.
+(() => {
+    const items = document.querySelectorAll('.landing-pillar');
+    if (!items.length) return;
+    document.documentElement.classList.add('reveal-on');
+
+    const revealAll = () => items.forEach((el) => el.classList.add('is-visible'));
+
+    if (!('IntersectionObserver' in window)) { revealAll(); return; }
+
+    const io = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+            if (e.isIntersecting) {
+                e.target.classList.add('is-visible');
+                io.unobserve(e.target);
+            }
+        });
+    }, { threshold: 0.2, rootMargin: '0px 0px -8% 0px' });
+    items.forEach((el) => io.observe(el));
+
+    // Red de seguridad: si algún pilar quedó sin revelar (observer que no dispara
+    // en ciertos navegadores/estados), mostrarlo igual pasados unos segundos.
+    setTimeout(revealAll, 2500);
+})();
+
+
+// Scroll-spy: marca en el nav la sección visible mientras se hace scroll.
+(() => {
+    const links = Array.from(document.querySelectorAll('.landing-nav__link'));
+    if (!links.length || !('IntersectionObserver' in window)) return;
+
+    const byId = new Map();
+    links.forEach((a) => {
+        const sec = document.getElementById(a.getAttribute('href').slice(1));
+        if (sec) byId.set(sec, a);
+    });
+
+    const io = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+            if (e.isIntersecting) {
+                links.forEach((l) => l.removeAttribute('aria-current'));
+                const a = byId.get(e.target);
+                if (a) a.setAttribute('aria-current', 'page');
+            }
+        });
+    }, { rootMargin: '-45% 0px -50% 0px' });
+
+    byId.forEach((_a, sec) => io.observe(sec));
+})();

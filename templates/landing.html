@@ -8,7 +8,7 @@
     {% include 'app/partials/_styles.html' %}
     <link rel="stylesheet" href="{% static 'css/landing.css' %}?v={{ ASSET_V }}">
 </head>
-<body class="landing-body">
+<body class="landing-body clay-theme">
 
     <header class="landing-header">
         <div class="landing-container landing-header__inner">
@@ -20,6 +20,13 @@
                 </svg>
                 CogniRoom
             </a>
+
+            <nav class="landing-nav" aria-label="Secciones">
+                <a class="landing-nav__link" href="#pilares">Metodología</a>
+                <a class="landing-nav__link" href="#como-funciona">Cómo funciona</a>
+                <a class="landing-nav__link" href="#empezar">Empezar</a>
+            </nav>
+
             <a href="/app/" class="landing-header__cta" data-auth-cta>
                 <span class="landing-header__cta-pulse" aria-hidden="true"></span>
                 Entrar
@@ -42,7 +49,7 @@
                     facultades que toman en serio la metacognición.
                 </p>
                 <div class="landing-hero__actions">
-                    <a href="/app/" class="landing-btn landing-btn--primary">
+                    <a href="/app/register/" class="landing-btn landing-btn--primary">
                         Crear cuenta institucional
                         <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
                             <line x1="7" y1="17" x2="17" y2="7"></line>
@@ -142,6 +149,11 @@
     </section>
 
     <section class="landing-pillars" id="pilares">
+        <div class="bg-decor" aria-hidden="true">
+            <span class="bg-decor__shape bg-decor__shape--circle"></span>
+            <span class="bg-decor__shape bg-decor__shape--tri"></span>
+            <span class="bg-decor__shape bg-decor__shape--dot"></span>
+        </div>
         <div class="landing-container landing-pillars__inner">
             <header class="landing-pillars__head">
                 <div class="eyebrow">Tres pilares</div>
@@ -178,8 +190,7 @@
                     </div>
                     <h3 class="landing-pillar__title">Lo que realmente sabe</h3>
                     <p class="landing-pillar__body">
-                        Un modelo probabilístico estima, pregunta a pregunta, qué tanto domina el
-                        estudiante cada tema. No promedios — inferencia.
+                        Un modelo probabilístico infiere, pregunta a pregunta, cuánto domina cada tema. No promedios.
                     </p>
                 </article>
 
@@ -207,8 +218,7 @@
                     </div>
                     <h3 class="landing-pillar__title">Qué tan bien se conoce</h3>
                     <p class="landing-pillar__body">
-                        Compara lo que el estudiante cree saber con su probabilidad real de acierto.
-                        Valores cerca de 1 indican un estudiante que se conoce a sí mismo.
+                        Contrasta su confianza declarada con su acierto real. Cerca de 1: se conoce a sí mismo.
                     </p>
                 </article>
 
@@ -250,8 +260,7 @@
                     </div>
                     <h3 class="landing-pillar__title">Punto ciego del grupo</h3>
                     <p class="landing-pillar__body">
-                        Temas donde el grupo, en promedio, cree saber más de lo que realmente sabe.
-                        La pista más confiable para rediseñar una clase.
+                        Temas donde la clase, en promedio, cree saber más de lo que sabe. La pista para rediseñar.
                     </p>
                 </article>
 
@@ -274,23 +283,23 @@
             <ol class="landing-how__steps">
                 <li class="landing-how__step">
                     <span class="landing-how__step-num">01</span>
-                    <h3 class="landing-how__step-title">Subí material</h3>
-                    <p class="landing-how__step-body">El docente carga los PDFs del curso. CogniRoom extrae los temas de conocimiento y los organiza en un mapa.</p>
+                    <h3 class="landing-how__step-title">Sube material</h3>
+                    <p class="landing-how__step-body">Cargas los PDFs del curso; extraemos y mapeamos los temas.</p>
                 </li>
                 <li class="landing-how__step">
                     <span class="landing-how__step-num">02</span>
-                    <h3 class="landing-how__step-title">Generá preguntas</h3>
-                    <p class="landing-how__step-body">Claude propone ítems calibrados por dificultad. El docente aprueba, edita o descarta antes de publicar.</p>
+                    <h3 class="landing-how__step-title">Genera preguntas</h3>
+                    <p class="landing-how__step-body">Claude propone ítems calibrados; apruebas, editas o descartas.</p>
                 </li>
                 <li class="landing-how__step">
                     <span class="landing-how__step-num">03</span>
                     <h3 class="landing-how__step-title">Estudiantes responden</h3>
-                    <p class="landing-how__step-body">Antes de cada respuesta, el estudiante dice qué tan seguro está (0–100). Esa diferencia es la materia prima del análisis.</p>
+                    <p class="landing-how__step-body">Antes de responder, el estudiante declara su confianza (0–100).</p>
                 </li>
                 <li class="landing-how__step">
                     <span class="landing-how__step-num">04</span>
-                    <h3 class="landing-how__step-title">Intervení a tiempo</h3>
-                    <p class="landing-how__step-body">El docente ve puntos ciegos del grupo y casos individuales. El estudiante recibe una carta del tutor cuando cree saber más de lo que sabe.</p>
+                    <h3 class="landing-how__step-title">Interviene a tiempo</h3>
+                    <p class="landing-how__step-body">Ves puntos ciegos del grupo y casos individuales, a tiempo.</p>
                 </li>
             </ol>
 
@@ -304,8 +313,7 @@
                     </header>
                     <h3 class="ai-diagnosis__title">«Tu confianza en cinética está sistemáticamente por encima de tu desempeño.»</h3>
                     <p class="ai-diagnosis__body">
-                        En las últimas 12 preguntas, declaraste un 78% de confianza promedio sobre cinética química,
-                        pero acertaste el 41%. No es ruido: el patrón es consistente desde el segundo intento.
+                        Declaraste 78% de confianza promedio en cinética, pero acertaste el 41%. El patrón es consistente.
                     </p>
                     <div class="ai-diagnosis__suggestion" role="note">
                         <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
@@ -319,23 +327,67 @@
         </div>
     </section>
 
-    <section class="landing-cta">
+    <section class="landing-cta" id="empezar">
+        <div class="bg-decor" aria-hidden="true">
+            <span class="bg-decor__shape bg-decor__shape--ring"></span>
+            <span class="bg-decor__shape bg-decor__shape--blob"></span>
+        </div>
         <div class="landing-container">
             <div class="landing-cta__inner">
-                <div>
+                <div class="landing-cta__text">
                     <div class="eyebrow">Empezar</div>
                     <h2 class="landing-cta__title display">Tu próxima evaluación puede decirte algo nuevo.</h2>
                     <p class="landing-cta__body">
-                        Activa tu cuenta institucional, importá un curso y publicá una primera sala en menos de 20 minutos.
+                        Activa tu cuenta institucional, importa un curso y publica tu primera sala en menos de 20 minutos.
                     </p>
+                    <a href="/app/register/" class="landing-btn landing-btn--primary">
+                        Crear cuenta institucional
+                        <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                            <line x1="7" y1="17" x2="17" y2="7"></line>
+                            <polyline points="7 7 17 7 17 17"></polyline>
+                        </svg>
+                    </a>
                 </div>
-                <a href="/app/" class="landing-btn landing-btn--primary">
-                    Crear cuenta institucional
-                    <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
-                        <line x1="7" y1="17" x2="17" y2="7"></line>
-                        <polyline points="7 7 17 7 17 17"></polyline>
-                    </svg>
-                </a>
+
+                <ul class="landing-cta__points">
+                    <li class="landing-cta__point">
+                        <span class="landing-cta__point-icon" data-tone="sage" aria-hidden="true">
+                            <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24">
+                                <path d="M12 2a10 10 0 1 0 10 10"></path>
+                                <path d="M22 4 12 14.01l-3-3"></path>
+                            </svg>
+                        </span>
+                        <div>
+                            <strong>Ves el exceso de confianza antes del examen.</strong>
+                            La brecha entre lo que el estudiante cree saber y lo que sabe.
+                        </div>
+                    </li>
+                    <li class="landing-cta__point">
+                        <span class="landing-cta__point-icon" data-tone="terracotta" aria-hidden="true">
+                            <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="9"></circle>
+                                <circle cx="12" cy="12" r="4"></circle>
+                                <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"></circle>
+                            </svg>
+                        </span>
+                        <div>
+                            <strong>Puntos ciegos del grupo, tema por tema.</strong>
+                            Sabes dónde reforzar antes de la próxima clase.
+                        </div>
+                    </li>
+                    <li class="landing-cta__point">
+                        <span class="landing-cta__point-icon" data-tone="stone" aria-hidden="true">
+                            <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                        </span>
+                        <div>
+                            <strong>Un instrumento para el docente, no un reemplazo.</strong>
+                            Tú decides; CogniRoom te da mejor información.
+                        </div>
+                    </li>
+                </ul>
             </div>
         </div>
     </section>

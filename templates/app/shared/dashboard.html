@@ -25,10 +25,20 @@
         {% include 'app/partials/_app-topbar.html' %}
 
         <section class="dashboard-view" data-view="student" hidden aria-labelledby="student-heading">
-            <span class="dashboard-eyebrow eyebrow">Mi perfil</span>
-            <h1 id="student-heading" class="dashboard-title display">
-                <span id="student-greeting"></span>, así te ves esta semana
-            </h1>
+            <header class="clay-header" data-accent="primary">
+                <div class="clay-header__lead">
+                    <span class="clay-header__icon" aria-hidden="true">
+                        <svg class="icon-svg" width="24" height="24" viewBox="0 0 24 24">
+                            <rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+                            <rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+                        </svg>
+                    </span>
+                    <div class="clay-header__text">
+                        <span class="clay-header__eyebrow">Mi perfil</span>
+                        <h1 id="student-heading" class="clay-header__title"><span id="student-greeting"></span>, así te ves esta semana</h1>
+                    </div>
+                </div>
+            </header>
 
             <div class="student-hero">
                 <div class="student-hero__profile">
@@ -62,60 +72,31 @@
                 </div>
 
                 <div class="student-hero__side">
-                    <article class="ai-diagnosis" id="student-diagnosis">
-                        <header class="ai-diagnosis__head eyebrow">
-                            <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
-                                <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path>
-                            </svg>
-                            Tutor cognitivo 
-                        </header>
-                        <h3 class="ai-diagnosis__title" id="student-diag-title">«Aún no hay diagnóstico disponible»</h3>
-                        <div class="ai-diagnosis__meta" id="student-diag-meta" hidden>
-                            <span class="pill" data-risk="" id="student-diag-risk">—</span>
-                            <span class="ai-diagnosis__classification num" id="student-diag-classification">—</span>
-                            <span class="ai-diagnosis__failprob num" id="student-diag-failprob">p=—</span>
+                    <section class="dashboard-section" id="student-categories-section" hidden>
+                        <div class="dashboard-section__head">
+                            <div>
+                                <span class="eyebrow">Tus habilidades cognitivas</span>
+                                <p class="dashboard-section__lead">En qué tipo de preguntas aciertas más y en cuáles menos.</p>
+                            </div>
                         </div>
-                        <div class="ai-diagnosis__suggestion" id="student-diag-suggestion" hidden role="note">
-                            <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                                <polyline points="12 5 19 12 12 19"></polyline>
-                            </svg>
-                            <span id="student-diag-suggestion-text"></span>
-                        </div>
-                    </article>
+                        <div class="student-cats" id="student-categories"></div>
+                    </section>
 
-                    <article class="hero-focus" id="hero-focus" aria-labelledby="hero-focus-title">
-                        <header class="hero-focus__head eyebrow">
-                            <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <circle cx="12" cy="12" r="6"></circle>
-                                <circle cx="12" cy="12" r="2"></circle>
+                    <article class="student-cta">
+                        <span class="student-cta__icon" aria-hidden="true">
+                            <svg class="icon-svg" width="22" height="22" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="9"></circle>
+                                <polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"></polygon>
                             </svg>
-                            Foco recomendado
-                        </header>
-                        <div class="hero-focus__body">
-                            <div class="hero-focus__node">
-                                <span class="hero-focus__node-name" id="hero-focus-name">—</span>
-                                <span class="hero-focus__node-topic" id="hero-focus-topic">—</span>
-                            </div>
-                            <div class="hero-focus__metrics">
-                                <div class="hero-focus__metric">
-                                    <span class="hero-focus__metric-k num" id="hero-focus-mastery">—</span>
-                                    <span class="hero-focus__metric-v">Lo que realmente sabe</span>
-                                </div>
-                                <div class="hero-focus__metric">
-                                    <span class="hero-focus__metric-k num" id="hero-focus-conf">—</span>
-                                    <span class="hero-focus__metric-v">Lo que cree saber</span>
-                                </div>
-                                <div class="hero-focus__metric">
-                                    <span class="hero-focus__metric-k num" data-tone="amber" id="hero-focus-gap">—</span>
-                                    <span class="hero-focus__metric-v">Diferencia (pts)</span>
-                                </div>
-                            </div>
+                        </span>
+                        <div class="student-cta__text">
+                            <span class="eyebrow">Siguiente paso</span>
+                            <h3 class="student-cta__title">¿Listo para practicar?</h3>
+                            <p class="student-cta__body">Una evaluación corta actualiza tu autoconocimiento y tu mapa de conocimiento.</p>
                         </div>
-                        <a href="#" class="hero-focus__cta" id="hero-focus-cta">
-                            Ir al tema
-                            <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <a href="/app/my-rooms/" class="clay-btn student-cta__btn">
+                            Empezar evaluación
+                            <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
                                 <line x1="5" y1="12" x2="19" y2="12"></line>
                                 <polyline points="12 5 19 12 12 19"></polyline>
                             </svg>
@@ -124,27 +105,67 @@
                 </div>
             </div>
 
-            <section class="dashboard-section" id="student-categories-section" hidden>
-                <div class="dashboard-section__head">
-                    <div>
-                        <span class="eyebrow">Tus habilidades cognitivas</span>
-                        <p class="dashboard-section__lead">En qué tipo de preguntas aciertas más y en cuáles menos.</p>
+            <div class="student-duo">
+                <article class="ai-diagnosis" id="student-diagnosis">
+                    <header class="ai-diagnosis__head eyebrow">
+                        <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path>
+                        </svg>
+                        Tutor cognitivo
+                    </header>
+                    <h3 class="ai-diagnosis__title" id="student-diag-title">«Aún no hay diagnóstico disponible»</h3>
+                    <div class="ai-diagnosis__meta" id="student-diag-meta" hidden>
+                        <span class="pill" data-risk="" id="student-diag-risk">—</span>
+                        <span class="ai-diagnosis__classification num" id="student-diag-classification">—</span>
+                        <span class="ai-diagnosis__failprob num" id="student-diag-failprob">p=—</span>
                     </div>
-                </div>
-                <div class="student-cats" id="student-categories"></div>
-            </section>
+                    <div class="ai-diagnosis__suggestion" id="student-diag-suggestion" hidden role="note">
+                        <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                        <span id="student-diag-suggestion-text"></span>
+                    </div>
+                </article>
 
-            <section class="dashboard-section" id="rooms-available">
-                <div class="dashboard-section__head">
-                    <div>
-                        <span class="eyebrow">Tus salas</span>
+                <article class="hero-focus" id="hero-focus" aria-labelledby="hero-focus-title">
+                    <header class="hero-focus__head eyebrow">
+                        <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <circle cx="12" cy="12" r="6"></circle>
+                            <circle cx="12" cy="12" r="2"></circle>
+                        </svg>
+                        Foco recomendado
+                    </header>
+                    <div class="hero-focus__body">
+                        <div class="hero-focus__node">
+                            <span class="hero-focus__node-name" id="hero-focus-name">—</span>
+                            <span class="hero-focus__node-topic" id="hero-focus-topic">—</span>
+                        </div>
+                        <div class="hero-focus__metrics">
+                            <div class="hero-focus__metric">
+                                <span class="hero-focus__metric-k num" id="hero-focus-mastery">—</span>
+                                <span class="hero-focus__metric-v">Lo que realmente sabe</span>
+                            </div>
+                            <div class="hero-focus__metric">
+                                <span class="hero-focus__metric-k num" id="hero-focus-conf">—</span>
+                                <span class="hero-focus__metric-v">Lo que cree saber</span>
+                            </div>
+                            <div class="hero-focus__metric">
+                                <span class="hero-focus__metric-k num" data-tone="amber" id="hero-focus-gap">—</span>
+                                <span class="hero-focus__metric-v">Diferencia (pts)</span>
+                            </div>
+                        </div>
                     </div>
-                    <span class="dashboard-section__head-meta" id="student-rooms-count">—</span>
-                </div>
-                <div class="rooms-list" id="student-rooms-list">
-                    <div class="room-card skeleton" aria-hidden="true" style="height:120px;"></div>
-                </div>
-            </section>
+                    <a href="#" class="hero-focus__cta" id="hero-focus-cta">
+                        Ir al tema
+                        <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </a>
+                </article>
+            </div>
 
             <aside class="student-underconfidence" id="student-underconfidence" hidden>
                 <svg class="icon-svg" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
