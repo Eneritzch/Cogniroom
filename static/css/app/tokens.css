@@ -12,8 +12,9 @@
   --sage:            #5dd5ff;
   --sage-strong:     #7de4ff;
   --sage-soft:       #1d2e4a;
-  --terracotta:      #a78bfa;
-  --terracotta-soft: #2a234a;
+  --terracotta:        #a78bfa;
+  --terracotta-strong: #8b6ff0;
+  --terracotta-soft:   #2a234a;
   --moss:            #34d399;
   --moss-soft:       #0e2e2a;
   --amber:           #fbbf24;
@@ -117,6 +118,31 @@
   --shadow-md:   0 4px 14px rgba(8, 10, 28, 0.6), 0 2px 4px rgba(8, 10, 28, 0.4);
   --shadow-lg:   0 18px 50px rgba(8, 10, 28, 0.7), 0 4px 14px rgba(8, 10, 28, 0.5);
   --shadow-glow: 0 0 0 1px var(--color-primary-glow), 0 8px 32px rgba(93, 213, 255, 0.22);
+
+  /* Claymorphism (tema oscuro): rim de luz arriba + sombra interior abajo + drop suave.
+     Da el aspecto "inflado/plastilina" sin bordes duros. */
+  --clay-highlight: rgba(255, 255, 255, 0.07);
+  --clay-sheen:     rgba(255, 255, 255, 0.32);
+  --r-clay:    22px;
+  --r-clay-lg: 30px;
+  --r-clay-sm: 16px;
+  --clay-raised:
+    inset 0 1.5px 0 var(--clay-highlight),
+    inset 0 -14px 20px -14px rgba(4, 6, 20, 0.8),
+    0 16px 30px -12px rgba(4, 6, 20, 0.6),
+    0 6px 12px -6px rgba(4, 6, 20, 0.5);
+  --clay-raised-hover:
+    inset 0 1.5px 0 var(--clay-highlight),
+    inset 0 -16px 24px -14px rgba(4, 6, 20, 0.85),
+    0 24px 44px -12px rgba(4, 6, 20, 0.68),
+    0 10px 18px -6px rgba(4, 6, 20, 0.55);
+  --clay-pressed:
+    inset 0 3px 8px rgba(4, 6, 20, 0.75),
+    inset 0 -1.5px 0 var(--clay-highlight);
+  --clay-tile:
+    inset 0 2px 1px rgba(255, 255, 255, 0.18),
+    inset 0 -6px 10px -4px rgba(4, 6, 20, 0.35),
+    0 10px 18px -6px rgba(4, 6, 20, 0.5);
 
   --ease-out:    cubic-bezier(0.22, 1, 0.36, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);

@@ -10,7 +10,15 @@
     <link rel="stylesheet" href="{% static 'css/app/teacher/room.css' %}?v={{ ASSET_V }}">
     <link rel="stylesheet" href="{% static 'css/app/teacher/requests.css' %}?v={{ ASSET_V }}">
 </head>
-<body class="room-page dashboard-shell">
+<body class="room-page dashboard-shell clay-theme">
+
+    <div class="bg-decor bg-decor--calm" aria-hidden="true">
+        <span class="bg-decor__shape bg-decor__shape--circle"></span>
+        <span class="bg-decor__shape bg-decor__shape--ring"></span>
+        <span class="bg-decor__shape bg-decor__shape--tri"></span>
+        <span class="bg-decor__shape bg-decor__shape--blob"></span>
+        <span class="bg-decor__shape bg-decor__shape--dot"></span>
+    </div>
 
     {% include 'app/partials/_app-sidebar.html' with active='requests' %}
 
@@ -18,15 +26,21 @@
 
         {% include 'app/partials/_app-topbar.html' %}
 
-        <span class="eyebrow">Solicitudes</span>
-        <div class="room-head">
-            <h1 class="room-title">Solicitudes de ingreso</h1>
-            <div class="room-meta">
-                <span><span id="requests-count">—</span> pendientes</span>
-                <span class="room-meta__sep">·</span>
-                <span>Alumnos de tu institución que pidieron unirse a tus salas</span>
+        <header class="clay-header" data-accent="warning">
+            <div class="clay-header__lead">
+                <span class="clay-header__icon" aria-hidden="true">
+                    <svg class="icon-svg" width="24" height="24" viewBox="0 0 24 24">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <polyline points="17 11 19 13 23 9"></polyline>
+                    </svg>
+                </span>
+                <div class="clay-header__text">
+                    <span class="clay-header__eyebrow">Solicitudes</span>
+                    <h1 class="clay-header__title">Solicitudes de ingreso</h1>
+                </div>
             </div>
-        </div>
+        </header>
 
         <section class="room-panel" role="region" aria-label="Solicitudes de ingreso">
             <ul class="join-requests__list" id="join-requests-list" aria-live="polite"></ul>

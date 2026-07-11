@@ -161,6 +161,61 @@
 .students-search input::placeholder { color: var(--ink-faint); }
 
 
+/* ======================================================================
+   CLAY — migración de Estudiantes al tema .clay-theme (relieve por tokens).
+   ====================================================================== */
+
+/* Filtros sin fondo blanco: flotan sobre la página, pegados a la cabecera */
+.room-page .room-panel { margin-top: var(--s-2); }
+.students-controls {
+  margin-top: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+.student-card {
+  border-radius: var(--r-clay);
+  box-shadow: var(--clay-raised);
+  transition: transform var(--dur-base) var(--ease-spring),
+              box-shadow var(--dur-base) var(--ease-out);
+}
+.student-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--clay-raised-hover);
+}
+
+/* Chips de filtro: tiles clay; activo en el índigo del módulo */
+.students-chip {
+  border-color: transparent;
+  border-radius: var(--r-pill);
+  box-shadow: var(--clay-tile);
+}
+.students-chip[aria-pressed='true'] {
+  background: var(--color-success);
+  border-color: transparent;
+  color: var(--color-text-on-accent);
+}
+.students-chip[aria-pressed='true'] .students-chip__count {
+  background: color-mix(in srgb, var(--color-text-on-accent) 22%, transparent);
+  color: var(--color-text-on-accent);
+}
+
+/* Búsqueda como campo hundido */
+.students-search {
+  border-color: transparent;
+  border-radius: var(--r-clay-sm);
+  background: var(--color-bg);
+  box-shadow: var(--clay-pressed);
+}
+.students-search:focus-within {
+  background: var(--color-bg);
+  box-shadow: var(--clay-pressed), 0 0 0 2px var(--color-primary);
+}
+
+
 .students-meta {
   margin-top: var(--s-3);
   font-family: var(--font-mono);
@@ -320,8 +375,9 @@
 
 .cmpbar__track {
   flex: 1;
-  height: 7px;
-  background: var(--paper-surface);
+  height: 8px;
+  background: var(--color-bg);
+  box-shadow: var(--clay-pressed);
   border-radius: var(--r-pill);
   overflow: hidden;
   min-width: 0;
@@ -509,70 +565,91 @@
   display: flex;
   align-items: center;
   gap: var(--s-3);
-  padding: var(--s-3) var(--s-4);
-  background: var(--paper-surface);
-  border: 1px solid var(--paper-border);
-  border-radius: var(--r-md);
+  padding: var(--s-4);
+  background: var(--color-success-bg);
+  border: 0;
+  border-left: 3px solid var(--color-success);
+  border-radius: var(--r-clay);
+  box-shadow: var(--clay-raised);
 }
 
 .sections-admin__info {
   display: flex;
-  align-items: baseline;
-  gap: var(--s-2);
+  align-items: center;
+  gap: var(--s-3);
   flex: 1;
   min-width: 0;
   flex-wrap: wrap;
 }
 
+/* Código como badge índigo (resalta) */
 .sections-admin__code {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: var(--r-clay-sm);
+  background: var(--color-success);
+  color: var(--color-text-on-accent);
+  font-family: var(--font-mono);
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
-  color: var(--sage-strong);
+  font-weight: var(--fw-bold);
+  box-shadow: var(--clay-tile);
 }
 
 .sections-admin__name {
-  font-size: var(--fs-sm);
-  color: var(--ink);
+  font-size: var(--fs-base);
+  font-weight: var(--fw-semibold);
+  color: var(--color-text);
 }
 
 .sections-admin__sched {
   font-size: var(--fs-xs);
-  color: var(--ink-muted);
+  color: var(--color-text-muted);
 }
 
 .sections-admin__count {
   flex: 0 0 auto;
+  padding: 4px 10px;
+  border-radius: var(--r-pill);
+  background: var(--color-surface);
+  font-family: var(--font-mono);
   font-size: var(--fs-xs);
-  color: var(--ink-muted);
+  font-weight: var(--fw-semibold);
+  color: var(--color-text-muted);
 }
 
 .sections-admin__row-actions {
   display: flex;
-  gap: 4px;
+  gap: 6px;
 }
 
 .sections-admin__btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  background: transparent;
-  border: 1px solid var(--paper-border);
-  border-radius: var(--r-sm);
-  color: var(--ink-muted);
+  width: 34px;
+  height: 34px;
+  background: var(--color-bg-elevated);
+  border: 0;
+  border-radius: var(--r-clay-sm);
+  color: var(--color-text-muted);
+  box-shadow: var(--clay-tile);
   cursor: pointer;
+  transition: transform var(--dur-base) var(--ease-spring),
+              box-shadow var(--dur-base) var(--ease-out),
+              color var(--dur-fast) var(--ease-out);
 }
 
 .sections-admin__btn:hover {
-  color: var(--ink);
-  background: var(--paper-elevated);
+  transform: translateY(-2px);
+  box-shadow: var(--clay-raised-hover);
+  color: var(--color-primary);
 }
 
-.sections-admin__btn--danger:hover {
-  color: var(--rust);
-  border-color: var(--rust);
-}
+.sections-admin__btn--danger:hover { color: var(--color-danger); }
 
 .sections-admin__form {
   padding-top: var(--s-4);
@@ -609,11 +686,20 @@
 
 /* Encabezado del modal: identidad + lectura en lenguaje claro + comparación */
 .sd-hero {
-  padding: var(--s-4);
-  background: var(--paper-surface);
-  border: 1px solid var(--paper-border);
+  padding: var(--s-5);
+  background: var(--color-bg-elevated);
+  border: 0;
   border-left: 3px solid var(--paper-border-strong);
-  border-radius: var(--r-md);
+  border-radius: var(--r-clay);
+  box-shadow: var(--clay-raised);
+}
+
+/* Superficies clay del detalle del estudiante */
+.sd-stat,
+.sd-node {
+  border-color: transparent;
+  border-radius: var(--r-clay);
+  box-shadow: var(--clay-raised);
 }
 
 .sd-hero[data-profile='overconfident']  { border-left-color: var(--amber); }
@@ -780,45 +866,69 @@
 }
 
 .student-detail__diag {
-  padding: var(--s-4);
-  margin-bottom: var(--s-3);
-  background: var(--paper-surface);
-  border: 1px solid var(--paper-border);
-  border-radius: var(--r-md);
+  position: relative;
+  overflow: hidden;
+  padding: var(--s-5);
+  margin-bottom: var(--s-4);
+  background: var(--color-bg-elevated);
+  border: 0;
+  border-left: 3px solid var(--color-secondary);
+  border-radius: var(--r-clay);
+  box-shadow: var(--clay-raised);
 }
+/* Glow IA sutil en la esquina */
+.student-detail__diag::before {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  top: -55%;
+  right: -8%;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--color-secondary) 16%, transparent), transparent 68%);
+  pointer-events: none;
+}
+.student-detail__diag > * { position: relative; z-index: 1; }
 
 .student-detail__diag-head {
   display: flex;
   align-items: center;
   gap: var(--s-2);
   flex-wrap: wrap;
-  margin-bottom: var(--s-2);
+  margin-bottom: var(--s-3);
 }
 
 .student-detail__diag-node {
   font-size: var(--fs-xs);
-  color: var(--ink-muted);
+  color: var(--color-text-muted);
 }
 
 .student-detail__diag-date {
   margin-left: auto;
+  font-family: var(--font-mono);
   font-size: var(--fs-xs);
-  color: var(--ink-faint);
+  color: var(--color-text-faint);
 }
 
 .student-detail__diag-text {
   margin: 0;
   font-size: var(--fs-sm);
-  color: var(--ink);
+  color: var(--color-text);
   line-height: var(--lh-base);
 }
 
+/* Recomendación como callout destacado */
 .student-detail__diag-rec {
-  margin: var(--s-2) 0 0;
+  margin: var(--s-4) 0 0;
+  padding: var(--s-3) var(--s-4);
   font-size: var(--fs-sm);
-  color: var(--ink-muted);
+  color: var(--color-text);
   line-height: var(--lh-base);
+  background: var(--color-secondary-glow);
+  border-radius: var(--r-clay-sm);
 }
+.student-detail__diag-rec strong { color: var(--color-secondary); }
 
 .pill--sm {
   padding: 2px 8px;
@@ -869,6 +979,38 @@
 }
 
 .enroll__search input::placeholder { color: var(--ink-faint); }
+
+
+/* ===== Clay: filas y controles de los modales de Estudiantes ===== */
+.enroll__row {
+  border-color: transparent;
+  border-radius: var(--r-clay-sm);
+  box-shadow: var(--clay-raised);
+  background: var(--color-bg-elevated);
+}
+.enroll__search {
+  border-color: transparent;
+  border-radius: var(--r-clay-sm);
+  background: var(--color-bg);
+  box-shadow: var(--clay-pressed);
+}
+.enroll__search:focus-within {
+  background: var(--color-bg);
+  box-shadow: var(--clay-pressed), 0 0 0 2px var(--color-primary);
+}
+.enroll__add {
+  border: 0;
+  border-radius: var(--r-clay-sm);
+  background: var(--color-primary);
+  color: var(--color-text-on-accent);
+  box-shadow: var(--clay-tile);
+  transition: transform var(--dur-base) var(--ease-spring),
+              box-shadow var(--dur-base) var(--ease-out);
+}
+.enroll__add:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--clay-raised-hover);
+}
 
 .enroll__results {
   list-style: none;

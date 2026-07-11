@@ -1,33 +1,7 @@
-.rooms-toolbar {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-3);
-  margin-top: var(--s-5);
-  padding: var(--s-4) var(--s-5);
-  background: var(--paper-elevated);
-  border: 1px solid var(--paper-border);
-  border-radius: var(--r-lg);
-}
-
-@media (min-width: 768px) {
-  .rooms-toolbar {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
-}
-
-.rooms-toolbar__hint {
-  margin: 0;
-  font-size: 13px;
-  color: var(--ink-muted);
-  line-height: 1.45;
-}
-
-.rooms-toolbar__hint strong {
-  color: var(--ink);
-  font-weight: var(--fw-semibold);
-}
+/* Espacio entre la cabecera y las cards */
+.rooms-page .room-panel { margin-top: var(--s-2); }
+.rooms-page .rooms-meta { margin-top: var(--s-2); margin-bottom: 0; }
+.rooms-page .rooms-list { margin-top: var(--s-3); }
 
 
 .rooms-meta {
@@ -686,4 +660,58 @@
   padding: var(--s-3) var(--s-5);
   border-top: 1px solid var(--paper-border);
   background: var(--paper-surface);
+}
+
+
+/* ======================================================================
+   CLAY — migración de Salas al tema .clay-theme.
+   Las superficies ya heredan la paleta clara por tokens; aquí solo se
+   les da el relieve claymorphism (radios + sombras) desde tokens.
+   ====================================================================== */
+
+.rooms-page .rooms-empty,
+.rooms-page .room-delete {
+  border-color: transparent;
+  border-radius: var(--r-clay);
+  box-shadow: var(--clay-raised);
+}
+
+.rooms-page .rcard {
+  border-color: transparent;
+  border-radius: var(--r-clay);
+  box-shadow: var(--clay-raised);
+  transition: transform var(--dur-base) var(--ease-spring),
+              box-shadow var(--dur-base) var(--ease-out);
+}
+.rooms-page .rcard:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--clay-raised-hover);
+}
+
+/* Título de sala más "educativo": Nunito bold, mayor presencia */
+.rooms-page .rcard__name {
+  font-size: var(--fs-md);
+  font-weight: var(--fw-bold);
+  letter-spacing: -0.01em;
+}
+
+/* El código de la sala como "well" hundido */
+.rooms-page .rcard__code {
+  background: var(--color-bg);
+  box-shadow: var(--clay-pressed);
+}
+
+/* Paginador con tiles clay */
+.rooms-page .rooms-pager__btn {
+  border-color: transparent;
+  border-radius: var(--r-clay-sm);
+  box-shadow: var(--clay-tile);
+}
+.rooms-page .rooms-pager__btn:hover:not(:disabled) {
+  background: var(--color-bg-elevated);
+  box-shadow: var(--clay-raised-hover);
+}
+.rooms-page .rooms-pager__btn[aria-current='page'] {
+  background: var(--color-primary);
+  color: var(--color-text-on-accent);
 }

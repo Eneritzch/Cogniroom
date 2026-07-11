@@ -683,6 +683,7 @@ async function bootstrapTeacher(user) {
     renderKpis(TEACHER_ROOMS);
     renderRooms(TEACHER_ROOMS);
     renderRoomsCompare(TEACHER_ROOMS);
+    renderCalibrationBars(TEACHER_ROOMS);
 
     if (!TEACHER_ROOMS.length) return;
 
@@ -804,6 +805,9 @@ function renderDonut(counts) {
     const set = (sel, len, offset) => {
         const el = document.querySelector(sel);
         if (!el) return;
+        // Con extremos redondeados, un segmento de longitud 0 se dibuja como un
+        // puntito; lo ocultamos para que el estado vacío/parcial se vea limpio.
+        el.style.visibility = len > 0 ? 'visible' : 'hidden';
         el.style.strokeDasharray  = `${len.toFixed(2)} ${(C - len + 1).toFixed(2)}`;
         el.style.strokeDashoffset = `${(-offset).toFixed(2)}`;
     };
@@ -824,7 +828,7 @@ function renderDonut(counts) {
         set('.d-donut__seg--over', 0, 0);
         set('.d-donut__seg--und',  0, 0);
         set('.d-donut__seg--aware', 0, 0);
-        if ($pct) $pct.textContent = '—';
+        if ($pct) { $pct.textContent = '—'; $pct.removeAttribute('data-tone'); }
         if ($label) $label.textContent = (counts.nodata || 0) > 0 ? 'Sin evaluaciones' : 'Sin estudiantes';
         return;
     }
@@ -844,7 +848,10 @@ function renderDonut(counts) {
     // y "no sabe y lo reconoce" (aware) — ambos son "bien calibrados". Solo están
     // descalibrados los que confían de más (over) o de menos (und).
     const calPct = Math.round(((counts.cal + counts.aware) / total) * 100);
-    if ($pct) $pct.textContent = `${calPct}%`;
+    if ($pct) {
+        $pct.textContent = `${calPct}%`;
+        $pct.setAttribute('data-tone', calPct >= 60 ? 'moss' : calPct >= 35 ? 'amber' : 'rust');
+    }
     if ($label) $label.textContent = 'Bien calibrados';
 }
 
@@ -877,6 +884,54 @@ function renderDotMatrix(counts) {
 
 
 const _roomIcon = '<svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24"><path d="M3 21V8l9-5 9 5v13"></path><path d="M9 21V12h6v9"></path></svg>';
+
+
+function renderCalibrationBars(list) {
+    const $el = document.getElementById('calibration-bars');
+    if (!$el) return;
+
+    const rooms = (list || []).filter((r) => r.is_active !== false);
+    if (!rooms.length) {
+        $el.innerHTML = '<li class="empty" style="margin:0;">Aún no hay salas con datos de calibración.</li>';
+        return;
+    }
+
+    // Ordenadas de mejor a peor calibración. Se reparten el ancho (responsive).
+    const top = [...rooms].sort((a, b) => (b.icc || 0) - (a.icc || 0));
+    $el.innerHTML = top.map((r) => {
+        const icc = r.icc || 0;
+        const pct = Math.round(icc * 100);
+        const tone = icc >= 0.65 ? 'moss' : icc >= 0.5 ? 'amber' : 'rust';
+        const name = escapeHTML(String(r.name).split(' · ')[0]);
+        const full = escapeHTML(r.name);
+        const atRisk = r.at_risk_count || 0;
+        const riskTxt = `${atRisk} ${atRisk === 1 ? 'estudiante' : 'estudiantes'} por intervenir`;
+        let desc;
+        if (pct === 0) {
+            desc = 'Aún sin evaluaciones para medir la calibración.';
+        } else if (icc >= 0.65) {
+            desc = 'El grupo se conoce bien: lo que creen saber coincide con lo que realmente saben.';
+        } else if (icc >= 0.5) {
+            desc = 'Calibración media: hay una brecha notable entre lo que creen y lo que saben.';
+        } else {
+            desc = 'Baja calibración: la mayoría cree saber bastante más (o menos) de lo que realmente sabe.';
+        }
+        return `
+      <li class="calbar">
+        <span class="calbar__tip">
+          <span class="calbar__tip-name">${full}</span>
+          <span class="calbar__tip-pct" data-tone="${tone}">${pct}% de calibración</span>
+          <span class="calbar__tip-desc">${desc}</span>
+          <span class="calbar__tip-risk" data-has-risk="${atRisk > 0}">${riskTxt}</span>
+        </span>
+        <span class="calbar__val num">${pct}%</span>
+        <span class="calbar__track">
+          <span class="calbar__fill" data-tone="${tone}" style="height:${pct}%"></span>
+        </span>
+        <span class="calbar__name" title="${full}">${name}</span>
+      </li>`;
+    }).join('');
+}
 
 
 function renderRoomsCompare(list) {

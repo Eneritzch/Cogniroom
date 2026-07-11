@@ -42,6 +42,22 @@
 }
 
 
+/* ===== Clay — migración de PDFs al tema .clay-theme ===== */
+.room-page .room-panel { margin-top: var(--s-2); }
+.pdf-item {
+  border-radius: var(--r-clay);
+  box-shadow: var(--clay-raised);
+}
+.pdf-item:hover {
+  box-shadow: var(--clay-raised-hover);
+  transform: translateY(-3px);
+}
+.pdfview {
+  border-radius: var(--r-clay-lg);
+  box-shadow: var(--clay-raised), var(--shadow-lg);
+}
+
+
 .pdfs-list {
   margin: var(--s-5) 0 0;
   padding: 0;

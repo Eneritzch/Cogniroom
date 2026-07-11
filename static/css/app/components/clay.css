@@ -1,0 +1,513 @@
+/* Claymorphism — superficies y componentes reutilizables.
+   Consumen exclusivamente tokens de tokens.css (--clay-*, --r-clay-*).
+   Base = móvil. Único breakpoint: 768px. Solo Flexbox. */
+
+/* En tema claro, la X de Bootstrap NO debe invertirse (base.css la vuelve
+   blanca para el tema oscuro; sobre superficies claras quedaría invisible). */
+.clay-theme .btn-close { filter: none; }
+
+
+/* ---- Superficie base ---------------------------------------------------- */
+
+.clay {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-clay);
+  box-shadow: var(--clay-raised);
+}
+
+.clay--lg { border-radius: var(--r-clay-lg); }
+.clay--sm { border-radius: var(--r-clay-sm); }
+
+/* Interactiva: se "infla" un poco al pasar el puntero */
+.clay--interactive {
+  transition: transform var(--dur-base) var(--ease-spring),
+              box-shadow var(--dur-base) var(--ease-out);
+}
+.clay--interactive:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--clay-raised-hover);
+}
+
+/* Hundida: campos, wells, segmentos activos */
+.clay--pressed {
+  background: var(--color-bg);
+  border-color: transparent;
+  box-shadow: var(--clay-pressed);
+}
+
+/* ---- Tile de icono (los cuadrados pastel de la referencia) -------------- */
+
+.clay-tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 20px;
+  color: var(--color-text-on-accent);
+  box-shadow: var(--clay-tile);
+  flex-shrink: 0;
+}
+
+.clay-tile svg { width: 24px; height: 24px; }
+
+.clay-tile[data-tone='primary']   { background: var(--color-primary); }
+.clay-tile[data-tone='secondary'] { background: var(--color-secondary); }
+.clay-tile[data-tone='moss']      { background: var(--color-success); }
+.clay-tile[data-tone='amber']     { background: var(--color-warning); }
+.clay-tile[data-tone='rust']      { background: var(--color-danger); }
+.clay-tile[data-tone='stone']     { background: var(--color-info); }
+
+/* ---- Botón clay --------------------------------------------------------
+   Reutilizable para CTAs y acciones. Variantes: --secondary, --ghost. */
+
+.clay-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-5);
+  border: 0;
+  border-radius: var(--r-clay-sm);
+  background: var(--color-primary);
+  color: var(--color-text-on-accent);
+  font-family: var(--font-sans);
+  font-weight: var(--fw-semibold);
+  font-size: var(--fs-sm);
+  box-shadow: var(--clay-tile);
+  cursor: pointer;
+  transition: transform var(--dur-base) var(--ease-spring),
+              box-shadow var(--dur-base) var(--ease-out);
+}
+
+.clay-btn:hover  { transform: translateY(-2px); box-shadow: var(--clay-raised-hover); }
+.clay-btn:active { transform: translateY(0);    box-shadow: var(--clay-pressed); }
+
+.clay-btn--secondary { background: var(--color-secondary); }
+.clay-btn--ghost {
+  background: var(--color-bg-elevated);
+  color: var(--color-text);
+  box-shadow: var(--clay-raised);
+}
+
+
+/* ---- Header de página (icono + título + acciones, banda clay) ----------
+   Reutilizable por módulo. El color de acento se elige con data-accent
+   (primary por defecto): tinta el tile del icono, el eyebrow y el glow. */
+
+.clay-header {
+  --clay-header-accent: var(--color-primary);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  margin-bottom: var(--s-5);
+  padding: var(--s-5) var(--s-6);
+  background: var(--color-bg-elevated);
+  border-radius: var(--r-clay);
+  box-shadow: var(--clay-raised);
+}
+.clay-header[data-accent='secondary'] { --clay-header-accent: var(--color-secondary); }
+.clay-header[data-accent='success']   { --clay-header-accent: var(--color-success); }
+.clay-header[data-accent='warning']   { --clay-header-accent: var(--color-warning); }
+.clay-header[data-accent='danger']    { --clay-header-accent: var(--color-danger); }
+.clay-header[data-accent='info']      { --clay-header-accent: var(--color-info); }
+
+/* Glow del acento en la esquina */
+.clay-header::before {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  top: -55%;
+  right: -6%;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--clay-header-accent) 22%, transparent), transparent 68%);
+  pointer-events: none;
+}
+
+@media (min-width: 768px) {
+  .clay-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.clay-header__lead {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  min-width: 0;
+}
+.clay-header__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 54px;
+  height: 54px;
+  flex-shrink: 0;
+  border-radius: var(--r-clay-sm);
+  background: linear-gradient(140deg, var(--clay-header-accent), color-mix(in srgb, var(--clay-header-accent) 74%, var(--color-text)));
+  color: var(--color-text-on-accent);
+  box-shadow: var(--clay-tile);
+}
+.clay-header__icon svg { width: 24px; height: 24px; }
+
+.clay-header__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.clay-header__eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: var(--fw-semibold);
+  color: var(--clay-header-accent);
+}
+.clay-header__title {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-bold);
+  letter-spacing: -0.02em;
+  line-height: var(--lh-tight);
+  color: var(--color-text);
+}
+.clay-header__meta {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-sm);
+  color: var(--color-text-muted);
+}
+.clay-header__actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: var(--s-3);
+  flex-shrink: 0;
+}
+
+/* ---- Stat / KPI reutilizable -------------------------------------------
+   Reemplaza a futuro: .kpi-card, .d-kpi, .mkpi, .sdq__stat, .node-kpi… */
+
+.clay-stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding: var(--s-5);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-clay);
+  box-shadow: var(--clay-raised);
+}
+
+.clay-stat__k {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  color: var(--color-text-muted);
+  line-height: var(--lh-snug);
+}
+
+.clay-stat__v {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-semibold);
+  color: var(--color-text);
+  line-height: var(--lh-tight);
+}
+
+.clay-stat__v[data-tone='moss']  { color: var(--color-success); }
+.clay-stat__v[data-tone='amber'] { color: var(--color-warning); }
+.clay-stat__v[data-tone='rust']  { color: var(--color-danger); }
+.clay-stat__v[data-tone='stone'] { color: var(--color-info); }
+
+.clay-stat__hint {
+  font-size: var(--fs-xs);
+  color: var(--color-text-faint);
+  line-height: var(--lh-snug);
+}
+
+
+/* ---- Botón de icono (cuadrado suave) ----------------------------------- */
+
+.clay-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border: 0;
+  border-radius: var(--r-clay-sm);
+  background: var(--color-bg-elevated);
+  color: var(--color-text-muted);
+  box-shadow: var(--clay-raised);
+  cursor: pointer;
+  transition: transform var(--dur-base) var(--ease-spring),
+              box-shadow var(--dur-base) var(--ease-out),
+              color var(--dur-fast) var(--ease-out);
+}
+.clay-icon-btn svg { width: 22px; height: 22px; }
+.clay-icon-btn:hover { transform: translateY(-2px); box-shadow: var(--clay-raised-hover); color: var(--color-primary); }
+.clay-icon-btn[aria-pressed='true'],
+.clay-icon-btn.is-active { color: var(--color-primary); box-shadow: var(--clay-pressed); }
+
+
+/* ---- Fila de acción (badge de icono + etiqueta) ------------------------ */
+
+.clay-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  width: 100%;
+  padding: var(--s-2) var(--s-5) var(--s-2) var(--s-2);
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--color-bg-elevated);
+  color: var(--color-text);
+  box-shadow: var(--clay-raised);
+  cursor: pointer;
+  text-decoration: none;
+  font-family: var(--font-sans);
+  font-weight: var(--fw-semibold);
+  font-size: var(--fs-sm);
+  transition: transform var(--dur-base) var(--ease-spring),
+              box-shadow var(--dur-base) var(--ease-out);
+}
+.clay-row:hover { transform: translateY(-2px); box-shadow: var(--clay-raised-hover); }
+.clay-row__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-text-on-accent);
+  box-shadow: var(--clay-tile);
+  flex-shrink: 0;
+}
+.clay-row__badge svg { width: 18px; height: 18px; }
+.clay-row__badge[data-tone='secondary'] { background: var(--color-secondary); }
+.clay-row__badge[data-tone='warning']   { background: var(--color-warning); }
+.clay-row__badge[data-tone='danger']    { background: var(--color-danger); }
+.clay-row__badge[data-tone='success']   { background: var(--color-success); }
+
+
+/* ---- Campo de formulario (input hundido) ------------------------------- */
+
+.clay-field { display: flex; flex-direction: column; gap: var(--s-2); }
+.clay-field__label {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--color-text-muted);
+}
+.clay-input {
+  width: 100%;
+  padding: var(--s-3) var(--s-4);
+  border: 0;
+  border-radius: var(--r-clay-sm);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: var(--fs-base);
+  box-shadow: var(--clay-pressed);
+  transition: box-shadow var(--dur-fast) var(--ease-out);
+}
+.clay-input::placeholder { color: var(--color-text-faint); }
+.clay-input:focus {
+  outline: none;
+  box-shadow: var(--clay-pressed), 0 0 0 2px var(--color-primary);
+}
+
+
+/* ---- Interruptor (toggle) ---------------------------------------------- */
+
+.clay-toggle {
+  position: relative;
+  display: inline-flex;
+  width: 56px;
+  height: 30px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.clay-toggle input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.clay-toggle__track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r-pill);
+  background: var(--color-bg);
+  box-shadow: var(--clay-pressed);
+  transition: background-color var(--dur-base) var(--ease-out);
+}
+.clay-toggle__thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--color-bg-elevated);
+  box-shadow: var(--clay-tile);
+  transition: transform var(--dur-base) var(--ease-spring);
+}
+.clay-toggle input:checked ~ .clay-toggle__track { background: var(--color-primary); }
+.clay-toggle input:checked ~ .clay-toggle__thumb { transform: translateX(26px); }
+.clay-toggle input:focus-visible ~ .clay-toggle__track {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+
+/* ---- Barra de progreso / medidor --------------------------------------- */
+
+.clay-progress {
+  height: 12px;
+  border-radius: var(--r-pill);
+  background: var(--color-bg);
+  box-shadow: var(--clay-pressed);
+  overflow: hidden;
+}
+.clay-progress__fill {
+  height: 100%;
+  border-radius: var(--r-pill);
+  background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+  transition: width var(--dur-slow) var(--ease-out);
+}
+
+
+/* ---- Badge / etiqueta de color ----------------------------------------- */
+
+.clay-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: var(--r-pill);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  color: var(--color-text-on-accent);
+  background: var(--color-primary);
+  box-shadow: var(--clay-tile);
+}
+.clay-badge[data-tone='secondary'] { background: var(--color-secondary); }
+.clay-badge[data-tone='warning']   { background: var(--color-warning); }
+.clay-badge[data-tone='danger']    { background: var(--color-danger); }
+.clay-badge[data-tone='success']   { background: var(--color-success); }
+
+
+/* ---- Modales en tema clay (Bootstrap + create-room-modal) -------------
+   Cualquier modal dentro de .clay-theme hereda el estilo automáticamente:
+   superficie clay, inputs hundidos y botones de acción clay. */
+
+.clay-theme .modal-content,
+.clay-theme .create-room-modal {
+  border: 0;
+  border-radius: var(--r-clay-lg);
+  background: var(--color-bg-elevated);
+  box-shadow: var(--clay-raised), var(--shadow-lg);
+  overflow: hidden;
+}
+
+/* Dropdowns (selector de sala, notificaciones, perfil, selects custom) */
+.clay-theme .dropdown-menu {
+  border: 0;
+  border-radius: var(--r-clay);
+  box-shadow: var(--clay-raised), var(--shadow-lg);
+}
+.clay-theme .cselect__menu {
+  border: 0;
+  border-radius: var(--r-clay-sm);
+  box-shadow: var(--clay-raised), var(--shadow-lg);
+}
+.clay-theme .modal-footer { border: 0; }
+
+/* Header de modal con diseño clay: título rotundo + X como botón de icono */
+.clay-theme .modal-header {
+  border: 0;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--s-5) var(--s-6) var(--s-3);
+}
+.clay-theme .modal-title {
+  font-family: var(--font-sans);
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-lg);
+  letter-spacing: -0.01em;
+  color: var(--color-text);
+}
+.clay-theme .modal-header .btn-close {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  margin: 0 0 0 auto;
+  padding: 0;
+  border-radius: 50%;
+  background-color: var(--color-bg-elevated);
+  background-size: 12px;
+  box-shadow: var(--clay-tile);
+  opacity: 1;
+  transition: transform var(--dur-base) var(--ease-spring),
+              box-shadow var(--dur-base) var(--ease-out);
+}
+.clay-theme .modal-header .btn-close:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--clay-raised-hover);
+}
+
+/* Inputs / textareas / selects hundidos (como el kit .clay-input) */
+.clay-theme .form-control,
+.clay-theme .form-select {
+  border: 0;
+  border-radius: var(--r-clay-sm);
+  background: var(--color-bg);
+  box-shadow: var(--clay-pressed);
+  color: var(--color-text);
+}
+.clay-theme .form-control::placeholder { color: var(--color-text-faint); }
+.clay-theme .form-control:focus,
+.clay-theme .form-select:focus {
+  border-color: transparent;
+  box-shadow: var(--clay-pressed), 0 0 0 2px var(--color-primary);
+}
+
+/* Botones de acción del modal en clay (la primaria pasa a turquesa) */
+.clay-theme .ds-btn { border: 0; border-radius: var(--r-clay-sm); }
+.clay-theme .ds-btn--ink,
+.clay-theme .ds-btn--sage {
+  background: var(--color-primary);
+  color: var(--color-text-on-accent);
+  box-shadow: var(--clay-tile);
+}
+.clay-theme .ds-btn--ink:hover,
+.clay-theme .ds-btn--sage:hover {
+  background: var(--color-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--clay-raised-hover);
+}
+.clay-theme .ds-btn--ink:active,
+.clay-theme .ds-btn--sage:active {
+  transform: translateY(0);
+  box-shadow: var(--clay-pressed);
+}
+.clay-theme .ds-btn--danger { box-shadow: var(--clay-tile); }

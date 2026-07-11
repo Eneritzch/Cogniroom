@@ -8,7 +8,15 @@
     {% include 'app/partials/_styles.html' %}
     <link rel="stylesheet" href="{% static 'css/app/shared/dashboard.css' %}?v={{ ASSET_V }}">
 </head>
-<body class="dashboard-page dashboard-shell">
+<body class="dashboard-page dashboard-shell clay-theme">
+
+    <div class="bg-decor" aria-hidden="true">
+        <span class="bg-decor__shape bg-decor__shape--circle"></span>
+        <span class="bg-decor__shape bg-decor__shape--ring"></span>
+        <span class="bg-decor__shape bg-decor__shape--tri"></span>
+        <span class="bg-decor__shape bg-decor__shape--blob"></span>
+        <span class="bg-decor__shape bg-decor__shape--dot"></span>
+    </div>
 
     {% include 'app/partials/_app-sidebar.html' with active='dashboard' %}
 
@@ -152,10 +160,20 @@
 
         <section class="dashboard-view dashboard-view--teacher" data-view="teacher" hidden aria-labelledby="teacher-heading">
 
-            <header class="d-hero">
-                <div class="d-hero__text">
-                    <span class="eyebrow">Panel docente</span>
-                    <h1 id="teacher-heading" class="d-hero__title display">Dashboard</h1>
+            <header class="clay-header" data-accent="secondary">
+                <div class="clay-header__lead">
+                    <span class="clay-header__icon" aria-hidden="true">
+                        <svg class="icon-svg" width="24" height="24" viewBox="0 0 24 24">
+                            <rect x="3" y="3" width="7" height="9" rx="1.5"></rect>
+                            <rect x="14" y="3" width="7" height="5" rx="1.5"></rect>
+                            <rect x="14" y="12" width="7" height="9" rx="1.5"></rect>
+                            <rect x="3" y="16" width="7" height="5" rx="1.5"></rect>
+                        </svg>
+                    </span>
+                    <div class="clay-header__text">
+                        <span class="clay-header__eyebrow">Panel docente</span>
+                        <h1 id="teacher-heading" class="clay-header__title">Dashboard</h1>
+                    </div>
                 </div>
             </header>
 
@@ -172,7 +190,7 @@
                     <header class="d-kpi__head">
                         <span id="kpi-students-label" class="d-kpi__k">Estudiantes inscritos</span>
                     </header>
-                    <div class="d-kpi__v num" id="students-value">—</div>
+                    <div class="d-kpi__v num" data-tone-color="primary" id="students-value">—</div>
                     <p class="d-kpi__hint" id="students-hint">Total de estudiantes inscritos en sus salas</p>
                 </article>
 
@@ -180,7 +198,7 @@
                     <header class="d-kpi__head">
                         <span id="kpi-answers-label" class="d-kpi__k">Cuestionarios respondidos</span>
                     </header>
-                    <div class="d-kpi__v num" id="answers-value">—</div>
+                    <div class="d-kpi__v num" data-tone-color="amber" id="answers-value">—</div>
                     <p class="d-kpi__hint" id="answers-hint">Cuestionarios que han completado sus estudiantes</p>
                 </article>
 
@@ -188,47 +206,32 @@
                     <header class="d-kpi__head">
                         <span id="kpi-diags-label" class="d-kpi__k">Diagnósticos de IA</span>
                     </header>
-                    <div class="d-kpi__v num" id="diags-value">—</div>
+                    <div class="d-kpi__v num" data-tone-color="rust" id="diags-value">—</div>
                     <p class="d-kpi__hint" id="diags-hint">Notas del tutor IA</p>
                 </article>
             </section>
 
-            <section class="d-row-a">
+            <section class="d-main-grid">
 
-                <article class="d-card d-card--rooms" aria-labelledby="rooms-title">
-                    <header class="d-card__head">
-                        <h3 id="rooms-title" class="d-card__title">Mis salas</h3>
-                        <a href="/app/rooms/" class="d-card__action">
-                            <svg class="icon-svg" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true">
-                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                            </svg>
-                            Nueva
-                        </a>
-                    </header>
-                    <ul class="d-rooms" id="rooms-compare"></ul>
-                </article>
+                <div class="d-main-grid__left">
+                    <article class="d-card d-card--calbars" aria-labelledby="calbars-title">
+                        <header class="d-card__head">
+                            <div>
+                                <h3 id="calbars-title" class="d-card__title">Calibración por sala</h3>
+                                <p class="d-card__sub">Qué tan bien se conoce cada grupo</p>
+                            </div>
+                        </header>
+                        <ul class="calbars" id="calibration-bars"></ul>
+                    </article>
+                </div>
 
-            </section>
+                <div class="d-main-grid__right">
 
-            <section class="d-row-b">
-
-                <article class="d-card d-card--students" aria-labelledby="students-title">
+                    <article class="d-card d-card--donut" aria-labelledby="donut-title">
                     <header class="d-card__head">
                         <div>
-                            <h3 id="students-title" class="d-card__title">Estudiantes a intervenir</h3>
-                            <p class="d-card__sub">Riesgo alto detectado por el tutor IA</p>
-                        </div>
-                        <span class="d-card__hint num" data-bind="ar-count">—</span>
-                    </header>
-                    <ul class="d-students" id="teacher-at-risk" data-bind="at-risk"></ul>
-                </article>
-
-                <article class="d-card d-card--donut" aria-labelledby="donut-title">
-                    <header class="d-card__head">
-                        <div>
-                            <h3 id="donut-title" class="d-card__title">Salud del grupo</h3>
-                            <p class="d-card__sub">Cómo se conoce el grupo</p>
+                            <h3 id="donut-title" class="d-card__title">Salud de la sala activa</h3>
+                            <p class="d-card__sub">Reparto de sus estudiantes por cuadrante cognitivo</p>
                         </div>
                     </header>
                     <div class="d-donut">
@@ -267,6 +270,8 @@
                         </li>
                     </ul>
                 </article>
+
+                </div>
 
             </section>
 

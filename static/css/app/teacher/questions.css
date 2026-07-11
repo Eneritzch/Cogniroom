@@ -198,6 +198,67 @@
 .questions-search input::placeholder { color: var(--ink-faint); }
 
 
+/* ======================================================================
+   CLAY — migración de Preguntas al tema .clay-theme.
+   ====================================================================== */
+
+/* Filtros flotantes (sin fondo blanco), pegados a la cabecera */
+.room-page .room-panel { margin-top: var(--s-2); }
+.questions-controls {
+  margin-top: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+/* Chips: tiles clay; activo en teal del módulo */
+.questions-chip {
+  border-color: transparent;
+  border-radius: var(--r-pill);
+  box-shadow: var(--clay-tile);
+}
+.questions-chip[aria-pressed='true'] {
+  background: var(--color-primary);
+  border-color: transparent;
+  color: var(--color-text-on-accent);
+}
+.questions-chip[aria-pressed='true'] .questions-chip__count {
+  background: color-mix(in srgb, var(--color-text-on-accent) 22%, transparent);
+  color: var(--color-text-on-accent);
+}
+
+/* Búsqueda hundida */
+.questions-search {
+  border-color: transparent;
+  border-radius: var(--r-clay-sm);
+  background: var(--color-bg);
+  box-shadow: var(--clay-pressed);
+}
+.questions-search:focus-within {
+  background: var(--color-bg);
+  box-shadow: var(--clay-pressed), 0 0 0 2px var(--color-primary);
+}
+
+/* Tarjetas de pregunta y barra de selección múltiple */
+.qcard {
+  border-radius: var(--r-clay);
+  box-shadow: var(--clay-raised);
+  transition: transform var(--dur-base) var(--ease-spring),
+              box-shadow var(--dur-base) var(--ease-out);
+}
+.qcard:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--clay-raised-hover);
+}
+.qbulk-bar {
+  border-color: transparent;
+  border-radius: var(--r-clay);
+  box-shadow: var(--clay-raised);
+}
+
+
 .questions-meta {
   font-family: var(--font-mono);
   font-size: 11px;

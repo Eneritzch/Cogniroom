@@ -445,6 +445,76 @@
 .metrics-search input::placeholder { color: var(--ink-faint); }
 
 
+/* ======================================================================
+   CLAY — migración de Métricas al tema .clay-theme.
+   ====================================================================== */
+
+/* Chart cards, secciones y KPIs */
+.mchart,
+.attend,
+.blindspots,
+.mheat,
+.mkpi {
+  border-color: transparent;
+  border-radius: var(--r-clay);
+  box-shadow: var(--clay-raised);
+}
+.mq-tile {
+  border-radius: var(--r-clay);
+  box-shadow: var(--clay-raised);
+}
+
+/* Barra selector de sala + su chip */
+.metrics-roombar {
+  border-color: transparent;
+  border-radius: var(--r-clay);
+  box-shadow: var(--clay-raised);
+}
+.metrics-roomchip {
+  border-color: transparent;
+  border-radius: var(--r-pill);
+  box-shadow: var(--clay-tile);
+}
+.metrics-roomchip[aria-pressed='true'] {
+  background: var(--color-primary);
+  border-color: transparent;
+  color: var(--color-text-on-accent);
+}
+.metrics-roomchip[aria-pressed='true'] .icon-svg { color: var(--color-text-on-accent); }
+
+/* Filtros del heatmap flotantes + chips + búsqueda */
+.metrics-controls {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+}
+.metrics-chip {
+  border-color: transparent;
+  border-radius: var(--r-pill);
+  box-shadow: var(--clay-tile);
+}
+.metrics-chip[aria-pressed='true'] {
+  background: var(--color-primary);
+  border-color: transparent;
+  color: var(--color-text-on-accent);
+}
+.metrics-chip[aria-pressed='true'] .metrics-chip__count {
+  background: color-mix(in srgb, var(--color-text-on-accent) 22%, transparent);
+  color: var(--color-text-on-accent);
+}
+.metrics-search {
+  border-color: transparent;
+  border-radius: var(--r-clay-sm);
+  background: var(--color-bg);
+  box-shadow: var(--clay-pressed);
+}
+.metrics-search:focus-within {
+  background: var(--color-bg);
+  box-shadow: var(--clay-pressed), 0 0 0 2px var(--color-primary);
+}
+
+
 .metrics-meta {
   margin-top: var(--s-3);
   font-family: var(--font-mono);

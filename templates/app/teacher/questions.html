@@ -10,7 +10,15 @@
     <link rel="stylesheet" href="{% static 'css/app/teacher/room.css' %}?v={{ ASSET_V }}">
     <link rel="stylesheet" href="{% static 'css/app/teacher/questions.css' %}?v={{ ASSET_V }}">
 </head>
-<body class="room-page dashboard-shell">
+<body class="room-page dashboard-shell clay-theme">
+
+    <div class="bg-decor bg-decor--calm" aria-hidden="true">
+        <span class="bg-decor__shape bg-decor__shape--circle"></span>
+        <span class="bg-decor__shape bg-decor__shape--ring"></span>
+        <span class="bg-decor__shape bg-decor__shape--tri"></span>
+        <span class="bg-decor__shape bg-decor__shape--blob"></span>
+        <span class="bg-decor__shape bg-decor__shape--dot"></span>
+    </div>
 
     {% include 'app/partials/_app-sidebar.html' with active='questions' %}
 
@@ -18,43 +26,44 @@
 
         {% include 'app/partials/_app-topbar.html' %}
 
-        <span class="eyebrow">Preguntas</span>
-        <div class="room-head">
-            <h1 class="room-title" id="room-name">—</h1>
-            <div class="room-meta">
-                <span><span id="room-questions">—</span> en el banco</span>
+        <header class="clay-header" data-accent="primary">
+            <div class="clay-header__lead">
+                <span class="clay-header__icon" aria-hidden="true">
+                    <svg class="icon-svg" width="24" height="24" viewBox="0 0 24 24">
+                        <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path>
+                    </svg>
+                </span>
+                <div class="clay-header__text">
+                    <span class="clay-header__eyebrow">Preguntas</span>
+                    <h1 class="clay-header__title" id="room-name">—</h1>
+                    <p class="clay-header__meta"><span id="room-questions">—</span> en el banco</p>
+                </div>
             </div>
-        </div>
+            <div class="clay-header__actions">
+                <button type="button" class="clay-btn clay-btn--ghost" data-bs-toggle="modal" data-bs-target="#nodeModal">
+                    <svg class="icon-svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="12" cy="12" r="9"></circle>
+                        <circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"></circle>
+                    </svg>
+                    Temas
+                </button>
+                <button type="button" class="clay-btn clay-btn--secondary" data-bs-toggle="modal" data-bs-target="#manualQuestionModal">
+                    <svg class="icon-svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Crear manual
+                </button>
+                <button type="button" class="clay-btn" data-bs-toggle="modal" data-bs-target="#generateQuestionModal">
+                    <svg class="icon-svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path>
+                    </svg>
+                    Generar con IA
+                </button>
+            </div>
+        </header>
 
-        <section class="room-panel" role="region" aria-labelledby="questions-title">
-            <header class="questions-hero">
-                <div>
-                    <h2 id="questions-title" class="questions-hero__title">¿Qué preguntas tienen tus estudiantes?</h2>
-                    <p class="questions-hero__sub">Aprueba, edita o crea las preguntas que usará esta sala</p>
-                </div>
-                <div class="questions-hero__actions">
-                    <button type="button" class="ds-btn ds-btn--ghost" data-bs-toggle="modal" data-bs-target="#nodeModal">
-                        <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
-                            <circle cx="12" cy="12" r="9"></circle>
-                            <circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"></circle>
-                        </svg>
-                        Temas
-                    </button>
-                    <button type="button" class="ds-btn ds-btn--secondary" data-bs-toggle="modal" data-bs-target="#manualQuestionModal">
-                        <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
-                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                        </svg>
-                        Crear manual
-                    </button>
-                    <button type="button" class="ds-btn ds-btn--sage" data-bs-toggle="modal" data-bs-target="#generateQuestionModal">
-                        <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path>
-                        </svg>
-                        Generar con IA
-                    </button>
-                </div>
-            </header>
+        <section class="room-panel" role="region" aria-label="Banco de preguntas">
 
             <div class="questions-controls">
                 <div class="questions-controls__bar">

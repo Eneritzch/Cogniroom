@@ -10,7 +10,15 @@
     <link rel="stylesheet" href="{% static 'css/app/teacher/room.css' %}?v={{ ASSET_V }}">
     <link rel="stylesheet" href="{% static 'css/app/teacher/rooms.css' %}?v={{ ASSET_V }}">
 </head>
-<body class="rooms-page dashboard-shell">
+<body class="rooms-page dashboard-shell clay-theme">
+
+    <div class="bg-decor bg-decor--calm" aria-hidden="true">
+        <span class="bg-decor__shape bg-decor__shape--circle"></span>
+        <span class="bg-decor__shape bg-decor__shape--ring"></span>
+        <span class="bg-decor__shape bg-decor__shape--tri"></span>
+        <span class="bg-decor__shape bg-decor__shape--blob"></span>
+        <span class="bg-decor__shape bg-decor__shape--dot"></span>
+    </div>
 
     {% include 'app/partials/_app-sidebar.html' with active='rooms' %}
 
@@ -18,30 +26,31 @@
 
         {% include 'app/partials/_app-topbar.html' %}
 
-        <span class="eyebrow">Salas</span>
-        <div class="room-head">
-            <h1 class="room-title">Tus salas</h1>
-            <div class="room-meta">
-                <span><span id="rooms-count">—</span> activas</span>
-                <span class="room-meta__sep">·</span>
-                <span>Comparte el código para que tus alumnos se unan</span>
+        <header class="clay-header" data-accent="primary">
+            <div class="clay-header__lead">
+                <span class="clay-header__icon" aria-hidden="true">
+                    <svg class="icon-svg" width="24" height="24" viewBox="0 0 24 24">
+                        <path d="M3 21V8l9-5 9 5v13"></path>
+                        <path d="M9 21V12h6v9"></path>
+                    </svg>
+                </span>
+                <div class="clay-header__text">
+                    <span class="clay-header__eyebrow">Salas</span>
+                    <h1 class="clay-header__title">Tus salas</h1>
+                </div>
             </div>
-        </div>
-
-        <section class="room-panel" role="region" aria-label="Gestión de salas">
-            <header class="rooms-toolbar">
-                <p class="rooms-toolbar__hint">
-                    Cada sala tiene un <strong>código único</strong>. Tus alumnos lo introducen al unirse.
-                </p>
-                <button type="button" class="ds-btn ds-btn--ink" data-bs-toggle="modal" data-bs-target="#createRoomModal">
-                    <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+            <div class="clay-header__actions">
+                <button type="button" class="clay-btn" data-bs-toggle="modal" data-bs-target="#createRoomModal">
+                    <svg class="icon-svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
                         <line x1="12" y1="5" x2="12" y2="19"></line>
                         <line x1="5" y1="12" x2="19" y2="12"></line>
                     </svg>
                     Crear sala
                 </button>
-            </header>
+            </div>
+        </header>
 
+        <section class="room-panel" role="region" aria-label="Gestión de salas">
             <div class="rooms-meta" id="rooms-meta"></div>
 
             <ul class="rooms-list" id="rooms-list" aria-label="Lista de salas"></ul>
