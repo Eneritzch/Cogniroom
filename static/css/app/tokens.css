@@ -1,7 +1,8 @@
 :root {
-  /* Tema ÚNICO: clay claro, paleta monocromática teal (Pantone 630/7716/3165).
-     Coral (--rust) SOLO para alertas reales. .clay-theme re-declara estos mismos
-     valores para las páginas y añade los selectores de componentes clay. */
+  /* Tema ÚNICO y fuente de verdad: clay claro, paleta monocromática teal
+     (Pantone 630/7716/3165). Coral (--rust) SOLO para alertas reales. La clase
+     .clay-theme (en cada <body>) ya NO re-declara tokens: solo agrupa los
+     selectores de componentes clay en components/clay.css. */
 
   /* Superficies — neutro claro (tipo infografía) */
   --paper:               #eceef1;

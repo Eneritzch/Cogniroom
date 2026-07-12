@@ -2485,9 +2485,8 @@
 }
 
 
-/* La paleta clay-theme (superficies claras + aliases --color-* + sombras clay)
-   se movió a components/clay.css, que se carga en TODAS las páginas vía
-   _styles.html (incluidas auth y landing). No re-declarar aquí. */
+/* La paleta y el tema (superficies claras + aliases --color-* + sombras clay)
+   viven en :root de tokens.css como fuente única. No re-declarar aquí. */
 
 
 
