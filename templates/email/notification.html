@@ -4,44 +4,44 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="color-scheme" content="dark light">
-    <meta name="supported-color-schemes" content="dark light">
+    <meta name="color-scheme" content="light">
+    <meta name="supported-color-schemes" content="light">
     <title>{{ title }}</title>
 </head>
-<body style="margin:0; padding:0; background-color:#0a0e1f; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%;">
+<body style="margin:0; padding:0; background-color:#eceef1; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%;">
     <!-- preheader (texto oculto de previsualización) -->
-    <div style="display:none; max-height:0; overflow:hidden; opacity:0; color:#0a0e1f; font-size:1px; line-height:1px;">
+    <div style="display:none; max-height:0; overflow:hidden; opacity:0; color:#eceef1; font-size:1px; line-height:1px;">
         {% if body %}{{ body }}{% else %}{{ title }}{% endif %}
     </div>
 
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0a0e1f;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#eceef1;">
         <tr>
             <td align="center" style="padding:40px 16px;">
 
-                <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px; max-width:600px; background-color:#11162e; border:1px solid #252d56; border-radius:18px; overflow:hidden;">
+                <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px; max-width:600px; background-color:#ffffff; border:1px solid #e2e6eb; border-radius:20px; overflow:hidden; box-shadow:0 20px 44px rgba(42,54,72,.14);">
 
-                    <!-- Franja de marca (gradiente) -->
+                    <!-- Franja de marca (gradiente teal) -->
                     <tr>
-                        <td bgcolor="#5dd5ff" style="height:5px; line-height:5px; font-size:5px; background-color:#5dd5ff; background-image:linear-gradient(90deg,#5dd5ff 0%,#6366f1 50%,#a78bfa 100%);">&nbsp;</td>
+                        <td bgcolor="#009490" style="height:6px; line-height:6px; font-size:6px; background-color:#009490; background-image:linear-gradient(90deg,#62c4d3 0%,#009490 55%,#114b5f 100%);">&nbsp;</td>
                     </tr>
 
                     <!-- Cabecera de marca: sello + wordmark -->
                     <tr>
-                        <td style="padding:32px 36px 22px 36px; font-family:'Inter',-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+                        <td style="padding:32px 36px 22px 36px; font-family:'Nunito','Inter',-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
                             <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                                 <tr>
-                                    <td valign="middle" width="42" style="padding-right:13px;">
+                                    <td valign="middle" width="44" style="padding-right:13px;">
                                         <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                                             <tr>
-                                                <td width="42" height="42" align="center" valign="middle" bgcolor="#5dd5ff" style="width:42px; height:42px; background-color:#5dd5ff; background-image:linear-gradient(135deg,#5dd5ff 0%,#a78bfa 100%); border-radius:50%;">
-                                                    <div style="width:15px; height:15px; border:2px solid #0a0e1f; border-radius:50%; line-height:15px; font-size:1px;">&nbsp;</div>
+                                                <td width="44" height="44" align="center" valign="middle" bgcolor="#009490" style="width:44px; height:44px; background-color:#009490; background-image:linear-gradient(135deg,#62c4d3 0%,#114b5f 100%); border-radius:50%;">
+                                                    <div style="width:15px; height:15px; border:2px solid #ffffff; border-radius:50%; line-height:15px; font-size:1px;">&nbsp;</div>
                                                 </td>
                                             </tr>
                                         </table>
                                     </td>
                                     <td valign="middle">
-                                        <div style="font-size:18px; font-weight:700; color:#e6e9fa; letter-spacing:-0.01em; line-height:1.1;">CogniRoom</div>
-                                        <div style="font-size:10px; font-weight:600; color:#6b75a8; letter-spacing:0.12em; text-transform:uppercase; margin-top:3px;">Evaluación cognitiva</div>
+                                        <div style="font-size:19px; font-weight:800; color:#1f2733; letter-spacing:-0.01em; line-height:1.1;">CogniRoom</div>
+                                        <div style="font-size:10px; font-weight:700; color:#98a2ae; letter-spacing:0.12em; text-transform:uppercase; margin-top:3px;">Evaluación cognitiva</div>
                                     </td>
                                 </tr>
                             </table>
@@ -51,33 +51,33 @@
                     <!-- Hairline -->
                     <tr>
                         <td style="padding:0 36px;">
-                            <div style="border-top:1px solid #252d56; font-size:0; line-height:0; height:1px;">&nbsp;</div>
+                            <div style="border-top:1px solid #e2e6eb; font-size:0; line-height:0; height:1px;">&nbsp;</div>
                         </td>
                     </tr>
 
                     <!-- Categoría + Título -->
                     <tr>
-                        <td style="padding:30px 36px 0 36px; font-family:'Inter',-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+                        <td style="padding:30px 36px 0 36px; font-family:'Nunito','Inter',-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
                             <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                                 <tr>
                                     <td valign="middle" style="padding-right:9px;">
-                                        <div style="width:8px; height:8px; background-color:{{ accent|default:'#5dd5ff' }}; border-radius:50%; font-size:0; line-height:0;">&nbsp;</div>
+                                        <div style="width:8px; height:8px; background-color:{{ accent|default:'#009490' }}; border-radius:50%; font-size:0; line-height:0;">&nbsp;</div>
                                     </td>
-                                    <td valign="middle" style="font-size:11px; font-weight:700; color:{{ accent|default:'#5dd5ff' }}; letter-spacing:0.12em; text-transform:uppercase;">{{ eyebrow|default:'Notificación' }}</td>
+                                    <td valign="middle" style="font-size:11px; font-weight:800; color:{{ accent|default:'#009490' }}; letter-spacing:0.12em; text-transform:uppercase;">{{ eyebrow|default:'Notificación' }}</td>
                                 </tr>
                             </table>
-                            <h1 style="margin:14px 0 0 0; font-size:22px; line-height:1.32; font-weight:600; color:#e6e9fa; letter-spacing:-0.01em;">{{ title }}</h1>
+                            <h1 style="margin:14px 0 0 0; font-size:23px; line-height:1.32; font-weight:800; color:#1f2733; letter-spacing:-0.01em;">{{ title }}</h1>
                         </td>
                     </tr>
 
                     {% if body %}
                     <!-- Cuerpo: panel destacado con borde de acento -->
                     <tr>
-                        <td style="padding:18px 36px 0 36px; font-family:'Inter',-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+                        <td style="padding:18px 36px 0 36px; font-family:'Nunito','Inter',-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
                             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                                 <tr>
-                                    <td style="padding:17px 20px; background-color:#161d3d; border-left:3px solid {{ accent|default:'#5dd5ff' }}; border-radius:10px;">
-                                        <p style="margin:0; font-size:15px; line-height:1.66; color:#c3cbf0;">{{ body|linebreaksbr }}</p>
+                                    <td style="padding:18px 22px; background-color:#f4f6f8; border-left:3px solid {{ accent|default:'#009490' }}; border-radius:12px;">
+                                        <p style="margin:0; font-size:15px; line-height:1.66; color:#5b6672;">{{ body|linebreaksbr }}</p>
                                     </td>
                                 </tr>
                             </table>
@@ -88,11 +88,11 @@
                     {% if action_url %}
                     <!-- Botón -->
                     <tr>
-                        <td style="padding:28px 36px 4px 36px; font-family:'Inter',-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+                        <td style="padding:28px 36px 4px 36px; font-family:'Nunito','Inter',-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
                             <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                                 <tr>
-                                    <td align="center" bgcolor="#5dd5ff" style="border-radius:10px; background-color:#5dd5ff; background-image:linear-gradient(135deg,#5dd5ff 0%,#7aa2ff 55%,#a78bfa 100%);">
-                                        <a href="{{ action_url }}" style="display:inline-block; padding:14px 28px; font-size:14px; font-weight:600; color:#0a0e1f; text-decoration:none; border-radius:10px; font-family:'Inter',-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">{{ action_label }} &rarr;</a>
+                                    <td align="center" bgcolor="#009490" style="border-radius:12px; background-color:#009490; background-image:linear-gradient(135deg,#009490 0%,#0b6b6a 55%,#114b5f 100%);">
+                                        <a href="{{ action_url }}" style="display:inline-block; padding:14px 30px; font-size:14px; font-weight:700; color:#ffffff; text-decoration:none; border-radius:12px; font-family:'Nunito','Inter',-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">{{ action_label }} &rarr;</a>
                                     </td>
                                 </tr>
                             </table>
@@ -102,11 +102,11 @@
 
                     <!-- Pie -->
                     <tr>
-                        <td style="padding:32px 36px 30px 36px; font-family:'Inter',-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-                            <div style="border-top:1px solid #252d56; font-size:0; line-height:0; height:1px;">&nbsp;</div>
-                            <p style="margin:20px 0 0 0; font-size:12px; line-height:1.65; color:#6b75a8;">
-                                <strong style="color:#9ba4d4; font-weight:600;">CogniRoom</strong> &middot; Medimos la diferencia entre lo que crees saber y lo que realmente sabes.<br>
-                                Recibís este correo por tu actividad en la plataforma.
+                        <td style="padding:32px 36px 30px 36px; font-family:'Nunito','Inter',-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+                            <div style="border-top:1px solid #e2e6eb; font-size:0; line-height:0; height:1px;">&nbsp;</div>
+                            <p style="margin:20px 0 0 0; font-size:12px; line-height:1.65; color:#98a2ae;">
+                                <strong style="color:#5b6672; font-weight:700;">CogniRoom</strong> &middot; Medimos la diferencia entre lo que cree saber y lo que realmente sabe.<br>
+                                Recibe este correo por su actividad en la plataforma.
                             </p>
                         </td>
                     </tr>
@@ -116,8 +116,8 @@
                 <!-- Firma exterior -->
                 <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px; max-width:600px;">
                     <tr>
-                        <td align="center" style="padding:20px 16px 0 16px; font-family:'Inter',-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-                            <p style="margin:0; font-size:11px; line-height:1.5; color:#4a5480;">&copy; CogniRoom · Evaluación cognitiva adaptativa</p>
+                        <td align="center" style="padding:20px 16px 0 16px; font-family:'Nunito','Inter',-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+                            <p style="margin:0; font-size:11px; line-height:1.5; color:#98a2ae;">&copy; CogniRoom &middot; Evaluación cognitiva adaptativa</p>
                         </td>
                     </tr>
                 </table>

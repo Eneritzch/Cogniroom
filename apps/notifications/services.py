@@ -12,21 +12,23 @@ logger = logging.getLogger(__name__)
 
 # Etiqueta (eyebrow) y color de acento del email por tipo de notificación. Los
 # colores son hex fijos: los clientes de correo no soportan variables CSS.
+# Paleta teal monocromática (clay): sage #009490 · stone #62c4d3 · petróleo
+# #114b5f. Coral #e0604f SOLO para alertas reales (riesgo, rechazo).
 EMAIL_CATEGORIES = {
-    Notification.KIND_STUDENT_AT_RISK:   ('Alerta cognitiva', '#fb7185'),
-    Notification.KIND_DIAGNOSIS_READY:   ('Tu diagnóstico', '#5dd5ff'),
-    Notification.KIND_ROOM_JOINED:       ('Sala', '#34d399'),
-    Notification.KIND_JOIN_REQUEST:      ('Solicitud de ingreso', '#a78bfa'),
-    Notification.KIND_JOIN_REJECTED:     ('Solicitud de ingreso', '#fb7185'),
-    Notification.KIND_QUESTION_PENDING:  ('Preguntas por revisar', '#fbbf24'),
-    Notification.KIND_QUESTIONS_ADDED:   ('Preguntas nuevas', '#5dd5ff'),
-    Notification.KIND_PRACTICE_REMINDER: ('Recordatorio', '#60a5fa'),
+    Notification.KIND_STUDENT_AT_RISK:   ('Alerta cognitiva', '#e0604f'),
+    Notification.KIND_DIAGNOSIS_READY:   ('Tu diagnóstico', '#009490'),
+    Notification.KIND_ROOM_JOINED:       ('Sala', '#009490'),
+    Notification.KIND_JOIN_REQUEST:      ('Solicitud de ingreso', '#114b5f'),
+    Notification.KIND_JOIN_REJECTED:     ('Solicitud de ingreso', '#e0604f'),
+    Notification.KIND_QUESTION_PENDING:  ('Preguntas por revisar', '#114b5f'),
+    Notification.KIND_QUESTIONS_ADDED:   ('Preguntas nuevas', '#009490'),
+    Notification.KIND_PRACTICE_REMINDER: ('Recordatorio', '#62c4d3'),
 }
-DEFAULT_EMAIL_CATEGORY = ('Notificación', '#5dd5ff')
+DEFAULT_EMAIL_CATEGORY = ('Notificación', '#009490')
 
 
 def _send_notification_email(to_email, title, body, link, action_label='Ver en CogniRoom',
-                             eyebrow='Notificación', accent='#5dd5ff'):
+                             eyebrow='Notificación', accent='#009490'):
     """Email multipart (texto + HTML de marca). Best-effort: traga fallos."""
     try:
         action_url = ''
@@ -84,7 +86,7 @@ def notify(recipient, *, kind, title, body='', link='', email=True, email_async=
 
 
 def send_branded_email(to_email, *, title, body='', link='', action_label='Ver en CogniRoom',
-                       eyebrow='Notificación', accent='#5dd5ff', async_send=True):
+                       eyebrow='Notificación', accent='#009490', async_send=True):
     """Email de marca SIN registrar una notificación in-app. Para flujos fuera de
     sesión (recuperación de contraseña), donde no hay destinatario-usuario en
     contexto de notificación. Best-effort: nunca rompe el request que lo llama."""

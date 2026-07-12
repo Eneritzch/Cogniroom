@@ -27,16 +27,16 @@ function profileLabel(p) {
 // Lectura humana de la brecha (cree − sabe), en puntos porcentuales. El umbral
 // 20 coincide con la definición de perfil del proyecto (gap > 0.2 = sobreconfiado).
 function nodeStatus(gapPct) {
-    if (gapPct > 20)  return { tone: 'amber', text: 'Confía de más' };
+    if (gapPct > 20)  return { tone: 'rust', text: 'Confía de más' };
     if (gapPct < -20) return { tone: 'stone', text: 'Confía de menos' };
     return { tone: 'moss', text: 'Confianza justa' };
 }
 
 function masteryColor(m) {
-    if (m < 0.4) return 'var(--rust)';
-    if (m < 0.6) return 'var(--amber)';
-    if (m < 0.8) return 'var(--sage)';
-    return 'var(--moss)';
+    if (m < 0.4) return 'var(--rust)';        // Por reforzar — coral (alerta)
+    if (m < 0.6) return 'var(--stone)';       // En camino — cian claro
+    if (m < 0.8) return 'var(--sage)';        // Bien encaminado — teal
+    return 'var(--terracotta)';               // Dominado — petróleo (el más profundo)
 }
 
 
@@ -224,8 +224,8 @@ function renderKnowledgeGraph(graphNodes) {
 
         if (over) {
             const aura = el('circle', {
-                cx: n.x, cy: n.y, r: baseR + 1.8, fill: 'none', stroke: 'var(--amber)',
-                'stroke-width': 0.2, 'stroke-dasharray': '0.8 0.6', opacity: 0.75,
+                cx: n.x, cy: n.y, r: baseR + 1.8, fill: 'none', stroke: 'var(--rust)',
+                'stroke-width': 0.28, 'stroke-dasharray': '0.8 0.6', opacity: 0.85,
             });
             aura.appendChild(el('animateTransform', {
                 attributeName: 'transform', type: 'rotate',

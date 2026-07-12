@@ -7,8 +7,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-image:
-    radial-gradient(rgba(167, 139, 250, 0.05) 1px, transparent 1px),
-    radial-gradient(rgba(93, 213, 255, 0.035) 1px, transparent 1px);
+    radial-gradient(color-mix(in srgb, var(--terracotta) 5%, transparent) 1px, transparent 1px),
+    radial-gradient(color-mix(in srgb, var(--sage) 4%, transparent) 1px, transparent 1px);
   background-size: 3px 3px, 7px 7px;
   background-position: 0 0, 1px 2px;
 }

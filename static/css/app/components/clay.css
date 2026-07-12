@@ -3,94 +3,14 @@
    Base = móvil. Único breakpoint: 768px. Solo Flexbox. */
 
 /* ========================================================================
-   CLAY CLARO — tema NEUTRO MULTICOLOR. Re-declara la paleta base Y los aliases
-   --color-* dentro de .clay-theme. Vive aquí (clay.css se carga en TODAS las
-   páginas vía _styles.html) para que auth y landing también tomen el tema.
+   El TEMA (paleta teal-clara, tipografía Nunito, sombras clay, --gradient-brand,
+   --bs-*-rgb) vive ahora en :root de tokens.css como FUENTE ÚNICA. La clase
+   .clay-theme se mantiene en cada <body> solo para los selectores de componentes
+   de abajo (.clay-theme .foo …). Ya no re-declara tokens: no dupliques aquí.
    ======================================================================== */
 
-.clay-theme {
-  --font-sans: 'Nunito', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
-
-  /* Superficies — neutro claro (tipo infografía) */
-  --paper:               #eceef1;
-  --paper-elevated:      #ffffff;
-  --paper-surface:       #f4f6f8;
-  --paper-border:        #e2e6eb;
-  --paper-border-strong: #ccd2da;
-
-  /* Tinta slate neutra */
-  --ink:       #1f2733;
-  --ink-muted: #5b6672;
-  --ink-faint: #98a2ae;
-
-  /* Paleta MONOCROMÁTICA teal (Pantone 630 · 7716 · 3165): cian claro · teal ·
-     petróleo. Coral SOLO para alertas reales. */
-  --sage:            #009490;
-  --sage-strong:     #007571;
-  --sage-soft:       #dcf0ef;
-  --terracotta:        #114b5f;
-  --terracotta-strong: #0b3846;
-  --terracotta-soft:   #dde9ec;
-  --moss:      #12938f;  --moss-soft:  #dcf0ef;
-  --amber:     #0f8a86;  --amber-soft: #dcefee;
-  --rust:      #e0604f;  --rust-soft:  #fbe5e1;
-  --stone:     #62c4d3;  --stone-soft: #e2f4f7;
-
-  /* Re-resolución de la capa semántica contra la paleta clara */
-  --color-bg:            var(--paper);
-  --color-bg-elevated:   var(--paper-elevated);
-  --color-surface:       var(--paper-surface);
-  --color-surface-2:     var(--paper-elevated);
-  --color-border:        var(--paper-border);
-  --color-border-strong: var(--paper-border-strong);
-  --color-text:           var(--ink);
-  --color-text-muted:     var(--ink-muted);
-  --color-text-faint:     var(--ink-faint);
-  --color-text-on-accent: #ffffff;
-  --color-primary:        var(--sage);
-  --color-primary-strong: var(--sage-strong);
-  --color-primary-glow:   var(--sage-soft);
-  --color-secondary:      var(--terracotta);
-  --color-secondary-glow: var(--terracotta-soft);
-  --color-success: var(--moss);  --color-success-bg: var(--moss-soft);
-  --color-warning: var(--amber); --color-warning-bg: var(--amber-soft);
-  --color-danger:  var(--rust);  --color-danger-bg:  var(--rust-soft);
-  --color-info:    var(--stone); --color-info-bg:    var(--stone-soft);
-  --color-calibrated:     var(--color-success); --color-calibrated-bg:     var(--color-success-bg);
-  --color-overconfident:  var(--color-warning); --color-overconfident-bg:  var(--color-warning-bg);
-  --color-underconfident: var(--color-info);    --color-underconfident-bg: var(--color-info-bg);
-  --color-risk-high:   var(--color-danger);
-  --color-risk-medium: var(--color-warning);
-  --color-risk-low:    var(--color-success);
-
-  /* Sombras clásicas suavizadas */
-  --shadow-sm: 0 1px 2px rgba(42,54,72,.10), 0 1px 1px rgba(42,54,72,.08);
-  --shadow-md: 0 6px 18px rgba(42,54,72,.14), 0 2px 6px rgba(42,54,72,.10);
-  --shadow-lg: 0 20px 44px rgba(42,54,72,.18), 0 6px 16px rgba(42,54,72,.12);
-
-  /* Clay invertido: rim blanco arriba, sombra neutra abajo */
-  --clay-highlight: rgba(255,255,255,.9);
-  --clay-raised:
-    inset 0 2px 0 rgba(255,255,255,.9),
-    inset 0 -12px 18px -12px rgba(42,54,72,.15),
-    0 16px 30px -12px rgba(42,54,72,.18),
-    0 6px 12px -6px rgba(42,54,72,.13);
-  --clay-raised-hover:
-    inset 0 2px 0 rgba(255,255,255,.95),
-    inset 0 -14px 22px -12px rgba(42,54,72,.19),
-    0 24px 44px -12px rgba(42,54,72,.24),
-    0 10px 18px -6px rgba(42,54,72,.16);
-  --clay-pressed:
-    inset 0 3px 7px rgba(42,54,72,.16),
-    inset 0 -1.5px 0 rgba(255,255,255,.8);
-  --clay-tile:
-    inset 0 2px 1px rgba(255,255,255,.55),
-    inset 0 -6px 10px -4px rgba(42,54,72,.16),
-    0 10px 18px -6px rgba(42,54,72,.2);
-}
-
-/* En tema claro, la X de Bootstrap NO debe invertirse (base.css la vuelve
-   blanca para el tema oscuro; sobre superficies claras quedaría invisible). */
+/* La X de Bootstrap NO debe invertirse sobre superficies claras (quedaría
+   invisible). */
 .clay-theme .btn-close { filter: none; }
 
 

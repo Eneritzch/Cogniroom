@@ -99,7 +99,7 @@
 }
 
 .nodes-legend__item--aura {
-  color: var(--amber);
+  color: var(--rust);
 }
 
 .nodes-legend__aura {
@@ -107,7 +107,7 @@
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  border: 1.5px dashed var(--amber);
+  border: 1.5px dashed var(--rust);
 }
 
 /* Estado calibración en lenguaje humano (tarjeta + lectura del grafo). */
@@ -115,7 +115,7 @@
   font-weight: var(--fw-medium);
 }
 
-.node-card__status[data-tone='amber'] { color: var(--amber); }
+.node-card__status[data-tone='rust']  { color: var(--rust); }
 .node-card__status[data-tone='stone'] { color: var(--stone); }
 .node-card__status[data-tone='moss']  { color: var(--moss); }
 
@@ -126,7 +126,7 @@
   font-weight: var(--fw-medium);
 }
 
-.knowledge-graph__readout-tag[data-tone='amber'] { color: var(--amber); }
+.knowledge-graph__readout-tag[data-tone='rust']  { color: var(--rust); }
 .knowledge-graph__readout-tag[data-tone='stone'] { color: var(--stone); }
 .knowledge-graph__readout-tag[data-tone='moss']  { color: var(--moss); }
 
