@@ -102,21 +102,65 @@ function setupSidebarToggle() {
     const $toggle = document.getElementById('app-sidebar-toggle');
     if (!$sidebar) return;
 
+    const desktop = window.matchMedia('(min-width: 768px)');
+
+    // El estado "rail colapsado" solo tiene efecto visual en desktop.
     if (localStorage.getItem(SIDEBAR_KEY) === '1') {
         $sidebar.classList.add('app-sidebar--collapsed');
-        if ($toggle) $toggle.setAttribute('aria-expanded', 'false');
+    }
+
+    function closeMobileNav() {
+        $sidebar.classList.remove('app-sidebar--open');
+        syncToggleAria();
+    }
+
+    function syncToggleAria() {
+        if (!$toggle) return;
+        if (desktop.matches) {
+            const collapsed = $sidebar.classList.contains('app-sidebar--collapsed');
+            $toggle.setAttribute('aria-expanded', String(!collapsed));
+            $toggle.setAttribute('aria-label', collapsed ? 'Expandir menú' : 'Colapsar menú');
+        } else {
+            const open = $sidebar.classList.contains('app-sidebar--open');
+            $toggle.setAttribute('aria-expanded', String(open));
+            $toggle.setAttribute('aria-label', open ? 'Cerrar menú' : 'Abrir menú');
+        }
     }
 
     if ($toggle && !$toggle.dataset.bound) {
         $toggle.dataset.bound = '1';
+
         $toggle.addEventListener('click', () => {
-            const collapsed = $sidebar.classList.toggle('app-sidebar--collapsed');
-            localStorage.setItem(SIDEBAR_KEY, collapsed ? '1' : '0');
-            $toggle.setAttribute('aria-expanded', String(!collapsed));
-            $toggle.setAttribute('aria-label', collapsed ? 'Expandir menú' : 'Colapsar menú');
+            if (desktop.matches) {
+                // Desktop: colapsar/expandir el rail de iconos (persistido).
+                const collapsed = $sidebar.classList.toggle('app-sidebar--collapsed');
+                localStorage.setItem(SIDEBAR_KEY, collapsed ? '1' : '0');
+            } else {
+                // Móvil: abrir/cerrar el menú desplegable.
+                $sidebar.classList.toggle('app-sidebar--open');
+            }
+            syncToggleAria();
         });
+
+        // Móvil: cerrar al elegir una sección, al tocar fuera o con Escape.
+        $sidebar.addEventListener('click', (e) => {
+            if (!desktop.matches && e.target.closest('.app-sidebar__item')) closeMobileNav();
+        });
+        document.addEventListener('click', (e) => {
+            if (!desktop.matches
+                && $sidebar.classList.contains('app-sidebar--open')
+                && !e.target.closest('#app-sidebar')) {
+                closeMobileNav();
+            }
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && $sidebar.classList.contains('app-sidebar--open')) closeMobileNav();
+        });
+        // Al cruzar el breakpoint descartamos el estado "abierto" del móvil.
+        desktop.addEventListener('change', closeMobileNav);
     }
 
+    syncToggleAria();
     bindLogout(document.getElementById('logout-btn'));
 }
 

@@ -10,14 +10,19 @@
             </span>
             <span class="app-sidebar__name">CogniRoom</span>
         </a>
-        <button type="button" class="app-sidebar__toggle" id="app-sidebar-toggle" aria-label="Colapsar menú" aria-expanded="true">
+        <button type="button" class="app-sidebar__toggle" id="app-sidebar-toggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="app-sidebar-nav">
+            <svg class="icon-svg app-sidebar__toggle-burger" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
             <svg class="icon-svg app-sidebar__toggle-icon" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
                 <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
         </button>
     </div>
 
-    <nav class="app-sidebar__nav" aria-label="Secciones">
+    <nav class="app-sidebar__nav" id="app-sidebar-nav" aria-label="Secciones">
         <span class="app-sidebar__section eyebrow">Menú</span>
 
         <a class="app-sidebar__item" data-tone="secondary" href="/app/dashboard/" {% if active == 'dashboard' %}aria-current="page"{% endif %} data-tip="Dashboard">

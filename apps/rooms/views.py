@@ -54,6 +54,15 @@ def _student_room_data(room, user, request):
     data['totalSessions'] = EvaluationSession.objects.filter(
         room=room, student=user, status=EvaluationSession.STATUS_COMPLETED
     ).count()
+    # Evaluación a medias: si existe, la tarjeta ofrece "Continuar" en vez de
+    # "Empezar" y entra directo a esa sesión (sin volver a elegir temas).
+    data['active_session_id'] = (
+        EvaluationSession.objects
+        .filter(room=room, student=user, status=EvaluationSession.STATUS_ACTIVE)
+        .order_by('-started_at')
+        .values_list('id', flat=True)
+        .first()
+    )
     if room.mode == 'individual':
         data['pdfs'] = PDFDocument.objects.filter(room=room).count()
         data['questions'] = Question.objects.filter(

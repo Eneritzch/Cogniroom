@@ -1034,12 +1034,12 @@
 }
 
 .app-sidebar__toggle {
-  display: none;
+  display: inline-flex;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 34px;
+  height: 34px;
   background: transparent;
   border: 0;
   border-radius: var(--r-sm);
@@ -1054,8 +1054,14 @@
   background: var(--paper-surface);
 }
 
+/* Móvil: hamburguesa visible; el chevron (colapsar el rail) es solo de desktop. */
+.app-sidebar__toggle-burger { display: inline-flex; }
+.app-sidebar__toggle-icon { display: none; }
+
 @media (min-width: 768px) {
-  .app-sidebar__toggle { display: inline-flex; }
+  .app-sidebar__toggle { width: 28px; height: 28px; }
+  .app-sidebar__toggle-burger { display: none; }
+  .app-sidebar__toggle-icon { display: inline-flex; }
 }
 
 .app-sidebar__toggle-icon { transition: transform var(--dur-base) var(--ease-out); }
@@ -1073,10 +1079,46 @@
 
 
 .app-sidebar__nav {
-  display: flex;
+  display: none;
   flex-direction: column;
   gap: 1px;
   flex: 1;
+}
+
+/* Móvil: el menú se despliega como panel sobre el contenido (no empuja todo
+   hacia abajo). Se abre/cierra con la hamburguesa. */
+.app-sidebar--open .app-sidebar__nav {
+  display: flex;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 60;
+  padding: var(--s-3) var(--s-4) var(--s-4);
+  background: var(--paper-elevated);
+  border-bottom: 1px solid var(--paper-border);
+  border-radius: 0 0 var(--r-lg) var(--r-lg);
+  box-shadow: var(--shadow-lg);
+  max-height: calc(100vh - 76px);
+  /* Solo scroll vertical: fijar overflow-x evita que aparezca la barra
+     horizontal (poner solo overflow-y:auto convierte overflow-x en auto). */
+  overflow: hidden auto;
+}
+
+@media (min-width: 768px) {
+  .app-sidebar__nav,
+  .app-sidebar--open .app-sidebar__nav {
+    display: flex;
+    position: static;
+    z-index: auto;
+    padding: 0;
+    background: none;
+    border-bottom: 0;
+    border-radius: 0;
+    box-shadow: none;
+    max-height: none;
+    overflow: visible;
+  }
 }
 
 .app-sidebar__section {

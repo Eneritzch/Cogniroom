@@ -332,6 +332,22 @@ class SessionListCreateView(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
+        # Reanudar en vez de reiniciar: si el estudiante dejó una evaluación a
+        # medias en esta sala (una sesión activa sin cerrar), se devuelve esa
+        # misma para que continúe donde se quedó. La selección adaptativa ya
+        # excluye las preguntas que respondió, así que no vuelve a empezar de
+        # cero ni se pierde su avance.
+        pending = (
+            EvaluationSession.objects
+            .filter(student=request.user, room=room, status=EvaluationSession.STATUS_ACTIVE)
+            .order_by('-started_at')
+            .first()
+        )
+        if pending:
+            return Response(
+                EvaluationSessionSerializer(pending).data, status=status.HTTP_200_OK
+            )
+
         # Nodos elegidos por el estudiante; deben pertenecer a la sala. Vacío =
         # todos (la selección adaptativa abarca toda la sala, como antes).
         node_ids = serializer.validated_data.get('node_ids') or []

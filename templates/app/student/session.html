@@ -112,7 +112,7 @@
             <article>
                 <div class="session-feedback__eyebrow eyebrow">
                     <span class="session-feedback__status" id="feedback-status">—</span>
-                    <span style="color:var(--ink-muted);">· Pregunta <span id="feedback-q-num">—</span></span>
+                    <span style="color:var(--ink-muted);">· Pregunta <span id="feedback-q-num">—</span><span id="feedback-q-total"></span></span>
                 </div>
                 <h1 class="session-feedback__title" id="feedback-title">—</h1>
                 <p class="session-feedback__explanation" id="feedback-explanation"></p>
@@ -185,12 +185,20 @@
                 </div>
             </article>
 
+            <p class="session-lastnote" id="feedback-lastnote" hidden role="status">
+                <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+                    <line x1="4" y1="22" x2="4" y2="15"></line>
+                </svg>
+                Es la última pregunta — al terminar verás tu resumen.
+            </p>
+
             <div class="session-actions">
                 <button type="button" class="session-back" id="next-question">
                     Cargar siguiente pregunta →
                 </button>
                 <button type="button" class="session-next" id="complete-session">
-                    Terminar sesión
+                    Terminar evaluación
                     <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
                         <polyline points="20 6 9 17 4 12"></polyline>
                     </svg>

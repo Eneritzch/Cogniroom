@@ -247,7 +247,7 @@ function cardHTML(q) {
         return `
         <li class="qcard" data-status="${status}">
             <header class="qcard__head">
-                <input type="checkbox" class="qcard__select" data-q-id="${q.id}" aria-label="Seleccionar pregunta"${selected.has(q.id) ? ' checked' : ''}>
+                ${status === 'pending' ? `<input type="checkbox" class="qcard__select" data-q-id="${q.id}" aria-label="Seleccionar pregunta"${selected.has(q.id) ? ' checked' : ''}>` : ''}
                 <span class="qcard__source" data-source="${q.source}">${q.source === 'ai' ? 'IA' : 'Manual'}</span>
                 <span class="qcard__type" data-type="${qtype}">${typeLabel}</span>
                 ${q.cognitive_level ? `<span class="qcard__bloom" data-bloom="${q.cognitive_level}">${bloomLabel(q.cognitive_level)}</span>` : ''}
@@ -348,8 +348,8 @@ function updateBulkBar() {
     $bar.hidden = n === 0;
     if ($count) $count.textContent = `${n} seleccionada${n === 1 ? '' : 's'}`;
     if ($all) {
-        const visible = applyFilters(BANK);
-        $all.checked = visible.length > 0 && visible.every((q) => selected.has(q.id));
+        const selectable = applyFilters(BANK).filter((q) => q.status === 'pending');
+        $all.checked = selectable.length > 0 && selectable.every((q) => selected.has(q.id));
     }
 }
 
@@ -427,7 +427,7 @@ document.getElementById('qbulk-clear')?.addEventListener('click', () => {
 });
 
 document.getElementById('qbulk-all')?.addEventListener('change', (e) => {
-    const visible = applyFilters(BANK);
+    const visible = applyFilters(BANK).filter((q) => q.status === 'pending');
     if (e.target.checked) visible.forEach((q) => selected.add(q.id));
     else visible.forEach((q) => selected.delete(q.id));
     document.querySelectorAll('.qcard__select').forEach((c) => {

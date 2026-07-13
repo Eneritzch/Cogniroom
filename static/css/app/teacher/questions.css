@@ -148,6 +148,7 @@
    por revisar = cian (en espera) · activas = verde-teal (éxito). */
 .questions-chip__dot[data-tone='active'] { background: var(--moss); }
 .questions-chip__dot[data-tone='review'] { background: var(--stone); }
+.questions-chip__dot[data-tone='rejected'] { background: var(--rust); }
 
 .questions-chip__count {
   padding: 1px 6px;

@@ -139,9 +139,15 @@
 @media (min-width: 768px) {
   .clay-header {
     flex-direction: row;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
   }
+  /* Base cómoda para el título: si las acciones no caben a su lado (barra
+     lateral abierta en pantallas medias), bajan a una segunda fila en vez de
+     encimarse. Solo en fila (desktop): en móvil el header es columna y aquí
+     flex-basis afectaría la altura. */
+  .clay-header__lead { flex: 1 1 260px; }
 }
 
 .clay-header__lead {
@@ -202,8 +208,15 @@
   position: relative;
   z-index: 1;
   display: flex;
+  flex-wrap: wrap;
   gap: var(--s-3);
   flex-shrink: 0;
+}
+/* Móvil: cada acción a lo ancho (tap cómodo, sin desborde horizontal). */
+.clay-header__actions > .clay-btn { flex: 1 1 100%; }
+
+@media (min-width: 768px) {
+  .clay-header__actions > .clay-btn { flex: 0 0 auto; }
 }
 
 /* ---- Stat / KPI reutilizable -------------------------------------------
@@ -670,6 +683,17 @@
 .clay-theme .rcard__cta:hover {
   transform: translateY(-2px);
   box-shadow: var(--clay-raised-hover);
+}
+
+/* Evaluación a medias → CTA "Continuar" en ámbar para diferenciarlo del teal
+   de "Empezar" (misma tarjeta, distinta intención). */
+.clay-theme .rcard__cta--resume {
+  background: var(--color-warning);
+  color: var(--ink);
+}
+.clay-theme .rcard__cta--resume:hover {
+  background: color-mix(in srgb, var(--color-warning) 88%, var(--ink) 12%);
+  color: var(--ink);
 }
 
 /* Diagnóstico IA / Tutor cognitivo (.ai-diagnosis) → superficie clay en todo

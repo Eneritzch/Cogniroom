@@ -100,13 +100,25 @@ function renderCard(r) {
     // "Empezar evaluación" (que con 0 preguntas no tendría qué servir).
     const qCount = r.questions ?? 0;
     const needsContent = !isGroup && qCount === 0;
+    const pendingId = r.active_session_id || null;
     const arrowSvg = `<svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
-    const primaryCta = needsContent
-        ? `<a class="rcard__cta" href="/app/questions/" data-action="manage-questions" data-room-id="${rid}">Generar preguntas ${arrowSvg}</a>`
-        : `<a class="rcard__cta" href="#" data-action="start" data-room-id="${rid}">Empezar evaluación ${arrowSvg}</a>`;
+    let primaryCta;
+    if (pendingId) {
+        // Evaluación a medias: entra directo a esa sesión (reanuda donde quedó,
+        // sin volver a elegir temas).
+        primaryCta = `<a class="rcard__cta rcard__cta--resume" href="/app/session/${pendingId}/" data-action="resume" data-room-id="${rid}"><span class="rcard__cta-pulse" aria-hidden="true"></span>Continuar evaluación ${arrowSvg}</a>`;
+    } else if (needsContent) {
+        primaryCta = `<a class="rcard__cta" href="/app/questions/" data-action="manage-questions" data-room-id="${rid}">Generar preguntas ${arrowSvg}</a>`;
+    } else {
+        primaryCta = `<a class="rcard__cta" href="#" data-action="start" data-room-id="${rid}">Empezar evaluación ${arrowSvg}</a>`;
+    }
+
+    const pendingTag = pendingId
+        ? `<span class="rcard__pending"><span class="rcard__pending-dot" aria-hidden="true"></span>Evaluación en curso</span>`
+        : '';
 
     return `
-    <li class="rcard" data-mode="${r.mode}">
+    <li class="rcard" data-mode="${r.mode}"${pendingId ? ' data-pending="true"' : ''}>
         <header class="rcard__head rcard__head--withbadge">
             <div class="rcard__id">
                 <h3 class="rcard__name">${escapeHTML(r.name)}</h3>
@@ -117,6 +129,7 @@ function renderCard(r) {
                 </div>
                 ${teacherLine}
                 ${sectionLine}
+                ${pendingTag}
             </div>
             ${modeBadge(r.mode)}
         </header>

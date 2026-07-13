@@ -37,6 +37,7 @@ let currentIndex = 0;
 let currentQuestion = null;
 let selectedIndices = [];
 let confidenceDeclared = null;
+let sessionTotal = null;
 
 
 function escapeHTML(s) {
@@ -135,6 +136,7 @@ function renderQuestion(q) {
     if (typeof q.answered === 'number') currentIndex = q.answered;
     const num = currentIndex + 1;
     const total = typeof q.total === 'number' ? q.total : null;
+    if (total != null) sessionTotal = total;
 
     if ($current) $current.textContent = String(num);
     if ($progressCurrent) $progressCurrent.textContent = String(num);
@@ -201,7 +203,11 @@ function renderFeedback(result) {
     const gapAbs = Math.abs(gap);
     const tone = gapTone(gap);
 
-    document.getElementById('feedback-q-num').textContent = String(currentIndex + 1);
+    const qNum = currentIndex + 1;
+    document.getElementById('feedback-q-num').textContent = String(qNum);
+    const $qTotal = document.getElementById('feedback-q-total');
+    if ($qTotal) $qTotal.textContent = sessionTotal != null ? ` de ${sessionTotal}` : '';
+    const isLast = sessionTotal != null && qNum >= sessionTotal;
 
     const $status = document.getElementById('feedback-status');
     $status.dataset.kind = correct ? 'correct' : (partial ? 'partial' : 'incorrect');
@@ -263,12 +269,16 @@ function renderFeedback(result) {
     const $diag = document.getElementById('feedback-diagnosis');
     if ($diag) $diag.hidden = true;
 
-    // No se conoce la última pregunta de antemano: siempre se ofrece "Siguiente"
-    // y el cierre ocurre cuando el backend responde `completed`.
+    // Con el cupo por nodo se conoce el total: en la última pregunta se muestra
+    // el CTA prominente "Terminar evaluación" + aviso, en vez del enlace
+    // "Siguiente". El cierre real sigue ocurriendo cuando el backend responde
+    // `completed`.
     const $nextBtn = document.getElementById('next-question');
     const $finishBtn = document.getElementById('complete-session');
-    if ($nextBtn) $nextBtn.hidden = false;
-    if ($finishBtn) $finishBtn.hidden = true;
+    const $lastNote = document.getElementById('feedback-lastnote');
+    if ($nextBtn) $nextBtn.hidden = isLast;
+    if ($finishBtn) $finishBtn.hidden = !isLast;
+    if ($lastNote) $lastNote.hidden = !isLast;
 
     showStage('feedback');
 }
