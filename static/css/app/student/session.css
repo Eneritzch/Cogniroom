@@ -567,3 +567,199 @@
   margin-top: var(--s-3);
   line-height: 1.55;
 }
+
+
+/* ========================================================================
+   Tema clay — superficies infladas, opciones táctiles y botones teal.
+   Base = móvil. Único breakpoint 768px. Solo tokens (--clay-*, --r-clay-*).
+   ======================================================================== */
+
+.clay-theme.session-page { background: var(--color-bg); }
+
+/* El contenido va por encima de las figuras de fondo (bg-decor, z-index 0) */
+.clay-theme .session-header { z-index: 10; }
+.clay-theme .session-main { position: relative; z-index: 1; }
+
+.clay-theme .session-header {
+  border-bottom: 0;
+  background: var(--color-bg-elevated);
+  box-shadow: var(--clay-raised);
+}
+
+.clay-theme .session-header__close {
+  border: 0;
+  background: var(--color-bg-elevated);
+  box-shadow: var(--clay-tile);
+  border-radius: var(--r-clay-sm);
+}
+.clay-theme .session-header__close:hover { color: var(--sage); }
+
+.clay-theme .session-progress { background: var(--color-bg); }
+.clay-theme .session-progress__fill { background: var(--sage); box-shadow: none; }
+
+/* Tarjetas de paso (confianza) y progreso → superficie clay elevada */
+.clay-theme .session-confidence,
+.clay-theme .session-progress-card {
+  border: 0;
+  border-radius: var(--r-clay);
+  background: var(--color-bg-elevated);
+  box-shadow: var(--clay-raised);
+}
+
+/* Badge numerado del paso → tile clay teal */
+.clay-theme .session-step__num {
+  box-shadow: var(--clay-tile);
+}
+
+/* Niveles de confianza y opciones de respuesta → tiles táctiles */
+.clay-theme .confidence-level,
+.clay-theme .session-option {
+  border: 0;
+  border-radius: var(--r-clay-sm);
+  background: var(--color-surface);
+  box-shadow: var(--clay-tile);
+  transition: transform var(--dur-base) var(--ease-spring),
+              box-shadow var(--dur-base) var(--ease-out),
+              color var(--dur-fast) var(--ease-out);
+}
+
+.clay-theme .confidence-level:hover,
+.clay-theme .session-option:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--clay-raised-hover);
+}
+
+.clay-theme .confidence-level[aria-checked='true'],
+.clay-theme .session-option[aria-pressed='true'] {
+  background: var(--color-bg);
+  box-shadow: var(--clay-pressed);
+  color: var(--sage-strong);
+}
+
+/* Círculo A/B/C/D → hundido en reposo, teal inflado al seleccionar */
+.clay-theme .session-option__id {
+  border: 0;
+  background: var(--color-bg);
+  box-shadow: var(--clay-pressed);
+}
+.clay-theme .session-option[aria-pressed='true'] .session-option__id {
+  background: var(--sage);
+  color: var(--color-text-on-accent);
+  box-shadow: var(--clay-tile);
+}
+
+/* Barra interna del progreso → pozo hundido */
+.clay-theme .session-progress-card__bar {
+  background: var(--color-bg);
+  box-shadow: var(--clay-pressed);
+}
+
+/* Botones de acción → clay teal, no tinta plana */
+.clay-theme .session-submit,
+.clay-theme .session-next {
+  border-radius: var(--r-clay-sm);
+  background: var(--sage);
+  color: var(--color-text-on-accent);
+  box-shadow: var(--clay-tile);
+  transition: transform var(--dur-base) var(--ease-spring),
+              box-shadow var(--dur-base) var(--ease-out);
+}
+.clay-theme .session-submit:hover,
+.clay-theme .session-next:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--clay-raised-hover);
+  opacity: 1;
+}
+/* Deshabilitado (aún sin elegir): un poco de color teal en vez de gris plano */
+.clay-theme .session-submit:disabled {
+  background: color-mix(in srgb, var(--sage) 16%, var(--color-surface));
+  color: var(--sage-strong);
+  box-shadow: var(--clay-pressed);
+  transform: none;
+}
+
+/* Fila de tiles del feedback → superficies clay separadas */
+.clay-theme .session-tile-row {
+  gap: var(--s-2);
+  border: 0;
+  background: transparent;
+  overflow: visible;
+}
+.clay-theme .session-tile {
+  border-radius: var(--r-clay-sm);
+  background: var(--color-surface);
+  box-shadow: var(--clay-tile);
+}
+
+/* Color notorio: cada opción A/B/C/D toma un color del sistema — círculo
+   sólido + tile teñido en pastel + borde lateral del mismo tono. Rota teal,
+   cian, petróleo, coral para que el bloque de respuestas tenga vida. */
+.clay-theme .session-option {
+  --opt: var(--sage);
+  position: relative;
+  overflow: hidden;
+  padding-left: var(--s-6);
+  background: color-mix(in srgb, var(--opt) 12%, var(--color-surface));
+}
+.clay-theme .session-option:nth-child(4n+1) { --opt: var(--sage); }
+.clay-theme .session-option:nth-child(4n+2) { --opt: var(--stone); }
+.clay-theme .session-option:nth-child(4n+3) { --opt: var(--terracotta); }
+.clay-theme .session-option:nth-child(4n+4) { --opt: var(--rust); }
+
+/* Banda de color a la izquierda del tile */
+.clay-theme .session-option::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  background: var(--opt);
+}
+
+.clay-theme .session-option__id {
+  background: var(--opt);
+  color: var(--color-text-on-accent);
+  box-shadow: var(--clay-tile);
+}
+
+.clay-theme .session-option:hover {
+  background: color-mix(in srgb, var(--opt) 20%, var(--color-surface));
+}
+
+/* La opción elegida intensifica su color y suma un aro del mismo tono */
+.clay-theme .session-option[aria-pressed='true'] {
+  background: color-mix(in srgb, var(--opt) 24%, var(--color-surface));
+  box-shadow: var(--clay-pressed), inset 0 0 0 2px var(--opt);
+  color: var(--ink);
+}
+
+/* Confianza: escala de color notoria — punto + tile teñido de menor (cian) a
+   mayor (teal) certeza. */
+.clay-theme .confidence-level {
+  --lvl: var(--stone);
+  background: color-mix(in srgb, var(--lvl) 12%, var(--color-surface));
+}
+.clay-theme .confidence-level:nth-child(1) { --lvl: var(--stone); }
+.clay-theme .confidence-level:nth-child(2) { --lvl: var(--terracotta); }
+.clay-theme .confidence-level:nth-child(3) { --lvl: var(--amber); }
+.clay-theme .confidence-level:nth-child(4) { --lvl: var(--sage); }
+
+.clay-theme .confidence-level::before {
+  content: '';
+  flex: 0 0 auto;
+  width: 12px;
+  height: 12px;
+  margin-right: var(--s-3);
+  border-radius: 50%;
+  background: var(--lvl);
+  box-shadow: var(--clay-tile);
+}
+.clay-theme .confidence-level:hover {
+  background: color-mix(in srgb, var(--lvl) 20%, var(--color-surface));
+}
+.clay-theme .confidence-level[aria-checked='true'] {
+  background: color-mix(in srgb, var(--lvl) 26%, var(--color-surface));
+  box-shadow: var(--clay-pressed), inset 0 0 0 2px var(--lvl);
+  color: var(--ink);
+}

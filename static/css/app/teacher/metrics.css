@@ -1366,3 +1366,15 @@
 }
 .col--empty .col__bar { background: color-mix(in srgb, var(--paper-border-strong) 65%, transparent); }
 .col--empty .col__val { color: var(--ink-faint); }
+
+/* Acento superior sólido con el color de marca en el modal de detalle del
+   estudiante — un borde teal del sistema, sin degradado. */
+.clay-theme #studentDetailModal .modal-content { position: relative; }
+.clay-theme #studentDetailModal .modal-content::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: var(--sage);
+  z-index: 2;
+}
