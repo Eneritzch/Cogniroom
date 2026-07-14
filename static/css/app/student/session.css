@@ -417,13 +417,18 @@
 .session-feedback__status {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-weight: var(--fw-medium);
+  gap: var(--s-1);
+  padding: 4px var(--s-3);
+  border-radius: var(--r-pill);
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.03em;
 }
 
-.session-feedback__status[data-kind='correct']   { color: var(--moss); }
-.session-feedback__status[data-kind='partial']   { color: var(--amber); }
-.session-feedback__status[data-kind='incorrect'] { color: var(--rust); }
+.session-feedback__status[data-kind='correct']   { color: var(--moss); background: var(--moss-soft); }
+.session-feedback__status[data-kind='partial']   { color: var(--amber); background: var(--amber-soft); }
+.session-feedback__status[data-kind='incorrect'] { color: var(--rust); background: var(--rust-soft); }
+
+.session-feedback__qmeta { color: var(--ink-muted); }
 
 .session-feedback__title {
   margin: 0;
@@ -678,6 +683,14 @@
   transform: none;
 }
 
+/* Tarjeta de resultado → superficie clay elevada (no plana con borde) */
+.clay-theme .session-stage[data-stage='feedback'] .paper-card {
+  border: 0;
+  border-radius: var(--r-clay);
+  background: var(--color-bg-elevated);
+  box-shadow: var(--clay-raised);
+}
+
 /* Fila de tiles del feedback → superficies clay separadas */
 .clay-theme .session-tile-row {
   gap: var(--s-2);
@@ -689,6 +702,28 @@
   border-radius: var(--r-clay-sm);
   background: var(--color-surface);
   box-shadow: var(--clay-tile);
+}
+
+/* "Siguiente pregunta" es la acción principal tras responder → botón clay teal,
+   igual que "Terminar evaluación" (nunca se muestran a la vez). */
+.clay-theme .session-back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-5);
+  border-radius: var(--r-clay-sm);
+  background: var(--sage);
+  color: var(--color-text-on-accent);
+  font-size: 14px;
+  font-weight: var(--fw-semibold);
+  box-shadow: var(--clay-tile);
+  transition: transform var(--dur-base) var(--ease-spring),
+              box-shadow var(--dur-base) var(--ease-out);
+}
+.clay-theme .session-back:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--clay-raised-hover);
+  color: var(--color-text-on-accent);
 }
 
 /* Color notorio: cada opción A/B/C/D toma un color del sistema — círculo

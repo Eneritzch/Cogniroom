@@ -114,7 +114,7 @@
             <article>
                 <div class="session-feedback__eyebrow eyebrow">
                     <span class="session-feedback__status" id="feedback-status">—</span>
-                    <span style="color:var(--ink-muted);">· Pregunta <span id="feedback-q-num">—</span><span id="feedback-q-total"></span></span>
+                    <span class="session-feedback__qmeta">Pregunta <span id="feedback-q-num">—</span><span id="feedback-q-total"></span></span>
                 </div>
                 <h1 class="session-feedback__title" id="feedback-title">—</h1>
                 <p class="session-feedback__explanation" id="feedback-explanation"></p>
@@ -197,7 +197,11 @@
 
             <div class="session-actions">
                 <button type="button" class="session-back" id="next-question">
-                    Cargar siguiente pregunta →
+                    Siguiente pregunta
+                    <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
                 </button>
                 <button type="button" class="session-next" id="complete-session">
                     Terminar evaluación

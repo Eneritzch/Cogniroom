@@ -233,7 +233,7 @@ function renderFeedback(result) {
         : '';
     document.getElementById('feedback-explanation').textContent = result.explanation || fbString
         || pendingMsg
-        || `Lo que sabes ahora de este tema es ${(mastery / 100).toFixed(2)}.`;
+        || `Lo que sabes ahora de este tema es ${mastery}%.`;
 
     const $declFill = document.getElementById('feedback-decl-fill');
     const $mastFill = document.getElementById('feedback-mast-fill');
@@ -259,8 +259,8 @@ function renderFeedback(result) {
         $hatch.style.display = 'none';
     }
 
-    document.getElementById('tile-confidence').textContent = String(declared);
-    document.getElementById('tile-mastery').textContent = String(mastery);
+    document.getElementById('tile-confidence').textContent = `${declared}%`;
+    document.getElementById('tile-mastery').textContent = `${mastery}%`;
     document.getElementById('tile-gap').textContent = `${gap >= 0 ? '+' : ''}${gap}`;
     document.getElementById('tile-gap').dataset.tone = tone;
 

@@ -643,7 +643,7 @@ function renderStudentDetail(d) {
 
       <dl class="sd-stats">
         <div class="sd-stat">
-          <dt>Qué tan bien se conoce</dt>
+          <dt>Qué tan bien te conoces</dt>
           <dd class="num">${icc2(sum.icc_value)}</dd>
           <span class="sd-stat__cap">de 0 a 1 · mientras más alto, mejor</span>
         </div>

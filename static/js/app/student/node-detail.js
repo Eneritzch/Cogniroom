@@ -38,11 +38,6 @@ function answerFlag(declared, is_correct) {
     return null;
 }
 
-function fmt(n, decimals = 2) {
-    return typeof n === 'number' ? n.toFixed(decimals) : '—';
-}
-
-
 function getNodeId() {
     const m = location.pathname.match(/\/app\/node\/([^/]+)\/?/);
     return m ? decodeURIComponent(m[1]) : null;
@@ -115,6 +110,11 @@ function paintKpis(n) {
 
     document.getElementById('node-confidence').textContent = `${conf}%`;
 
+    const $mastBar = document.getElementById('node-mastery-bar');
+    if ($mastBar) { $mastBar.style.width = `${mast}%`; $mastBar.dataset.tone = masteryTone(n.bkt_mastery); }
+    const $confBar = document.getElementById('node-confidence-bar');
+    if ($confBar) $confBar.style.width = `${conf}%`;
+
     const gapEl = document.getElementById('node-gap');
     gapEl.textContent = `${gapPts >= 0 ? '+' : ''}${gapPts}`;
     gapEl.dataset.tone = gapToneFromPts(gapPts);
@@ -169,10 +169,19 @@ function paintInsight(n) {
 
 
 function paintBkt(n) {
-    document.getElementById('bkt-mastery').textContent = fmt(n.p_mastery, 3);
-    document.getElementById('bkt-transit').textContent = fmt(n.p_transit, 3);
-    document.getElementById('bkt-guess').textContent = fmt(n.p_guess, 3);
-    document.getElementById('bkt-slip').textContent = fmt(n.p_slip, 3);
+    setBktRow('bkt-mastery', n.p_mastery);
+    setBktRow('bkt-transit', n.p_transit);
+    setBktRow('bkt-guess', n.p_guess);
+    setBktRow('bkt-slip', n.p_slip);
+}
+
+// Cada parámetro del modelo (0–1) se muestra como % con barra: el número solo
+// no le dice nada al estudiante; la barra hace tangible la magnitud.
+function setBktRow(id, value) {
+    const pct = Math.round(Math.max(0, Math.min(1, value ?? 0)) * 100);
+    document.getElementById(id).textContent = `${pct}%`;
+    const bar = document.getElementById(`${id}-bar`);
+    if (bar) bar.style.width = `${pct}%`;
 }
 
 

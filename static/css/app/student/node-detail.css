@@ -129,54 +129,9 @@
 }
 
 
-.node-hero {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-3);
-  margin-top: var(--s-4);
-  padding-bottom: var(--s-4);
-  border-bottom: 1px solid color-mix(in srgb, var(--paper-border) 50%, transparent);
-}
-
-@media (min-width: 768px) {
-  .node-hero {
-    flex-direction: row;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: var(--s-5);
-  }
-}
-
-.node-hero__head {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-}
-
-.node-hero__title {
-  margin: 0;
-  font-size: 28px;
-  font-weight: var(--fw-semibold);
-  color: var(--ink);
-  letter-spacing: -0.02em;
-  line-height: 1.15;
-}
-
-@media (min-width: 768px) {
-  .node-hero__title { font-size: 32px; }
-}
-
-.node-hero__meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  margin-top: 6px;
-  font-size: 12px;
-  color: var(--ink-muted);
-}
-
+/* El header usa el componente .clay-header (data-accent="secondary"). Solo
+   sobreviven los chips del meta (sala + fecha), que viven dentro de
+   .clay-header__meta. */
 .node-hero__room {
   display: inline-flex;
   align-items: center;
@@ -195,13 +150,6 @@
   font-size: 10.5px;
   color: var(--ink-faint);
   letter-spacing: 0.04em;
-}
-
-.node-hero__cta {
-  display: flex;
-  align-items: center;
-  gap: var(--s-3);
-  flex-wrap: wrap;
 }
 
 
@@ -259,6 +207,30 @@
   font-size: 11px;
   color: var(--ink-muted);
 }
+
+/* Medidor visual del % (lo que sabes / lo que crees saber): la barra hace
+   tangible el número para el estudiante. */
+.node-kpi__meter {
+  height: 6px;
+  margin-top: 2px;
+  border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--ink) 8%, transparent);
+  overflow: hidden;
+}
+
+.node-kpi__meter-fill {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: var(--sage);
+  transition: width var(--dur-slow) var(--ease-out);
+}
+
+.node-kpi__meter-fill[data-tone='rust']  { background: var(--rust); }
+.node-kpi__meter-fill[data-tone='amber'] { background: var(--amber); }
+.node-kpi__meter-fill[data-tone='moss']  { background: var(--moss); }
+.node-kpi__meter-fill--conf { background: var(--terracotta); }
 
 
 .node-row {
@@ -382,22 +354,39 @@
 
 .bkt-row {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--s-3);
-  padding: 10px 12px;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
   background: color-mix(in srgb, var(--paper-surface) 50%, transparent);
   border-radius: 12px;
 }
 
-.bkt-row__k {
+.bkt-row__top {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+
+.bkt-row__meter {
+  height: 6px;
+  border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--ink) 8%, transparent);
+  overflow: hidden;
+}
+
+.bkt-row__meter-fill {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: var(--sage);
+  transition: width var(--dur-slow) var(--ease-out);
 }
 
 .bkt-row__label {
+  flex: 1;
+  min-width: 0;
   font-family: var(--font-sans);
   font-size: 13px;
   font-weight: var(--fw-semibold);
@@ -631,5 +620,67 @@
 
 .node-response__flag[data-tone='rust']  { background: color-mix(in srgb, var(--rust) 14%, transparent);  color: var(--rust); }
 .node-response__flag[data-tone='stone'] { background: color-mix(in srgb, var(--stone) 14%, transparent); color: var(--stone); }
+
+
+/* ========================================================================
+   CLAY — migración del detalle de nodo: relieve por tokens, sin bordes duros.
+   Superficies infladas (KPIs, categorías, tarjetas, banner) y pozos hundidos
+   para las filas internas. Base = móvil, único breakpoint 768px.
+   ======================================================================== */
+
+/* Tarjetas grandes → superficie clay elevada */
+.clay-theme .node-kpi,
+.clay-theme .node-card {
+  border: 0;
+  border-radius: var(--r-clay);
+  background: var(--color-bg-elevated);
+  box-shadow: var(--clay-raised);
+}
+
+/* Tarjetas de categoría → tile clay (más compactas) */
+.clay-theme .catcard {
+  border: 0;
+  border-radius: var(--r-clay-sm);
+  background: var(--color-bg-elevated);
+  box-shadow: var(--clay-tile);
+}
+
+/* Banner interpretativo → superficie clay con acento lateral */
+.clay-theme .node-insight {
+  border: 0;
+  border-left: 3px solid var(--sage);
+  border-radius: var(--r-clay);
+  background: var(--color-bg-elevated);
+  box-shadow: var(--clay-raised);
+}
+.clay-theme .node-insight[data-tone='amber'] { border-left-color: var(--amber); }
+.clay-theme .node-insight[data-tone='stone'] { border-left-color: var(--stone); }
+.clay-theme .node-insight[data-tone='moss']  { border-left-color: var(--moss); }
+
+/* Tutor cognitivo → tinte teal suave conservado sobre la superficie clay */
+.clay-theme .node-card--ai {
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--amber) 12%, var(--color-bg-elevated)),
+    var(--color-bg-elevated) 92%);
+}
+
+/* Filas internas (parámetros BKT, respuestas) → pozos hundidos */
+.clay-theme .bkt-row,
+.clay-theme .node-response {
+  border: 0;
+  background: var(--color-surface);
+  box-shadow: var(--clay-pressed);
+}
+.clay-theme .node-response:hover {
+  background: var(--color-bg);
+  box-shadow: var(--clay-pressed);
+}
+
+/* Barras/medidores dentro de tarjetas elevadas → pozo hundido */
+.clay-theme .catcard__bar,
+.clay-theme .node-kpi__meter {
+  background: var(--color-bg);
+  box-shadow: var(--clay-pressed);
+}
 
 
