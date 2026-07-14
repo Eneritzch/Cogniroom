@@ -12,13 +12,7 @@
 </head>
 <body class="room-page dashboard-shell clay-theme">
 
-    <div class="bg-decor bg-decor--calm" aria-hidden="true">
-        <span class="bg-decor__shape bg-decor__shape--circle"></span>
-        <span class="bg-decor__shape bg-decor__shape--ring"></span>
-        <span class="bg-decor__shape bg-decor__shape--tri"></span>
-        <span class="bg-decor__shape bg-decor__shape--blob"></span>
-        <span class="bg-decor__shape bg-decor__shape--dot"></span>
-    </div>
+    {% include 'app/partials/_bg-decor.html' with calm=True %}
 
     {% include 'app/partials/_app-sidebar.html' with active='requests' %}
 

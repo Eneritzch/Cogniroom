@@ -730,9 +730,7 @@
 .clay-theme .sdcat__fill[data-tone='amber'] { background: var(--stone); }
 .clay-theme .sdcat__fill[data-tone='moss']  { background: var(--sage); }
 
-/* Backdrop del modal en clay: más opaco y desenfocado para que el fondo
-   deje de distraer alrededor del modal. */
-.clay-theme .modal-backdrop.show,
+/* Backdrop del modal: más opaco y desenfocado para aislar el contenido */
 .modal-backdrop.show {
   --bs-backdrop-opacity: 0.62;
   background-color: var(--terracotta);

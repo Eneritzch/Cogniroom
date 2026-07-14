@@ -574,14 +574,11 @@
 }
 
 
-/* ========================================================================
-   Tema clay — superficies infladas, opciones táctiles y botones teal.
-   Base = móvil. Único breakpoint 768px. Solo tokens (--clay-*, --r-clay-*).
-   ======================================================================== */
+/* Tema clay — superficies infladas, opciones táctiles y botones teal. */
 
 .clay-theme.session-page { background: var(--color-bg); }
 
-/* El contenido va por encima de las figuras de fondo (bg-decor, z-index 0) */
+/* Contenido por encima de las figuras de fondo (bg-decor, z-index 0) */
 .clay-theme .session-header { z-index: 10; }
 .clay-theme .session-main { position: relative; z-index: 1; }
 
@@ -621,7 +618,6 @@
 .clay-theme .session-option {
   border: 0;
   border-radius: var(--r-clay-sm);
-  background: var(--color-surface);
   box-shadow: var(--clay-tile);
   transition: transform var(--dur-base) var(--ease-spring),
               box-shadow var(--dur-base) var(--ease-out),
@@ -632,25 +628,6 @@
 .clay-theme .session-option:hover {
   transform: translateY(-2px);
   box-shadow: var(--clay-raised-hover);
-}
-
-.clay-theme .confidence-level[aria-checked='true'],
-.clay-theme .session-option[aria-pressed='true'] {
-  background: var(--color-bg);
-  box-shadow: var(--clay-pressed);
-  color: var(--sage-strong);
-}
-
-/* Círculo A/B/C/D → hundido en reposo, teal inflado al seleccionar */
-.clay-theme .session-option__id {
-  border: 0;
-  background: var(--color-bg);
-  box-shadow: var(--clay-pressed);
-}
-.clay-theme .session-option[aria-pressed='true'] .session-option__id {
-  background: var(--sage);
-  color: var(--color-text-on-accent);
-  box-shadow: var(--clay-tile);
 }
 
 /* Barra interna del progreso → pozo hundido */
@@ -704,8 +681,7 @@
   box-shadow: var(--clay-tile);
 }
 
-/* "Siguiente pregunta" es la acción principal tras responder → botón clay teal,
-   igual que "Terminar evaluación" (nunca se muestran a la vez). */
+/* "Siguiente pregunta" → botón clay teal, igual que "Terminar evaluación" */
 .clay-theme .session-back {
   display: inline-flex;
   align-items: center;
@@ -726,9 +702,8 @@
   color: var(--color-text-on-accent);
 }
 
-/* Color notorio: cada opción A/B/C/D toma un color del sistema — círculo
-   sólido + tile teñido en pastel + borde lateral del mismo tono. Rota teal,
-   cian, petróleo, coral para que el bloque de respuestas tenga vida. */
+/* Cada opción A/B/C/D rota un color del sistema: círculo sólido, tile teñido
+   y banda lateral (teal, cian, petróleo, coral). */
 .clay-theme .session-option {
   --opt: var(--sage);
   position: relative;
@@ -753,6 +728,7 @@
 }
 
 .clay-theme .session-option__id {
+  border: 0;
   background: var(--opt);
   color: var(--color-text-on-accent);
   box-shadow: var(--clay-tile);
