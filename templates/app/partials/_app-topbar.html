@@ -1,5 +1,16 @@
 <header class="dashboard-shell__topbar">
 
+    <aside class="topbar-tip" id="topbar-tip" data-show-for="student" role="note" aria-live="polite" hidden>
+        <span class="topbar-tip__icon" aria-hidden="true">
+            <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24">
+                <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"></path>
+                <path d="M9 18h6"></path>
+                <path d="M10 22h4"></path>
+            </svg>
+        </span>
+        <span class="topbar-tip__text" id="topbar-tip-text"></span>
+    </aside>
+
     <div class="dashboard-shell__room" data-show-for="teacher" hidden>
         <div class="dropdown">
             <button type="button" class="topbar-room" id="topbar-room-trigger" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Cambiar de sala activa">

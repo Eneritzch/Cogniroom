@@ -1,11 +1,4 @@
-/**
- * Solicitud de recuperación de contraseña.
- * Vinculado a templates/app/public/forgot-password.html
- *
- * Anti-enumeración: el backend responde igual exista o no el correo. Por eso,
- * ante una respuesta correcta siempre mostramos el estado "revisá tu correo",
- * sin confirmar si la cuenta existe.
- */
+
 
 const _v = new URL(import.meta.url).searchParams.get('v') || '';
 const { auth, ApiError } = await import(`../api.js?v=${_v}`);

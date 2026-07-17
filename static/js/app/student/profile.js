@@ -55,6 +55,7 @@ function paintHero(p) {
     const fullName = `${p.first_name || ''} ${p.last_name || ''}`.trim() || p.username;
     document.getElementById('profile-name').textContent = fullName;
     document.getElementById('profile-institution').textContent = p.institution || '—';
+    document.getElementById('profile-username').textContent = p.username || '—';
     document.getElementById('profile-member').textContent = `Miembro desde ${fmtDateLong(p.date_joined)}`;
 
     const profile = profileOf(p);

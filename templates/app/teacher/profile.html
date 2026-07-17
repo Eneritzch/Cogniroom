@@ -20,30 +20,16 @@
 
         {% include 'app/partials/_app-topbar.html' %}
 
-        <header class="clay-header" data-accent="primary">
-            <div class="clay-header__lead">
-                <span class="clay-header__icon" aria-hidden="true">
-                    <svg class="icon-svg" width="24" height="24" viewBox="0 0 24 24">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="12" cy="7" r="4"></circle>
-                    </svg>
-                </span>
-                <div class="clay-header__text">
-                    <span class="clay-header__eyebrow">Perfil</span>
-                    <h1 class="clay-header__title">Tu cuenta</h1>
-                    <p class="clay-header__meta">Datos personales, estadísticas y seguridad</p>
-                </div>
-            </div>
-        </header>
-
-        <section class="profile-hero teacher-profile-hero" aria-label="Resumen de identidad">
+        <header class="profile-hero teacher-profile-hero" aria-label="Resumen de identidad">
             <div class="profile-hero__avatar" id="profile-avatar" aria-hidden="true">—</div>
             <div class="profile-hero__id">
-                <h2 class="profile-hero__name" id="profile-name">—</h2>
+                <h1 class="profile-hero__name" id="profile-name">—</h1>
                 <div class="profile-hero__sub">
                     <span class="profile-hero__role" data-role="teacher">Docente</span>
                     <span class="profile-hero__sep">·</span>
                     <span id="profile-institution">—</span>
+                    <span class="profile-hero__sep">·</span>
+                    <span class="num" id="profile-username" title="Tu usuario para iniciar sesión">—</span>
                 </div>
                 <div class="profile-hero__meta num">
                     <span id="profile-member">—</span>
@@ -58,33 +44,58 @@
                     Mis salas
                 </a>
             </div>
-        </section>
+        </header>
 
         <section class="profile-stats" aria-label="Estadísticas de cohorte">
-            <article class="profile-stat">
-                <span class="profile-stat__k eyebrow">Salas activas</span>
-                <span class="profile-stat__v num" id="stat-rooms">—</span>
-                <span class="profile-stat__sub" id="stat-rooms-sub">— en total</span>
+            <article class="profile-stat" data-accent="primary">
+                <span class="profile-stat__icon" aria-hidden="true">
+                    <svg class="icon-svg" viewBox="0 0 24 24"><path d="M3 21V8l9-5 9 5v13"></path><path d="M9 21V12h6v9"></path></svg>
+                </span>
+                <div class="profile-stat__body">
+                    <span class="profile-stat__k">Salas activas</span>
+                    <span class="profile-stat__v num" id="stat-rooms">—</span>
+                    <span class="profile-stat__sub" id="stat-rooms-sub">— en total</span>
+                </div>
             </article>
-            <article class="profile-stat">
-                <span class="profile-stat__k eyebrow">Estudiantes</span>
-                <span class="profile-stat__v num" id="stat-students">—</span>
-                <span class="profile-stat__sub">en tus cohortes</span>
+            <article class="profile-stat" data-accent="info">
+                <span class="profile-stat__icon" aria-hidden="true">
+                    <svg class="icon-svg" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                </span>
+                <div class="profile-stat__body">
+                    <span class="profile-stat__k">Estudiantes</span>
+                    <span class="profile-stat__v num" id="stat-students">—</span>
+                    <span class="profile-stat__sub">en tus cohortes</span>
+                </div>
             </article>
-            <article class="profile-stat">
-                <span class="profile-stat__k eyebrow">Preguntas aprobadas</span>
-                <span class="profile-stat__v num" id="stat-questions">—</span>
-                <span class="profile-stat__sub" id="stat-questions-sub">— pendientes</span>
+            <article class="profile-stat" data-accent="secondary">
+                <span class="profile-stat__icon" aria-hidden="true">
+                    <svg class="icon-svg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><polyline points="9 15 11 17 15 12"></polyline></svg>
+                </span>
+                <div class="profile-stat__body">
+                    <span class="profile-stat__k">Preguntas aprobadas</span>
+                    <span class="profile-stat__v num" id="stat-questions">—</span>
+                    <span class="profile-stat__sub" id="stat-questions-sub">— pendientes</span>
+                </div>
             </article>
-            <article class="profile-stat">
-                <span class="profile-stat__k eyebrow">PDFs subidos</span>
-                <span class="profile-stat__v num" id="stat-pdfs">—</span>
-                <span class="profile-stat__sub">material indexado</span>
+            <article class="profile-stat" data-accent="success">
+                <span class="profile-stat__icon" aria-hidden="true">
+                    <svg class="icon-svg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                </span>
+                <div class="profile-stat__body">
+                    <span class="profile-stat__k">PDFs subidos</span>
+                    <span class="profile-stat__v num" id="stat-pdfs">—</span>
+                    <span class="profile-stat__sub">material indexado</span>
+                </div>
             </article>
-            <article class="profile-stat">
-                <span class="profile-stat__k eyebrow">Diagnósticos IA</span>
-                <span class="profile-stat__v num" id="stat-diagnoses" data-tone="amber">—</span>
-                <span class="profile-stat__sub">generados para tus estudiantes</span>
+            <article class="profile-stat" data-accent="warning">
+                <span class="profile-stat__icon" aria-hidden="true">
+                    <svg class="icon-svg" viewBox="0 0 24 24"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path></svg>
+                </span>
+                <div class="profile-stat__body">
+                    <span class="profile-stat__k">Diagnósticos IA</span>
+                    <span class="profile-stat__v num" id="stat-diagnoses">—</span>
+                    <span class="profile-stat__sub">generados para tus estudiantes</span>
+                </div>
             </article>
         </section>
 

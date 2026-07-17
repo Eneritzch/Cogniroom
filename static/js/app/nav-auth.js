@@ -82,7 +82,7 @@ function populateTopbar(user) {
     const lastName = user.last_name || '';
     const fullName = lastName ? `${firstName} ${lastName}` : firstName;
 
-    if ($name) $name.textContent = firstName;
+    if ($name) $name.textContent = user.username || firstName;
     if ($role) {
         $role.textContent = user.role === 'teacher' ? 'Docente' : 'Estudiante';
         $role.dataset.role = user.role;
@@ -376,8 +376,36 @@ async function setupRequestsBadge() {
 }
 
 
+const COGNITIVE_TIPS = [
+    'La sobreconfianza es no saber que no sabes: declarar tu confianza honesta es el primer paso.',
+    'Si aciertas con poca seguridad, sabías más de lo que creías. Confía un poco más.',
+    'Calibrarse no es saber más, es conocer mejor tus propios límites.',
+    'Un error que reconoces vale más que un acierto que no entiendes.',
+    'El punto ciego más peligroso es el tema que crees dominar y no dominas.',
+    'Antes de responder, pregúntate: ¿qué tan seguro estoy y por qué?',
+    'Estudiar lo que ya sabes es cómodo; el avance está en lo que evitas.',
+    'La confianza bien calibrada predice tu rendimiento mejor que la nota sola.',
+];
+
+function setupTip() {
+    const $text = document.getElementById('topbar-tip-text');
+    if (!$text) return;
+    let idx = Math.floor(Math.random() * COGNITIVE_TIPS.length);
+    $text.textContent = COGNITIVE_TIPS[idx];
+    setInterval(() => {
+        idx = (idx + 1) % COGNITIVE_TIPS.length;
+        $text.style.opacity = '0';
+        setTimeout(() => {
+            $text.textContent = COGNITIVE_TIPS[idx];
+            $text.style.opacity = '1';
+        }, 400);
+    }, 12000);
+}
+
+
 async function updateNav() {
     setupSidebarToggle();
+    setupTip();
 
     if (!tokens.access) {
         filterNav(null);

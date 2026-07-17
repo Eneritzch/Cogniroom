@@ -19,30 +19,16 @@
 
         {% include 'app/partials/_app-topbar.html' %}
 
-        <header class="clay-header" data-accent="primary">
-            <div class="clay-header__lead">
-                <span class="clay-header__icon" aria-hidden="true">
-                    <svg class="icon-svg" width="24" height="24" viewBox="0 0 24 24">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="12" cy="7" r="4"></circle>
-                    </svg>
-                </span>
-                <div class="clay-header__text">
-                    <span class="clay-header__eyebrow">Perfil</span>
-                    <h1 class="clay-header__title">Tu cuenta</h1>
-                    <p class="clay-header__meta">Datos personales, estadísticas y seguridad</p>
-                </div>
-            </div>
-        </header>
-
-        <section class="profile-hero" aria-label="Resumen de identidad">
+        <header class="profile-hero" aria-label="Resumen de identidad">
             <div class="profile-hero__avatar" id="profile-avatar" aria-hidden="true">—</div>
             <div class="profile-hero__id">
-                <h2 class="profile-hero__name" id="profile-name">—</h2>
+                <h1 class="profile-hero__name" id="profile-name">—</h1>
                 <div class="profile-hero__sub">
                     <span class="profile-hero__role" data-role="student">Estudiante</span>
                     <span class="profile-hero__sep">·</span>
                     <span id="profile-institution">—</span>
+                    <span class="profile-hero__sep">·</span>
+                    <span class="num" id="profile-username" title="Tu usuario para iniciar sesión">—</span>
                 </div>
                 <div class="profile-hero__meta num">
                     <span id="profile-member">—</span>
@@ -51,28 +37,48 @@
             <div class="profile-hero__cta">
                 <span class="pill" data-profile="calibrated" id="profile-pill">—</span>
             </div>
-        </section>
+        </header>
 
         <section class="profile-stats" aria-label="Estadísticas globales">
-            <article class="profile-stat">
-                <span class="profile-stat__k eyebrow">Autoconocimiento</span>
-                <span class="profile-stat__v num" id="stat-icc">—</span>
-                <span class="profile-stat__sub" id="stat-icc-sub">de 0 a 1 · mientras más alto, mejor</span>
+            <article class="profile-stat" data-accent="primary">
+                <span class="profile-stat__icon" aria-hidden="true">
+                    <svg class="icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+                </span>
+                <div class="profile-stat__body">
+                    <span class="profile-stat__k">Autoconocimiento</span>
+                    <span class="profile-stat__v num" id="stat-icc">—</span>
+                    <span class="profile-stat__sub" id="stat-icc-sub">de 0 a 1 · mientras más alto, mejor</span>
+                </div>
             </article>
-            <article class="profile-stat">
-                <span class="profile-stat__k eyebrow">Lo que realmente sabe</span>
-                <span class="profile-stat__v num" id="stat-mastery">—</span>
-                <span class="profile-stat__sub">promedio en tus temas</span>
+            <article class="profile-stat" data-accent="info">
+                <span class="profile-stat__icon" aria-hidden="true">
+                    <svg class="icon-svg" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                </span>
+                <div class="profile-stat__body">
+                    <span class="profile-stat__k">Lo que realmente sabe</span>
+                    <span class="profile-stat__v num" id="stat-mastery">—</span>
+                    <span class="profile-stat__sub">promedio en tus temas</span>
+                </div>
             </article>
-            <article class="profile-stat">
-                <span class="profile-stat__k eyebrow">Sesiones</span>
-                <span class="profile-stat__v num" id="stat-sessions">—</span>
-                <span class="profile-stat__sub" id="stat-answers-sub">— respuestas</span>
+            <article class="profile-stat" data-accent="secondary">
+                <span class="profile-stat__icon" aria-hidden="true">
+                    <svg class="icon-svg" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                </span>
+                <div class="profile-stat__body">
+                    <span class="profile-stat__k">Sesiones</span>
+                    <span class="profile-stat__v num" id="stat-sessions">—</span>
+                    <span class="profile-stat__sub" id="stat-answers-sub">— respuestas</span>
+                </div>
             </article>
-            <article class="profile-stat">
-                <span class="profile-stat__k eyebrow">Temas seguidos</span>
-                <span class="profile-stat__v num" id="stat-nodes">—</span>
-                <span class="profile-stat__sub" id="stat-diagnoses-sub">— diagnósticos IA</span>
+            <article class="profile-stat" data-accent="success">
+                <span class="profile-stat__icon" aria-hidden="true">
+                    <svg class="icon-svg" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                </span>
+                <div class="profile-stat__body">
+                    <span class="profile-stat__k">Temas seguidos</span>
+                    <span class="profile-stat__v num" id="stat-nodes">—</span>
+                    <span class="profile-stat__sub" id="stat-diagnoses-sub">— diagnósticos IA</span>
+                </div>
             </article>
         </section>
 

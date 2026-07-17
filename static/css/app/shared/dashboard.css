@@ -1698,6 +1698,49 @@
   text-align: center;
 }
 
+/* Tip cognitivo rotativo: llena el hueco izquierdo del topbar con una frase
+   educativa del sistema. Oculto en móvil (el topbar ahí es estrecho). */
+.topbar-tip {
+  display: none;
+  align-items: center;
+  gap: var(--s-2);
+  max-width: 46ch;
+  padding: 6px 14px 6px 8px;
+  background: color-mix(in srgb, var(--sage-soft) 55%, var(--paper-elevated));
+  border-radius: var(--r-pill);
+  box-shadow: var(--clay-tile);
+}
+
+@media (min-width: 768px) {
+  .topbar-tip:not([hidden]) { display: inline-flex; }
+}
+
+.topbar-tip__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--sage);
+  color: var(--color-text-on-accent);
+  box-shadow: var(--clay-tile);
+}
+
+.topbar-tip__icon svg { width: 15px; height: 15px; }
+
+.topbar-tip__text {
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--ink-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  transition: opacity var(--dur-base) var(--ease-out);
+}
+
 .dashboard-shell__user {
   margin-left: auto;
   display: flex;
@@ -1717,7 +1760,7 @@
   border: 1px solid transparent;
   border-radius: var(--r-clay-sm);
   box-shadow: var(--clay-tile);
-  color: var(--ink);
+  color: var(--sage);
   cursor: pointer;
   transition: transform var(--dur-base) var(--ease-spring),
               box-shadow var(--dur-base) var(--ease-out);
@@ -1855,11 +1898,12 @@
   justify-content: center;
   width: 32px;
   height: 32px;
-  background: var(--ink);
-  color: var(--paper-surface);
+  background: var(--gradient-brand);
+  color: var(--color-text-on-accent);
   border-radius: 50%;
   font-size: 12px;
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-semibold);
+  box-shadow: var(--clay-tile);
 }
 
 .dashboard-shell__profile-meta {
@@ -1873,15 +1917,22 @@
 }
 
 .dashboard-shell__profile-name {
-  font-size: 13px;
-  font-weight: var(--fw-medium);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: var(--fw-semibold);
   color: var(--ink);
 }
 
 .dashboard-shell__profile-role {
-  font-size: 10px;
-  color: var(--ink-muted);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sage-strong);
 }
+
+.dashboard-shell__profile-role[data-role="teacher"] { color: var(--terracotta); }
 
 
 /* KPIs */

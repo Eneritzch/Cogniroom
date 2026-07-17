@@ -1,5 +1,6 @@
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
+from django.db.models import Q
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
@@ -186,15 +187,22 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
 
 
 class LoginSerializer(serializers.Serializer):
-    email = serializers.EmailField()
+    # Acepta correo o username en un mismo campo. Se mantiene 'email' como alias
+    # por compatibilidad con clientes que aún envíen ese nombre.
+    identifier = serializers.CharField(required=False)
+    email = serializers.CharField(required=False)
     password = serializers.CharField(write_only=True)
 
     def validate(self, attrs):
-        email = attrs.get('email')
+        login_id = (attrs.get('identifier') or attrs.get('email') or '').strip()
         password = attrs.get('password')
-        try:
-            user = User.objects.get(email__iexact=email)
-        except User.DoesNotExist:
+        if not login_id:
+            raise serializers.ValidationError('Ingresa tu correo o usuario.')
+
+        user = User.objects.filter(
+            Q(email__iexact=login_id) | Q(username__iexact=login_id)
+        ).first()
+        if user is None:
             raise serializers.ValidationError('Invalid credentials.')
 
         user_auth = authenticate(username=user.username, password=password)
