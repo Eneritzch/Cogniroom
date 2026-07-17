@@ -207,8 +207,8 @@ class Command(BaseCommand):
         self._seed_history(room, students, recursividad)
 
         self.stdout.write(self.style.SUCCESS('Seed complete.'))
-        self.stdout.write(f'Teacher login: teacher@cogniroom.com / password123')
-        self.stdout.write(f'Student login: student1@cogniroom.com / password123')
+        self.stdout.write('Teacher login: teacher@cogniroom.com / password123')
+        self.stdout.write('Student login: student1@cogniroom.com / password123')
         self.stdout.write(f'Room access code: {room.access_code}')
 
     def _seed_history(self, room, students, node):

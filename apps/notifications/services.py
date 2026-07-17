@@ -10,10 +10,8 @@ from .models import Notification
 logger = logging.getLogger(__name__)
 
 
-# Etiqueta (eyebrow) y color de acento del email por tipo de notificación. Los
-# colores son hex fijos: los clientes de correo no soportan variables CSS.
-# Paleta teal monocromática (clay): sage #009490 · stone #62c4d3 · petróleo
-# #114b5f. Coral #e0604f SOLO para alertas reales (riesgo, rechazo).
+# Eyebrow y color de acento del email por tipo. Hex fijos (los clientes de correo
+# no soportan variables CSS). Coral #e0604f solo para alertas reales.
 EMAIL_CATEGORIES = {
     Notification.KIND_STUDENT_AT_RISK:   ('Alerta cognitiva', '#e0604f'),
     Notification.KIND_DIAGNOSIS_READY:   ('Tu diagnóstico', '#009490'),
@@ -72,7 +70,7 @@ def notify(recipient, *, kind, title, body='', link='', email=True, email_async=
     if email and to_email:
         eyebrow, accent = EMAIL_CATEGORIES.get(kind, DEFAULT_EMAIL_CATEGORY)
         email_kwargs = {'eyebrow': eyebrow, 'accent': accent}
-        if email_async:
+        if email_async and not getattr(settings, 'TASKS_ALWAYS_EAGER', False):
             threading.Thread(
                 target=_send_notification_email,
                 args=(to_email, title, body, link),
@@ -93,7 +91,7 @@ def send_branded_email(to_email, *, title, body='', link='', action_label='Ver e
     if not to_email:
         return
     email_kwargs = {'action_label': action_label, 'eyebrow': eyebrow, 'accent': accent}
-    if async_send:
+    if async_send and not getattr(settings, 'TASKS_ALWAYS_EAGER', False):
         threading.Thread(
             target=_send_notification_email,
             args=(to_email, title, body, link),

@@ -1,8 +1,13 @@
+import sys
 from pathlib import Path
 from datetime import timedelta
 from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Tareas en segundo plano (generación IA, diagnóstico): en tests se ejecutan
+# de forma síncrona para que sean deterministas y no filtren estado entre casos.
+TASKS_ALWAYS_EAGER = config('TASKS_ALWAYS_EAGER', default=False, cast=bool) or ('test' in sys.argv)
 
 DEBUG = config('DEBUG', default=False, cast=bool)
 
@@ -21,6 +26,9 @@ ALLOWED_HOSTS = [
 ]
 
 ANTHROPIC_API_KEY = config('ANTHROPIC_API_KEY', default='')
+
+# Preguntas con IA que un docente puede generar por mes calendario. 0 = sin límite.
+AI_MONTHLY_QUESTION_QUOTA = config('AI_MONTHLY_QUESTION_QUOTA', default=100, cast=int)
 
 # El alta de docentes se valida contra el código por institución
 # (Institution.teacher_code), no contra un secreto global. Ver apps.users.
@@ -90,11 +98,7 @@ DATABASES = {
 
 AUTH_USER_MODEL = 'users.User'
 
-# Email. Por defecto consola (imprime en la terminal, no envía de verdad) para
-# desarrollar sin credenciales. Para envío real con Gmail/SMTP, definir en .env:
-#   EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
-#   EMAIL_HOST=smtp.gmail.com  EMAIL_PORT=587  EMAIL_USE_TLS=True
-#   EMAIL_HOST_USER=tu@gmail.com  EMAIL_HOST_PASSWORD=<contraseña de aplicación>
+# Por defecto consola (no envía); para envío real configurar SMTP en .env (ver .env.example).
 EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
 EMAIL_HOST = config('EMAIL_HOST', default='')
 EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)

@@ -26,11 +26,11 @@
 .pill[data-quadrant='calibrated']     { background: var(--moss-soft);  color: var(--moss); }
 .pill[data-quadrant='underconfident'] { background: var(--stone-soft); color: var(--stone); }
 .pill[data-quadrant='overconfident']  { background: var(--rust-soft);  color: var(--rust); }
-.pill[data-quadrant='aware_gap']      { background: var(--amber-soft); color: var(--amber); }
+.pill[data-quadrant='aware_gap']      { background: var(--terracotta-soft); color: var(--terracotta); }
 .pill[data-quadrant='calibrated']::before     { background: var(--moss); }
 .pill[data-quadrant='underconfident']::before { background: var(--stone); }
 .pill[data-quadrant='overconfident']::before  { background: var(--rust); }
-.pill[data-quadrant='aware_gap']::before      { background: var(--amber); }
+.pill[data-quadrant='aware_gap']::before      { background: var(--terracotta); }
 
 .pill[data-risk='low']    { background: var(--moss-soft);  color: var(--moss); }
 .pill[data-risk='medium'] { background: var(--amber-soft); color: var(--amber); }

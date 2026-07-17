@@ -75,7 +75,7 @@
 
 .mq-tile[data-quadrant='overconfident']  { border-left-color: var(--rust); }
 .mq-tile[data-quadrant='underconfident'] { border-left-color: var(--stone); }
-.mq-tile[data-quadrant='aware_gap']      { border-left-color: var(--amber); }
+.mq-tile[data-quadrant='aware_gap']      { border-left-color: var(--terracotta); }
 .mq-tile[data-quadrant='calibrated']     { border-left-color: var(--moss); }
 
 /* El crítico (no sabe y confía) resalta siempre para que no pase desapercibido. */
@@ -94,7 +94,7 @@
 
 .mq-tile[data-quadrant='overconfident']  .mq-tile__count { color: var(--rust); }
 .mq-tile[data-quadrant='underconfident'] .mq-tile__count { color: var(--stone); }
-.mq-tile[data-quadrant='aware_gap']      .mq-tile__count { color: var(--amber); }
+.mq-tile[data-quadrant='aware_gap']      .mq-tile__count { color: var(--terracotta); }
 .mq-tile[data-quadrant='calibrated']     .mq-tile__count { color: var(--moss); }
 
 .mq-tile__label {
@@ -391,7 +391,7 @@
 
 .metrics-chip__dot[data-quadrant='overconfident']  { background: var(--rust); }
 .metrics-chip__dot[data-quadrant='underconfident'] { background: var(--stone); }
-.metrics-chip__dot[data-quadrant='aware_gap']      { background: var(--amber); }
+.metrics-chip__dot[data-quadrant='aware_gap']      { background: var(--terracotta); }
 .metrics-chip__dot[data-quadrant='calibrated']     { background: var(--moss); }
 
 .metrics-chip__count {
@@ -873,7 +873,7 @@
 .mlegend__dot { width: 10px; height: 10px; border-radius: 3px; flex: 0 0 auto; }
 .mlegend__dot[data-quadrant='overconfident']  { background: var(--rust); }
 .mlegend__dot[data-quadrant='underconfident'] { background: var(--stone); }
-.mlegend__dot[data-quadrant='aware_gap']      { background: var(--amber); }
+.mlegend__dot[data-quadrant='aware_gap']      { background: var(--terracotta); }
 .mlegend__dot[data-quadrant='calibrated']     { background: var(--moss); }
 
 
@@ -931,7 +931,7 @@
 .mrow__seg { display: block; min-width: 5px; height: 12px; }
 .mrow__seg[data-quadrant='overconfident']  { background: var(--rust); }
 .mrow__seg[data-quadrant='underconfident'] { background: var(--stone); }
-.mrow__seg[data-quadrant='aware_gap']      { background: var(--amber); }
+.mrow__seg[data-quadrant='aware_gap']      { background: var(--terracotta); }
 .mrow__seg[data-quadrant='calibrated']     { background: var(--moss); }
 .mrow__bar-empty { padding: 0 10px; font-size: 11px; color: var(--ink-faint); }
 
@@ -1036,7 +1036,7 @@
 .qm-zone[data-quadrant='calibrated']     { fill: color-mix(in srgb, var(--moss) 30%, transparent); }
 .qm-zone[data-quadrant='underconfident'] { fill: color-mix(in srgb, var(--stone) 28%, transparent); }
 .qm-zone[data-quadrant='overconfident']  { fill: color-mix(in srgb, var(--rust) 34%, transparent); }
-.qm-zone[data-quadrant='aware_gap']      { fill: color-mix(in srgb, var(--amber) 22%, transparent); }
+.qm-zone[data-quadrant='aware_gap']      { fill: color-mix(in srgb, var(--terracotta) 22%, transparent); }
 .qm-th { stroke: color-mix(in srgb, var(--ink) 45%, transparent); stroke-width: 0.5; stroke-dasharray: 1.8 1.8; }
 .qm-frame { stroke: color-mix(in srgb, var(--ink) 22%, transparent); stroke-width: 0.5; }
 .qm-dot {
@@ -1048,7 +1048,7 @@
 }
 .qm-dot[data-quadrant='overconfident']  { fill: var(--rust); }
 .qm-dot[data-quadrant='underconfident'] { fill: var(--stone); }
-.qm-dot[data-quadrant='aware_gap']      { fill: var(--amber); }
+.qm-dot[data-quadrant='aware_gap']      { fill: var(--terracotta); }
 .qm-dot[data-quadrant='calibrated']     { fill: var(--moss); }
 .qm-dot:hover { r: 3.6; }
 
@@ -1244,7 +1244,7 @@
 .donut__seg { fill: none; stroke-linecap: butt; transition: opacity var(--dur-fast) var(--ease-out); }
 .donut__seg[data-quadrant='calibrated']     { stroke: var(--moss); }
 .donut__seg[data-quadrant='underconfident'] { stroke: var(--stone); }
-.donut__seg[data-quadrant='aware_gap']      { stroke: var(--amber); }
+.donut__seg[data-quadrant='aware_gap']      { stroke: var(--terracotta); }
 .donut__seg[data-quadrant='overconfident']  { stroke: var(--rust); }
 .donut__seg:hover { opacity: 0.82; }
 
@@ -1280,7 +1280,7 @@
 .donut__legdot { width: 11px; height: 11px; border-radius: 3px; flex: 0 0 auto; }
 .donut__legdot[data-quadrant='calibrated']     { background: var(--moss); }
 .donut__legdot[data-quadrant='underconfident'] { background: var(--stone); }
-.donut__legdot[data-quadrant='aware_gap']      { background: var(--amber); }
+.donut__legdot[data-quadrant='aware_gap']      { background: var(--terracotta); }
 .donut__legdot[data-quadrant='overconfident']  { background: var(--rust); }
 .donut__leglabel { flex: 1; min-width: 0; color: var(--ink); }
 .donut__legval { flex: 0 0 auto; width: 20px; text-align: right; font-family: var(--font-mono); font-weight: var(--fw-semibold); color: var(--ink); }

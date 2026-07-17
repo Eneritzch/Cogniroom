@@ -81,11 +81,3 @@ class JoinRoomSerializer(serializers.Serializer):
 class AssignSectionSerializer(serializers.Serializer):
     # null = quitar la sección (dejar al estudiante sin sección).
     section_id = serializers.IntegerField(required=False, allow_null=True)
-
-
-class RoomMembershipSerializer(serializers.ModelSerializer):
-    student = UserSerializer(read_only=True)
-
-    class Meta:
-        model = RoomMembership
-        fields = ['id', 'student', 'joined_at']

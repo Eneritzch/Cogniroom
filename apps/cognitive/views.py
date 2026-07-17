@@ -11,6 +11,14 @@ from apps.rooms.models import Room, RoomMembership
 from apps.sessions.models import Answer, EvaluationSession
 from services.cognitive_quadrant import QUADRANTS, classify_quadrant, is_critical
 
+from .metrics import (
+    category_breakdown,
+    quadrant_counts,
+    room_avg_icc,
+    room_blind_spots,
+    student_cognitive_rows,
+    weak_category,
+)
 from .models import (
     AIDiagnosis,
     BKTState,
@@ -43,34 +51,6 @@ def _parse_section(request, room):
             status=status.HTTP_404_NOT_FOUND,
         )
     return sid, None
-
-
-def _category_breakdown(answers):
-    """Aciertos por categoría cognitiva (nivel de Bloom de la pregunta) de un
-    queryset de Answer. Sirve para ver en qué tipo de razonamiento falla el
-    estudiante (análisis, aplicación, memoria/recordar…). Ignora preguntas sin
-    clasificar. Devuelve [{level, total, correct, accuracy, weak}] ordenado por
-    accuracy ascendente (lo más flojo primero)."""
-    from django.db.models import Count, Q as Qf
-    rows = (
-        answers.exclude(question__cognitive_level='')
-        .values('question__cognitive_level')
-        .annotate(total=Count('id'), correct=Count('id', filter=Qf(is_correct=True)))
-        .order_by()
-    )
-    result = []
-    for r in rows:
-        total = r['total']
-        acc = round(r['correct'] / total, 4) if total else 0.0
-        result.append({
-            'level': r['question__cognitive_level'],
-            'total': total,
-            'correct': r['correct'],
-            'accuracy': acc,
-            'weak': total >= 2 and acc < 0.6,
-        })
-    result.sort(key=lambda c: c['accuracy'])
-    return result
 
 
 class MyProfileView(APIView):
@@ -117,7 +97,7 @@ class MyProfileView(APIView):
             'ai_diagnoses_count': ai_diagnoses_count,
             'last_diagnosis': AIDiagnosisSerializer(last_diag).data if last_diag else None,
             'bkt_states': BKTStateSerializer(bkt_states, many=True).data,
-            'categories': _category_breakdown(Answer.objects.filter(session__student=user)),
+            'categories': category_breakdown(Answer.objects.filter(session__student=user)),
         })
 
 
@@ -137,7 +117,7 @@ class MyNodesView(APIView):
 
     def get(self, request):
         user = request.user
-        bkt_states = BKTState.objects.filter(student=user).select_related('node')
+        bkt_states = BKTState.objects.filter(student=user).select_related('node__room')
 
         result = []
         for state in bkt_states:
@@ -154,11 +134,14 @@ class MyNodesView(APIView):
                 elif diff < -0.05:
                     trend = 'empeorando'
 
+            room = state.node.room
             result.append({
                 'node_id': state.node_id,
                 'node_name': state.node.name,
                 'name': state.node.name,
                 'description': '',
+                'room_id': room.id,
+                'room_name': room.name,
                 'p_mastery': round(state.p_mastery, 4),
                 'avg_confidence': round(latest.avg_confidence, 4) if latest else None,
                 'icc_value': round(latest.icc_value, 4) if latest else None,
@@ -238,87 +221,11 @@ class MyNodeDetailView(APIView):
             'p_guess': round(bkt.p_guess, 4),
             'p_slip': round(bkt.p_slip, 4),
             'diagnosis': diagnosis,
-            'categories': _category_breakdown(
+            'categories': category_breakdown(
                 Answer.objects.filter(session__student=user, question__node_id=node_id)
             ),
             'recentResponses': recent,
         })
-
-
-def _student_cognitive_rows(room, section_id=None):
-    """Por estudiante de la sala (opcional filtrado por sección): dominio real y
-    confianza promedio + cuadrante. Omite a quienes aún no tienen datos
-    cognitivos. Base compartida por el panel de métricas del docente."""
-    memberships = RoomMembership.objects.filter(room=room).select_related('student')
-    if section_id is not None:
-        memberships = memberships.filter(section_id=section_id)
-    rows = []
-    for m in memberships:
-        agg = (
-            CognitiveIndex.objects.filter(node__room=room, student=m.student)
-            .aggregate(gap=Avg('metacognitive_gap'), conf=Avg('avg_confidence'),
-                       mastery=Avg('bkt_mastery'), icc=Avg('icc_value'))
-        )
-        if agg['mastery'] is None or agg['conf'] is None:
-            continue
-        mastery = float(agg['mastery'])
-        conf = float(agg['conf'])
-        rows.append({
-            'student': m.student,
-            'mastery': round(mastery, 4),
-            'confidence': round(conf, 4),
-            'gap': round(float(agg['gap'] or 0.0), 4),
-            'icc': round(float(agg['icc'] or 0.0), 4),
-            'quadrant': classify_quadrant(mastery, conf),
-        })
-    return rows
-
-
-def _quadrant_counts(rows):
-    counts = {'calibrated': 0, 'underconfident': 0, 'overconfident': 0, 'aware_gap': 0}
-    for r in rows:
-        if r['quadrant'] in counts:
-            counts[r['quadrant']] += 1
-    return counts
-
-
-def _weak_category(answers):
-    """Categoría cognitiva más floja de un queryset de Answer (o None)."""
-    cats = _category_breakdown(answers)
-    if not cats:
-        return None
-    weak = [c for c in cats if c['weak']]
-    return (weak[0] if weak else cats[0])['level']
-
-
-def _room_blind_spots(room, section_id=None):
-    spots = []
-    for node in room.nodes.order_by('id'):
-        ci = CognitiveIndex.objects.filter(node=node)
-        if section_id is not None:
-            ci = ci.filter(
-                student__room_memberships__room=room,
-                student__room_memberships__section_id=section_id,
-            )
-        total = ci.values('student').distinct().count()
-        if total == 0:
-            continue
-        ipc = round(float(ci.aggregate(v=Avg('icc_value'))['v'] or 0.0), 4)
-        spots.append({
-            'node': node.id,
-            'node_name': node.name,
-            'ipc_value': ipc,
-            'total_student': total,
-            'alert': ipc < 0.5,
-        })
-    spots.sort(key=lambda s: s['ipc_value'])
-    return spots
-
-
-def _room_avg_icc(room):
-    return round(float(
-        CognitiveIndex.objects.filter(node__room=room).aggregate(v=Avg('icc_value'))['v'] or 0.0
-    ), 4)
 
 
 class RoomOverviewView(APIView):
@@ -339,8 +246,8 @@ class RoomOverviewView(APIView):
         if error:
             return error
 
-        rows = _student_cognitive_rows(room, section_id)
-        counts = _quadrant_counts(rows)
+        rows = student_cognitive_rows(room, section_id)
+        counts = quadrant_counts(rows)
 
         answers = Answer.objects.filter(session__room=room)
         if section_id is not None:
@@ -348,7 +255,7 @@ class RoomOverviewView(APIView):
                 session__student__room_memberships__room=room,
                 session__student__room_memberships__section_id=section_id,
             )
-        categories = _category_breakdown(answers)
+        categories = category_breakdown(answers)
 
         # Atender primero: descalibrados (críticos primero, luego por brecha).
         attend = [r for r in rows if r['quadrant'] in ('overconfident', 'underconfident')]
@@ -370,7 +277,7 @@ class RoomOverviewView(APIView):
                 'metacognitive_gap': r['gap'],
                 'bkt_mastery': r['mastery'],
                 'avg_confidence': r['confidence'],
-                'weak_category': _weak_category(
+                'weak_category': weak_category(
                     Answer.objects.filter(session__room=room, session__student=s)
                 ),
                 'diagnosis': (diag.recommendation or diag.reasoning) if diag else None,
@@ -395,11 +302,11 @@ class RoomOverviewView(APIView):
             'room': {'id': room.id, 'name': room.name, 'mode': room.mode},
             'students': total_students,
             'evaluated': len(rows),
-            'avg_icc': _room_avg_icc(room),
+            'avg_icc': room_avg_icc(room),
             'quadrants': counts,
             'categories': categories,
             'attend_first': attend_first,
-            'blind_spots': _room_blind_spots(room, section_id),
+            'blind_spots': room_blind_spots(room, section_id),
             'scatter': scatter,
         })
 
@@ -420,11 +327,11 @@ class RoomsMetricsSummaryView(APIView):
         icc_sum = 0.0
         icc_n = 0
         for room in rooms:
-            rows = _student_cognitive_rows(room)
-            counts = _quadrant_counts(rows)
+            rows = student_cognitive_rows(room)
+            counts = quadrant_counts(rows)
             at_risk = counts['overconfident'] + counts['underconfident']
             students = RoomMembership.objects.filter(room=room).count()
-            avg_icc = _room_avg_icc(room)
+            avg_icc = room_avg_icc(room)
             sessions = EvaluationSession.objects.filter(
                 room=room, status=EvaluationSession.STATUS_COMPLETED
             ).count()
@@ -439,7 +346,7 @@ class RoomsMetricsSummaryView(APIView):
                 'quadrants': counts,
                 'at_risk_count': at_risk,
                 'critical_count': counts['overconfident'],
-                'weak_category': _weak_category(Answer.objects.filter(session__room=room)),
+                'weak_category': weak_category(Answer.objects.filter(session__room=room)),
             })
             agg_students += students
             agg_at_risk += at_risk
@@ -520,11 +427,8 @@ class AtRiskView(APIView):
         if error:
             return error
 
-        # En riesgo = descalibración metacognitiva. Se cruza lo que el estudiante
-        # REALMENTE sabe (BKT) con lo que CREE saber (confianza) en 4 cuadrantes;
-        # el crítico es "no sabe y está confiado". Se calcula desde las métricas
-        # reales (no depende de que Claude haya corrido). Los cuadrantes sanos
-        # (sabe y confía / no sabe y lo reconoce) no se listan como alerta.
+        # En riesgo = descalibración: se cruza dominio real (BKT) con confianza en
+        # 4 cuadrantes; el crítico es "no sabe y está confiado". No depende de Claude.
         result = []
         memberships = RoomMembership.objects.filter(room=room).select_related('student')
         if section_id is not None:
@@ -734,7 +638,7 @@ class StudentDetailView(APIView):
                 ).count(),
             },
             'nodes': nodes_data,
-            'categories': _category_breakdown(
+            'categories': category_breakdown(
                 Answer.objects.filter(session__room=room, session__student=student)
             ),
             'diagnoses': AIDiagnosisSerializer(diagnoses, many=True).data,

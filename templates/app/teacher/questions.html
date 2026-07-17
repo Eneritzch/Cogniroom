@@ -281,19 +281,19 @@
                                 </select>
                             </div>
                             <div class="qmodal__field qmodal__field--narrow">
-                                <label class="form-label" for="gen-count">Cantidad</label>
-                                <input class="form-control" type="number" id="gen-count" min="1" max="20" value="5">
+                                <label class="form-label" for="gen-count">Cantidad <span class="qmodal__hint-inline">1–10</span></label>
+                                <input class="form-control" type="number" id="gen-count" min="1" max="10" value="5">
                             </div>
                         </div>
 
                         <label class="form-label" for="gen-pdf">Fuente desde PDF <span class="qmodal__hint-inline">opcional</span></label>
                         <select class="form-select" id="gen-pdf">
-                            <option value="">Sin PDF — usar el texto de abajo</option>
+                            <option value="">Sin PDF — pegar el material abajo</option>
                         </select>
 
-                        <label class="form-label" for="gen-content">Temas</label>
+                        <label class="form-label" for="gen-content" id="gen-content-label">Material</label>
                         <textarea class="form-control" id="gen-content" rows="5"
-                                  placeholder="Pegue el material sobre el que generar las preguntas (o elija un PDF arriba)…"></textarea>
+                                  placeholder="Pegue el material sobre el que generar las preguntas…"></textarea>
                         <p class="qmodal__hint">En salas grupales, las preguntas generadas quedan <strong>por revisar</strong> hasta que las apruebes.</p>
                         <p class="qmodal__estimate" id="gen-estimate" aria-live="polite" hidden></p>
                     </div>

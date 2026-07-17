@@ -1,6 +1,7 @@
-import random
-
+from django.conf import settings
+from django.db.models import Sum
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
@@ -12,7 +13,22 @@ from apps.notifications.services import notify
 from apps.rooms.models import Room, RoomMembership
 from services.claude_service import CognitiveAnalysisService
 
-from .models import KnowledgeNode, PDFDocument, Question
+from .extractors import ALLOWED_UPLOAD_EXTENSIONS, extract_document_text
+from .generation import run_generation
+from .models import AIGenerationLog, KnowledgeNode, PDFDocument, Question
+
+
+def _question_quota_status(teacher):
+    """Preguntas IA generadas este mes por el docente. Devuelve (limit, used,
+    remaining); limit=0 = sin límite (remaining None)."""
+    limit = getattr(settings, 'AI_MONTHLY_QUESTION_QUOTA', 0) or 0
+    if limit <= 0:
+        return 0, 0, None
+    month_start = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    used = AIGenerationLog.objects.filter(
+        teacher=teacher, created_at__gte=month_start
+    ).aggregate(n=Sum('created_count'))['n'] or 0
+    return limit, used, max(0, limit - used)
 from .serializers import (
     ApproveQuestionsSerializer,
     GenerateQuestionsSerializer,
@@ -32,22 +48,6 @@ def _is_member(user, room):
     if room.mode == 'individual':
         return room.teacher_id == user.id
     return RoomMembership.objects.filter(room=room, student=user).exists()
-
-
-def shuffle_options(options, correct_indices, qtype):
-    """Randomiza el orden de las opciones y reubica las correctas. Los modelos de
-    lenguaje tienden a poner la respuesta correcta primero (en nuestras pruebas,
-    el 100% en la opción A), lo que el estudiante detecta y juega. Randomizar la
-    posición fuerza a evaluar conocimiento real. Verdadero/Falso conserva su orden
-    natural (Verdadero, Falso)."""
-    if qtype == Question.TYPE_TRUE_FALSE or len(options) < 2:
-        return options, sorted(correct_indices)
-    order = list(range(len(options)))
-    random.shuffle(order)
-    new_options = [options[i] for i in order]
-    correct_set = set(correct_indices)
-    new_correct = sorted(j for j, old in enumerate(order) if old in correct_set)
-    return new_options, new_correct
 
 
 class NodeListCreateView(APIView):
@@ -163,16 +163,31 @@ class GenerateQuestionsView(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
+        limit, used, remaining = _question_quota_status(request.user)
+        if limit > 0 and remaining <= 0:
+            return Response(
+                {
+                    'detail': f'Alcanzaste el límite de {limit} preguntas con IA este mes. '
+                              'Se renueva el primer día del próximo mes.',
+                    'quota': {'limit': limit, 'used': used, 'remaining': 0},
+                },
+                status=status.HTTP_429_TOO_MANY_REQUESTS,
+            )
+
         serializer = GenerateQuestionsSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
         node = get_object_or_404(KnowledgeNode, id=data['node_id'], room=room)
 
-        content = data.get('content') or ''
+        # Con documento: la fuente es el PDF y el texto del docente es el enfoque
+        # (qué temas sacar; vacío = todo). Sin documento: el texto es la fuente.
+        text = (data.get('content') or '').strip()
         source_pdf = None
         file_id = ''
-        if not content and data.get('pdf_id'):
+        content = ''
+        focus = ''
+        if data.get('pdf_id'):
             source_pdf = get_object_or_404(PDFDocument, id=data['pdf_id'], room=room)
             # PDF nativo si está subido a la Files API; si no, texto plano.
             file_id = source_pdf.file_id or ''
@@ -180,66 +195,20 @@ class GenerateQuestionsView(APIView):
                 content = source_pdf.extracted_text
                 if not content:
                     return Response(
-                        {'detail': 'PDF has no extracted text yet.'},
+                        {'detail': 'El PDF aún no tiene texto extraído.'},
                         status=status.HTTP_400_BAD_REQUEST,
                     )
+            focus = text
+        else:
+            content = text
 
-        claude = CognitiveAnalysisService()
-        generated = claude.generate_questions(
-            node_name=node.name,
-            difficulty=data['difficulty'],
-            count=data['count'],
-            content=content,
-            file_id=file_id,
-            question_type=data.get('question_type') or '',
+        created = run_generation(
+            request.user, room, node, source_pdf,
+            data['difficulty'], data['count'], content, file_id,
+            data.get('question_type') or '', focus,
         )
 
-        created = []
-        for item in generated:
-            try:
-                options = item.get('options', [])
-                qtype = item.get('question_type', Question.TYPE_SINGLE)
-                indices = item.get('correct_indices') or []
-                if not isinstance(options, list) or not (2 <= len(options) <= 6):
-                    continue
-                if qtype not in (Question.TYPE_SINGLE, Question.TYPE_TRUE_FALSE, Question.TYPE_MULTIPLE):
-                    continue
-                if not isinstance(indices, list) or not indices:
-                    continue
-                indices = [int(i) for i in indices]
-                if len(set(indices)) != len(indices):
-                    continue
-                if any(i < 0 or i >= len(options) for i in indices):
-                    continue
-                if qtype in Question.SINGLE_ANSWER_TYPES and len(indices) != 1:
-                    continue
-                if qtype == Question.TYPE_TRUE_FALSE and len(options) != 2:
-                    continue
-                # Randomiza la posición de la correcta (el modelo la pone siempre
-                # primera); imprescindible para que el estudiante no la adivine.
-                options, indices = shuffle_options(options, indices, qtype)
-                level = item.get('cognitive_level', '')
-                if level not in dict(Question.COGNITIVE_LEVEL_CHOICES):
-                    level = ''
-                q = Question.objects.create(
-                    node=node,
-                    statement=item.get('text', ''),
-                    difficulty=item.get('difficulty', data['difficulty']),
-                    question_type=qtype,
-                    cognitive_level=level,
-                    options=options,
-                    correct_indices=indices,
-                    correct_index=indices[0],
-                    rationale=item.get('rationale', ''),
-                    source=Question.SOURCE_AI,
-                    source_pdf=source_pdf,
-                )
-                created.append(q)
-            except (ValueError, TypeError):
-                continue
-
-        # En salas grupales las preguntas IA quedan pendientes: avisamos al docente
-        # que hay banco por revisar.
+        # En salas grupales las preguntas IA quedan por revisar: avisamos al docente.
         if created and room.mode == Room.MODE_GROUP:
             notify(
                 room.teacher,
@@ -250,77 +219,15 @@ class GenerateQuestionsView(APIView):
                 link='/app/questions/',
             )
 
+        limit, used, remaining = _question_quota_status(request.user)
         return Response(
             {
                 'created_count': len(created),
                 'questions': QuestionSerializer(created, many=True).data,
+                'quota': {'limit': limit, 'used': used, 'remaining': remaining},
             },
             status=status.HTTP_201_CREATED,
         )
-
-
-class EstimateGenerationView(APIView):
-    """Estima el costo de una generación con IA antes de ejecutarla: tokens de
-    entrada reales (vía count_tokens) + salida aproximada. Sirve para que el
-    docente vea el gasto en el panel antes de darle "Generar"."""
-    permission_classes = [IsAuthenticated]
-
-    INPUT_PER_M = 5.0      # Opus 4.8: USD por millón de tokens de entrada
-    OUTPUT_PER_M = 25.0    # USD por millón de tokens de salida
-    APPROX_OUTPUT_PER_Q = 500  # salida aprox. por pregunta (enunciado+opciones+racional+thinking)
-
-    def post(self, request, room_id):
-        room = get_object_or_404(Room, id=room_id)
-        if room.teacher_id != request.user.id:
-            return Response(
-                {'detail': 'Only the room owner can estimate generation.'},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        content = (request.data.get('content') or '').strip()
-        pdf_id = request.data.get('pdf_id')
-        difficulty = request.data.get('difficulty') or 'medium'
-        try:
-            count = int(request.data.get('count') or 1)
-        except (TypeError, ValueError):
-            count = 1
-        count = max(1, min(count, 20))
-
-        node_name = ''
-        node_id = request.data.get('node_id')
-        if node_id:
-            node = KnowledgeNode.objects.filter(id=node_id, room=room).first()
-            node_name = node.name if node else ''
-
-        # Si no se pegó texto pero se eligió un PDF, estimamos sobre su texto
-        # extraído (la Files API no soporta count_tokens; el PDF nativo se
-        # aproxima por su texto y puede tokenizar algo distinto).
-        source = 'text'
-        if not content and pdf_id:
-            pdf = PDFDocument.objects.filter(id=pdf_id, room=room).first()
-            if pdf and pdf.extracted_text:
-                content = pdf.extracted_text
-                source = 'pdf'
-
-        # Sin contenido aprovechable o sin API key: no hay estimación.
-        if not content:
-            return Response({'available': False, 'input_tokens': 0, 'approx_cost_usd': 0.0})
-
-        input_tokens = CognitiveAnalysisService().estimate_generation_tokens(
-            content=content, node_name=node_name, difficulty=difficulty, count=count,
-        )
-        if not input_tokens:
-            return Response({'available': False, 'input_tokens': 0, 'approx_cost_usd': 0.0})
-
-        est_output = count * self.APPROX_OUTPUT_PER_Q
-        cost = (input_tokens / 1_000_000) * self.INPUT_PER_M + (est_output / 1_000_000) * self.OUTPUT_PER_M
-        return Response({
-            'available': True,
-            'source': source,
-            'input_tokens': input_tokens,
-            'approx_output_tokens': est_output,
-            'approx_cost_usd': round(cost, 4),
-        })
 
 
 class ManualQuestionView(APIView):
@@ -477,66 +384,6 @@ class QuestionDetailView(APIView):
         return Response(QuestionSerializer(question).data)
 
 
-def _extract_pdf_text(path) -> str:
-    import pdfplumber
-
-    parts = []
-    with pdfplumber.open(path) as pdf:
-        for page in pdf.pages:
-            text = page.extract_text() or ''
-            if text:
-                parts.append(text)
-    return '\n\n'.join(parts).strip()
-
-
-def _extract_pptx_text(path) -> str:
-    from pptx import Presentation
-
-    parts = []
-    prs = Presentation(path)
-    for slide in prs.slides:
-        for shape in slide.shapes:
-            if shape.has_text_frame:
-                text = shape.text_frame.text.strip()
-                if text:
-                    parts.append(text)
-            if shape.has_table:
-                for row in shape.table.rows:
-                    cells = [c.text.strip() for c in row.cells]
-                    if any(cells):
-                        parts.append(' | '.join(cells))
-    return '\n'.join(parts).strip()
-
-
-def _extract_docx_text(path) -> str:
-    from docx import Document
-
-    doc = Document(path)
-    parts = [p.text.strip() for p in doc.paragraphs if p.text.strip()]
-    for table in doc.tables:
-        for row in table.rows:
-            cells = [c.text.strip() for c in row.cells]
-            if any(cells):
-                parts.append(' | '.join(cells))
-    return '\n'.join(parts).strip()
-
-
-# Formatos aceptados como material de origen. PDF permite además análisis nativo
-# por Claude (Files API); PPTX/DOCX se procesan solo por su texto extraído.
-ALLOWED_UPLOAD_EXTENSIONS = ('.pdf', '.pptx', '.docx')
-
-
-def _extract_document_text(path, filename) -> str:
-    name = (filename or '').lower()
-    if name.endswith('.pdf'):
-        return _extract_pdf_text(path)
-    if name.endswith('.pptx'):
-        return _extract_pptx_text(path)
-    if name.endswith('.docx'):
-        return _extract_docx_text(path)
-    return ''
-
-
 class PDFUploadListView(APIView):
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
@@ -577,7 +424,7 @@ class PDFUploadListView(APIView):
         )
 
         try:
-            pdf.extracted_text = _extract_document_text(pdf.file_path.path, uploaded.name)
+            pdf.extracted_text = extract_document_text(pdf.file_path.path, uploaded.name)
             pdf.status = PDFDocument.STATUS_PROCESSED
             pdf.save(update_fields=['extracted_text', 'status'])
 

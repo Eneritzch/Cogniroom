@@ -61,7 +61,7 @@ class QuestionPublicSerializer(serializers.ModelSerializer):
 class GenerateQuestionsSerializer(serializers.Serializer):
     node_id = serializers.IntegerField()
     difficulty = serializers.ChoiceField(choices=['easy', 'medium', 'hard'])
-    count = serializers.IntegerField(default=5, min_value=1, max_value=20)
+    count = serializers.IntegerField(default=5, min_value=1, max_value=10)
     # Vacío = la IA mezcla tipos; o forzar single/true_false/multiple.
     question_type = serializers.ChoiceField(
         choices=[t[0] for t in Question.TYPE_CHOICES], required=False, allow_blank=True,

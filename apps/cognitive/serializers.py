@@ -4,8 +4,6 @@ from .models import (
     AIDiagnosis,
     BKTState,
     BlindSpotIndex,
-    CognitiveIndex,
-    StudentProgressSnapshot,
 )
 
 
@@ -18,18 +16,6 @@ class BKTStateSerializer(serializers.ModelSerializer):
             'id', 'student', 'node', 'node_name',
             'p_mastery', 'p_transit', 'p_slip', 'p_guess',
             'attempts', 'updated_at',
-        ]
-
-
-class CognitiveIndexSerializer(serializers.ModelSerializer):
-    node_name = serializers.CharField(source='node.name', read_only=True)
-
-    class Meta:
-        model = CognitiveIndex
-        fields = [
-            'id', 'student', 'node', 'node_name', 'session',
-            'avg_confidence', 'bkt_mastery', 'icc_value', 'metacognitive_gap',
-            'profile', 'calculated_at',
         ]
 
 
@@ -69,15 +55,3 @@ class AIDiagnosisSerializer(serializers.ModelSerializer):
         if obj.session_id and obj.session.room_id:
             return {'id': obj.session.room_id, 'name': obj.session.room.name}
         return None
-
-
-class StudentProgressSnapshotSerializer(serializers.ModelSerializer):
-    room_name = serializers.CharField(source='room.name', read_only=True)
-
-    class Meta:
-        model = StudentProgressSnapshot
-        fields = [
-            'id', 'student', 'room', 'room_name', 'session',
-            'avg_icc', 'avg_bkt_mastery', 'avg_gap', 'dominant_profile',
-            'questions_answered', 'correct_count', 'created_at',
-        ]

@@ -197,9 +197,6 @@ export const questions = {
     generate: (roomId, payload) => request(`/rooms/${roomId}/questions/generate/`, {
         method: 'POST', body: payload,
     }),
-    estimate: (roomId, payload) => request(`/rooms/${roomId}/questions/estimate/`, {
-        method: 'POST', body: payload,
-    }),
     manual:   (roomId, payload) => request(`/rooms/${roomId}/questions/manual/`, {
         method: 'POST', body: payload,
     }),

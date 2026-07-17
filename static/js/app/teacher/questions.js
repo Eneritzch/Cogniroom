@@ -860,6 +860,12 @@ document.getElementById('manual-form').addEventListener('submit', async (e) => {
 });
 
 /* Generar con IA */
+const GEN_MAX = 10;  // tope de preguntas por generación (debe coincidir con el backend)
+function genCount() {
+    const v = Math.floor(Number(document.getElementById('gen-count')?.value)) || 5;
+    return Math.max(1, Math.min(GEN_MAX, v));
+}
+
 document.getElementById('generate-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!ROOM_ID) return;
@@ -875,12 +881,12 @@ document.getElementById('generate-form').addEventListener('submit', async (e) =>
     const payload = {
         node_id: nodeId,
         difficulty: document.getElementById('gen-difficulty').value,
-        count: Number(document.getElementById('gen-count').value) || 5,
+        count: genCount(),
     };
     const genType = document.getElementById('gen-type').value;
     if (genType) payload.question_type = genType;
     if (pdfId) payload.pdf_id = Number(pdfId);
-    else payload.content = content;
+    if (content) payload.content = content;  // con PDF, el backend lo trata como enfoque
 
     const $submit = document.getElementById('generate-submit');
     const original = $submit.textContent;
@@ -889,11 +895,14 @@ document.getElementById('generate-form').addEventListener('submit', async (e) =>
     try {
         const res = await questionsApi.generate(ROOM_ID, payload);
         const n = res?.created_count ?? 0;
-        toast(n ? `${n} pregunta${n === 1 ? '' : 's'} generada${n === 1 ? '' : 's'}.` : 'La IA no devolvió preguntas. Pruebe con más contenido.', {
-            kind: n ? 'success' : 'error',
-        });
+        toast(
+            n ? `${n} pregunta${n === 1 ? '' : 's'} generada${n === 1 ? '' : 's'}.`
+              : 'La IA no devolvió preguntas. Pruebe con más material.',
+            { kind: n ? 'success' : 'error' },
+        );
         if (n) {
             e.target.reset();
+            syncSourceFields();
             hideModal('generateQuestionModal');
             currentStatus = 'pending';
             document.querySelectorAll('[data-status-filter]').forEach((b) => {
@@ -927,21 +936,62 @@ function updateGenEstimate() {
     const content = document.getElementById('gen-content')?.value.trim() || '';
     // Hace falta una fuente: texto pegado o un PDF elegido.
     if (!content && !pdfId) { $est.hidden = true; return; }
-    const count = Number(document.getElementById('gen-count')?.value) || 5;
-    const source = pdfId
-        ? (($pdf.options[$pdf.selectedIndex]?.text || '').trim() || 'el PDF seleccionado')
-        : 'el contenido pegado';
+    const count = genCount();
+    const plural = count === 1 ? '' : 's';
     $est.hidden = false;
-    $est.textContent = `Generará ${count} pregunta${count === 1 ? '' : 's'} a partir de ${source}.`;
+    if (pdfId) {
+        const pdfName = ($pdf.options[$pdf.selectedIndex]?.text || '').trim() || 'el PDF seleccionado';
+        $est.textContent = content
+            ? `Generará ${count} pregunta${plural} de ${pdfName}, enfocadas en: ${content}.`
+            : `Generará ${count} pregunta${plural} de ${pdfName} (todo el documento).`;
+    } else {
+        $est.textContent = `Generará ${count} pregunta${plural} a partir del material pegado.`;
+    }
+}
+
+/* Con documento, el cuadro pasa a ser el ENFOQUE (qué temas sacar del PDF; vacío
+   = todo). Sin documento, es el MATERIAL fuente. El nombre del "Tema" no guía la
+   generación: siempre se basa en el documento o el material pegado. */
+function syncSourceFields() {
+    const $pdf = document.getElementById('gen-pdf');
+    const $label = document.getElementById('gen-content-label');
+    const $content = document.getElementById('gen-content');
+    if (!$pdf || !$label || !$content) return;
+    const usingPdf = !!$pdf.value;
+    $label.textContent = usingPdf ? 'Temas a evaluar del documento (opcional)' : 'Material';
+    $content.placeholder = usingPdf
+        ? '¿Qué temas o secciones del documento? Déjelo vacío para usar todo el documento.'
+        : 'Pegue el material sobre el que generar las preguntas…';
+}
+
+/* Corrige la cantidad al salir del campo y avisa el límite (en vez de cambiar el
+   número en silencio, que parece un error). */
+function clampCountField() {
+    const $c = document.getElementById('gen-count');
+    if (!$c) return;
+    const n = Math.floor(Number($c.value.trim()));
+    if (!$c.value.trim() || Number.isNaN(n)) { $c.value = 5; return; }
+    if (n > GEN_MAX) {
+        $c.value = GEN_MAX;
+        toast(`El máximo es ${GEN_MAX} preguntas por generación.`, { kind: 'info' });
+    } else {
+        $c.value = Math.max(1, n);
+    }
+    scheduleGenEstimate();
 }
 
 document.getElementById('gen-content')?.addEventListener('input', scheduleGenEstimate);
 document.getElementById('gen-count')?.addEventListener('input', scheduleGenEstimate);
+document.getElementById('gen-count')?.addEventListener('change', clampCountField);
+document.getElementById('gen-pdf')?.addEventListener('change', syncSourceFields);
 ['gen-difficulty', 'gen-node', 'gen-pdf'].forEach((id) => {
     document.getElementById(id)?.addEventListener('change', scheduleGenEstimate);
 });
-// Al abrir el modal, estimar si ya hay una fuente (PDF preseleccionado o texto).
-document.getElementById('generateQuestionModal')?.addEventListener('shown.bs.modal', updateGenEstimate);
+// Al abrir el modal, sincronizar fuentes y estimar si ya hay material.
+document.getElementById('generateQuestionModal')?.addEventListener('shown.bs.modal', () => {
+    syncSourceFields();
+    updateGenEstimate();
+});
 
 
 async function load() {

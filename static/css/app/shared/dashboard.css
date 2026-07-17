@@ -2049,11 +2049,12 @@
               stroke-dashoffset var(--dur-base) var(--ease-out);
 }
 
-/* Rampa monocromática púrpura: claro → profundo por cuadrante */
-.d-donut__seg--cal   { stroke: color-mix(in srgb, var(--terracotta) 34%, var(--color-bg)); }
-.d-donut__seg--over  { stroke: color-mix(in srgb, var(--terracotta) 56%, var(--color-bg)); }
-.d-donut__seg--aware { stroke: color-mix(in srgb, var(--terracotta) 78%, var(--color-bg)); }
-.d-donut__seg--und   { stroke: var(--terracotta); }
+/* Un color por cuadrante — distinguibles dentro de la paleta. El cuadrante de
+   riesgo (No sabe y confía) va en coral, único color de alerta. */
+.d-donut__seg--cal   { stroke: var(--color-success); }    /* Sabe y confía — teal */
+.d-donut__seg--over  { stroke: var(--color-danger); }     /* No sabe y confía — coral (riesgo) */
+.d-donut__seg--und   { stroke: var(--color-info); }       /* Sabe pero no confía — cian */
+.d-donut__seg--aware { stroke: var(--terracotta); }       /* No sabe y lo reconoce — petróleo */
 
 .d-donut__center {
   position: absolute;
@@ -2107,10 +2108,10 @@
   box-shadow: var(--clay-tile);
 }
 
-.d-donut__dot[data-tone='moss']  { background: color-mix(in srgb, var(--terracotta) 34%, var(--color-bg)); }  /* cal */
-.d-donut__dot[data-tone='rust']  { background: color-mix(in srgb, var(--terracotta) 56%, var(--color-bg)); }  /* over */
-.d-donut__dot[data-tone='amber'] { background: color-mix(in srgb, var(--terracotta) 78%, var(--color-bg)); }  /* aware */
-.d-donut__dot[data-tone='stone'] { background: var(--terracotta); }  /* und */
+.d-donut__dot[data-tone='moss']  { background: var(--color-success); }  /* cal — teal */
+.d-donut__dot[data-tone='rust']  { background: var(--color-danger); }   /* over — coral */
+.d-donut__dot[data-tone='stone'] { background: var(--color-info); }     /* und — cian */
+.d-donut__dot[data-tone='amber'] { background: var(--terracotta); }     /* aware — petróleo */
 
 .d-donut__legend-label { flex: 1; }
 

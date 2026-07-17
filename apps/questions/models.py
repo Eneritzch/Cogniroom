@@ -186,3 +186,31 @@ class Question(models.Model):
 
     def __str__(self):
         return f'Q#{self.pk} [{self.difficulty}]'
+
+
+class AIGenerationLog(models.Model):
+    """Una fila por generación con IA: sostiene el cupo mensual de preguntas por
+    docente y deja el consumo real (tokens) para auditoría del operador."""
+
+    teacher = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='ai_generation_logs'
+    )
+    room = models.ForeignKey('rooms.Room', on_delete=models.CASCADE, related_name='ai_generation_logs')
+    node = models.ForeignKey(
+        KnowledgeNode, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='ai_generation_logs',
+    )
+    model = models.CharField(max_length=64, blank=True)
+    requested_count = models.PositiveIntegerField(default=0)
+    created_count = models.PositiveIntegerField(default=0)
+    input_tokens = models.PositiveIntegerField(default=0)
+    output_tokens = models.PositiveIntegerField(default=0)
+    cache_read_tokens = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [models.Index(fields=['teacher', 'created_at'])]
+
+    def __str__(self):
+        return f'AIGen#{self.pk} teacher={self.teacher_id} +{self.created_count}'

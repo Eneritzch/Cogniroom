@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Answer, EvaluationSession
+from .models import EvaluationSession
 
 
 class EvaluationSessionSerializer(serializers.ModelSerializer):
@@ -16,17 +16,6 @@ class CreateSessionSerializer(serializers.Serializer):
     node_ids = serializers.ListField(
         child=serializers.IntegerField(min_value=1), required=False, allow_empty=True,
     )
-
-
-class AnswerSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Answer
-        fields = [
-            'id', 'session', 'question', 'selected_index', 'selected_indices',
-            'is_correct', 'score', 'confidence_declared', 'response_time_sec',
-            'ai_feedback', 'answered_at',
-        ]
-        read_only_fields = ['id', 'session', 'is_correct', 'score', 'ai_feedback', 'answered_at']
 
 
 class SubmitAnswerSerializer(serializers.Serializer):

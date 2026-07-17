@@ -66,6 +66,30 @@ JUDGE_SCHEMA = {
     'additionalProperties': False,
 }
 
+DIAGNOSIS_SCHEMA = {
+    'type': 'object',
+    'properties': {
+        'profile': {'type': 'string', 'enum': ['overconfident', 'underconfident', 'calibrated']},
+        'risk_level': {'type': 'string', 'enum': ['high', 'medium', 'low']},
+        'risk_nodes': {'type': 'array', 'items': {'type': 'string'}},
+        'prediction': {'type': 'number'},
+        'problem_type': {
+            'type': 'string',
+            'enum': [
+                'vacio_conceptual', 'confusion_conceptual', 'error_procedimental',
+                'aplicacion_incorrecta', 'sin_patron',
+            ],
+        },
+        'reasoning': {'type': 'string'},
+        'recommendation': {'type': 'string'},
+    },
+    'required': [
+        'profile', 'risk_level', 'risk_nodes', 'prediction',
+        'problem_type', 'reasoning', 'recommendation',
+    ],
+    'additionalProperties': False,
+}
+
 JUDGE_RULES = (
     'Eres un evaluador psicométrico independiente. Calificas ítems de opción '
     'múltiple contra una rúbrica, del 1 (deficiente) al 5 (excelente), siendo '
@@ -150,7 +174,7 @@ class CognitiveAnalysisService:
         except anthropic.AnthropicError:
             return ''
 
-    def analyze_student(self, student_data: dict) -> dict:
+    def analyze_student(self, student_data: dict, error_context: dict = None) -> dict:
         defaults = {
             'profile': 'calibrated',
             'risk_level': 'low',
@@ -160,12 +184,29 @@ class CognitiveAnalysisService:
             'recommendation': '',
             'problem_type': 'sin_patron',
         }
+        if self.client is None:
+            return defaults
+
+        known_nodes = student_data.get('known_nodes', []) or []
 
         system = (
             'Eres un analista pedagógico que ayuda a un docente a entender a un '
-            'estudiante. Respondes únicamente en JSON válido, sin texto adicional, '
-            'sin markdown, sin backticks.'
+            'estudiante. Diagnosticas SOLO a partir de los datos provistos: no '
+            'inventes causas, temas ni hechos que no estén en la evidencia. Si no '
+            'hay un patrón claro, dilo (problem_type "sin_patron") en vez de '
+            'especular.'
         )
+
+        error_block = ''
+        if error_context:
+            error_block = (
+                '\nError puntual que disparó este análisis (basa el diagnóstico en esto):\n'
+                f"- Tema: {error_context.get('node', '')}\n"
+                f"- Pregunta: {error_context.get('question', '')}\n"
+                f"- Respondió (incorrecto): {error_context.get('selected', '')}\n"
+                f"- Respuesta correcta: {error_context.get('correct', '')}\n"
+                f"- Por qué la correcta lo es: {error_context.get('rationale', '')}\n"
+            )
 
         user_prompt = (
             'Analiza el perfil del estudiante con los siguientes datos:\n'
@@ -173,35 +214,47 @@ class CognitiveAnalysisService:
             f"- bkt_nodes: {json.dumps(student_data.get('bkt_nodes', {}), ensure_ascii=False)}\n"
             f"- confidence_avg: {student_data.get('confidence_avg', 0.0)}\n"
             f"- overconfident_nodes: {json.dumps(student_data.get('overconfident_nodes', []), ensure_ascii=False)}\n"
-            f"- error_patterns: {json.dumps(student_data.get('error_patterns', []), ensure_ascii=False)}\n\n"
-            'Responde con un JSON con este formato exacto:\n'
-            '{\n'
-            '  "profile": "overconfident|underconfident|calibrated",\n'
-            '  "risk_level": "high|medium|low",\n'
-            '  "risk_nodes": ["tema1", "tema2"],\n'
-            '  "prediction": 0.0,\n'
-            '  "problem_type": "vacio_conceptual|confusion_conceptual|error_procedimental|aplicacion_incorrecta|sin_patron",\n'
-            '  "reasoning": "texto",\n'
-            '  "recommendation": "texto"\n'
-            '}\n'
-            '"problem_type" es un valor interno (elige uno del enum): '
-            '"vacio_conceptual" (no conoce el concepto), "confusion_conceptual" '
-            '(mezcla conceptos), "error_procedimental" (conoce pero falla al aplicar), '
+            f"- error_patterns: {json.dumps(student_data.get('error_patterns', []), ensure_ascii=False)}\n"
+            f"{error_block}\n"
+            'Elige "risk_nodes" ÚNICAMENTE de esta lista de temas reales: '
+            f"{json.dumps(known_nodes, ensure_ascii=False)}. Si ninguno aplica, deja "
+            'la lista vacía. NO inventes ni traduzcas nombres de temas.\n\n'
+            '"problem_type" (valor interno, elige uno): "vacio_conceptual" (no '
+            'conoce el concepto), "confusion_conceptual" (mezcla conceptos), '
+            '"error_procedimental" (conoce pero falla al aplicar), '
             '"aplicacion_incorrecta" (aplica bien un concepto equivocado) o '
             '"sin_patron" (sin patrón claro).\n\n'
-            'MUY IMPORTANTE — los campos "reasoning" y "recommendation" los lee '
-            'una persona (el docente) y deben estar en español claro, natural y '
-            'cotidiano, que entienda cualquiera. PROHIBIDO usar jerga técnica: '
-            'nada de "BKT", "ICC", "metacognición", "calibración", "vacío '
-            'conceptual", "nodo", ni números/probabilidades. En "reasoning" di en '
-            '1-2 frases sencillas qué le está pasando al estudiante (p. ej. "cree '
-            'que domina X pero le cuesta más de lo que piensa"). En '
-            '"recommendation" da un consejo concreto y accionable para el docente '
-            'en lenguaje simple (qué hacer o reforzar). Habla de "temas" o '
-            '"materias", no de "nodos".'
+            'MUY IMPORTANTE — "reasoning" y "recommendation" los lee el docente, en '
+            'español claro y cotidiano, sin jerga (nada de "BKT", "ICC", '
+            '"metacognición", "calibración", "nodo", ni números/probabilidades).\n'
+            '"reasoning" (1-2 frases): nombra EXACTAMENTE qué idea confunde el '
+            'estudiante y con cuál la está mezclando, y por qué probablemente pasa, '
+            'apoyándote en su error concreto.\n'
+            '"recommendation" (1-2 frases): una acción concreta dirigida a ESA '
+            'confusión puntual — por ejemplo, que el estudiante contraste los dos '
+            'conceptos que mezcla y explique con sus palabras en qué se diferencian. '
+            'NO des consejos genéricos como "que relea el tema" sin decir qué '
+            'comparar o revisar. Habla de "temas", no de "nodos".'
         )
 
-        raw = self._message(system, user_prompt)
+        try:
+            response = self.client.messages.create(
+                model=self.MODEL_ANALYSIS,
+                max_tokens=self.MAX_TOKENS_ANALYSIS,
+                output_config={
+                    'format': {'type': 'json_schema', 'schema': DIAGNOSIS_SCHEMA},
+                },
+                system=system,
+                messages=[{'role': 'user', 'content': user_prompt}],
+            )
+        except anthropic.AnthropicError:
+            return defaults
+
+        raw = ''
+        for block in response.content:
+            if getattr(block, 'type', None) == 'text':
+                raw = block.text
+                break
         if not raw:
             return defaults
 
@@ -209,11 +262,22 @@ class CognitiveAnalysisService:
             parsed = json.loads(raw)
             if not isinstance(parsed, dict):
                 return defaults
-            for key, default_value in defaults.items():
-                parsed.setdefault(key, default_value)
-            return parsed
         except (json.JSONDecodeError, ValueError):
             return defaults
+
+        # Descarta temas que el modelo haya inventado fuera de la sala.
+        known_set = set(known_nodes)
+        risk_nodes = parsed.get('risk_nodes') or []
+        parsed['risk_nodes'] = [n for n in risk_nodes if n in known_set]
+
+        try:
+            parsed['prediction'] = min(1.0, max(0.0, float(parsed.get('prediction', 0.5))))
+        except (TypeError, ValueError):
+            parsed['prediction'] = defaults['prediction']
+
+        for key, default_value in defaults.items():
+            parsed.setdefault(key, default_value)
+        return parsed
 
     def upload_pdf(self, fileobj, filename: str) -> str:
         # Sube el PDF a la Files API de Anthropic una sola vez y devuelve su
@@ -246,9 +310,9 @@ class CognitiveAnalysisService:
             'cache_control': {'type': 'ephemeral'},
         }
 
-    def _generation_messages(self, node_name, difficulty, count, content='', file_id='', question_type=''):
+    def _generation_messages(self, difficulty, count, content='', file_id='', question_type='', focus=''):
         # El material va primero y marcado como cacheable; la instrucción (que
-        # varía por nodo/dificultad/cantidad) va después del breakpoint para no
+        # varía por dificultad/cantidad/enfoque) va después del breakpoint para no
         # invalidar el prefijo cacheado.
         type_labels = {
             'single': 'todas de opción única (question_type="single")',
@@ -259,6 +323,10 @@ class CognitiveAnalysisService:
             question_type,
             'combinando tipos (single, true_false, multiple) según convenga al material',
         )
+        # El recorte temático lo da el enfoque del docente (no el nombre del nodo,
+        # que puede ser arbitrario). Vacío = cubrir todo el material.
+        focus = (focus or '').strip()
+        scope = f' Enfócate únicamente en estos temas o secciones del material: {focus}.' if focus else ''
         return [{
             'role': 'user',
             'content': [
@@ -266,42 +334,22 @@ class CognitiveAnalysisService:
                 {
                     'type': 'text',
                     'text': (
-                        f'Genera exactamente {count} preguntas sobre el tema '
-                        f'"{node_name}" con dificultad "{difficulty}", {type_clause}, '
-                        'basadas únicamente en el material de referencia anterior.'
+                        f'Genera exactamente {count} preguntas con dificultad "{difficulty}", '
+                        f'{type_clause}, basadas únicamente en el material de referencia anterior.'
+                        f'{scope}'
                     ),
                 },
             ],
         }]
 
-    def estimate_generation_tokens(
-        self, content='', node_name='', difficulty='medium', count=1, file_id=''
-    ) -> int:
-        # Estimación de tokens de entrada para mostrar el costo aproximado en el
-        # panel del docente antes de generar. Devuelve 0 si la IA no está activa.
-        # La Files API no es compatible con el endpoint de token counting, así
-        # que para PDF nativo no hay estimación previa (la devolvemos en 0).
-        if self.client is None or file_id:
-            return 0
-        messages = self._generation_messages(node_name, difficulty, count, content=content)
-        try:
-            resp = self.client.messages.count_tokens(
-                model=self.MODEL_GENERATION,
-                system=GENERATION_RULES,
-                messages=messages,
-            )
-            return resp.input_tokens
-        except anthropic.AnthropicError:
-            return 0
-
     def generate_questions(
         self,
-        node_name: str,
         difficulty: str,
         count: int,
         content: str = '',
         file_id: str = '',
         question_type: str = '',
+        focus: str = '',
     ) -> list:
         if self.client is None:
             return []
@@ -319,8 +367,8 @@ class CognitiveAnalysisService:
             },
             system=GENERATION_RULES,
             messages=self._generation_messages(
-                node_name, difficulty, count,
-                content=content, file_id=file_id, question_type=question_type,
+                difficulty, count,
+                content=content, file_id=file_id, question_type=question_type, focus=focus,
             ),
         )
         try:

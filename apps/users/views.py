@@ -5,7 +5,6 @@ from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.views import TokenRefreshView  # noqa: F401
 
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes

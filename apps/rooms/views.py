@@ -9,6 +9,7 @@ from apps.notifications.models import Notification
 from apps.notifications.services import notify
 
 from .models import Room, RoomJoinRequest, RoomMembership, Section
+from .presenters import join_request_data, student_room_data, teacher_room_data
 from .serializers import (
     AssignSectionSerializer,
     JoinRoomSerializer,
@@ -19,58 +20,6 @@ from .serializers import (
 )
 
 
-def _teacher_room_data(room):
-    """Datos de sala enriquecidos para el panel docente (conteos + calibración)."""
-    from apps.cognitive.models import AIDiagnosis, CognitiveIndex
-    from apps.questions.models import PDFDocument, Question
-    from apps.sessions.models import EvaluationSession
-
-    data = RoomSerializer(room).data
-    ci = CognitiveIndex.objects.filter(node__room=room)
-    data.update({
-        'member_count': RoomMembership.objects.filter(room=room).count(),
-        'question_count': Question.objects.filter(node__room=room, status='approved').count(),
-        'pending_ai_count': Question.objects.filter(node__room=room, status='pending', source='ai').count(),
-        'pdf_count': PDFDocument.objects.filter(room=room).count(),
-        'section_count': room.sections.count(),
-        # Cuestionarios respondidos = sesiones de evaluación completadas (no preguntas sueltas).
-        'session_count': EvaluationSession.objects.filter(room=room, status=EvaluationSession.STATUS_COMPLETED).count(),
-        'diagnosis_count': AIDiagnosis.objects.filter(session__room=room).count(),
-        'icc': round(float(ci.aggregate(avg=Avg('icc_value'))['avg'] or 0.0), 4),
-        'at_risk_count': ci.filter(metacognitive_gap__gt=0.2).values('student').distinct().count(),
-    })
-    return data
-
-
-def _student_room_data(room, user, request):
-    """Sala enriquecida para la vista del estudiante: los conteos que la tarjeta
-    de "Mis salas" muestra (nodos, sesiones y —en salas de estudio— pdfs y
-    preguntas). Sin esto la tarjeta los lee como 0."""
-    from apps.questions.models import KnowledgeNode, PDFDocument, Question
-    from apps.sessions.models import EvaluationSession
-
-    data = RoomSerializer(room, context={'request': request}).data
-    data['activeNodes'] = KnowledgeNode.objects.filter(room=room).count()
-    data['totalSessions'] = EvaluationSession.objects.filter(
-        room=room, student=user, status=EvaluationSession.STATUS_COMPLETED
-    ).count()
-    # Evaluación a medias: si existe, la tarjeta ofrece "Continuar" en vez de
-    # "Empezar" y entra directo a esa sesión (sin volver a elegir temas).
-    data['active_session_id'] = (
-        EvaluationSession.objects
-        .filter(room=room, student=user, status=EvaluationSession.STATUS_ACTIVE)
-        .order_by('-started_at')
-        .values_list('id', flat=True)
-        .first()
-    )
-    if room.mode == 'individual':
-        data['pdfs'] = PDFDocument.objects.filter(room=room).count()
-        data['questions'] = Question.objects.filter(
-            node__room=room, status=Question.STATUS_APPROVED
-        ).count()
-    return data
-
-
 class RoomListCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -78,7 +27,7 @@ class RoomListCreateView(APIView):
         user = request.user
         if user.role == 'teacher':
             qs = Room.objects.filter(teacher=user).order_by('-created_at')
-            return Response([_teacher_room_data(r) for r in qs])
+            return Response([teacher_room_data(r) for r in qs])
 
         membership_room_ids = RoomMembership.objects.filter(
             student=user
@@ -88,7 +37,7 @@ class RoomListCreateView(APIView):
         qs = Room.objects.filter(
             Q(id__in=membership_room_ids, is_active=True) | Q(teacher=user, mode='individual')
         ).order_by('-created_at').distinct()
-        return Response([_student_room_data(r, user, request) for r in qs])
+        return Response([student_room_data(r, user, request) for r in qs])
 
     def post(self, request):
         serializer = RoomCreateSerializer(data=request.data)
@@ -147,7 +96,7 @@ class RoomDetailView(APIView):
 
         if fields:
             room.save(update_fields=fields)
-        return Response(_teacher_room_data(room))
+        return Response(teacher_room_data(room))
 
     def delete(self, request, room_id):
         room = get_object_or_404(Room, id=room_id)
@@ -559,26 +508,6 @@ class RoomMemberView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-def _join_request_data(req):
-    s = req.student
-    name = f'{s.first_name} {s.last_name}'.strip() or s.username
-    initials = ''.join(p[0] for p in name.split()[:2]).upper()
-    sec = req.section
-    return {
-        'id': req.id,
-        'room': {'id': req.room_id, 'name': req.room.name},
-        'student': {'name': name, 'email': s.email, 'initials': initials},
-        # Paralelo declarado por el alumno + los paralelos de la sala para que el
-        # docente pueda corregirlo antes de aprobar.
-        'section': {'id': sec.id, 'code': sec.code, 'name': sec.name} if sec else None,
-        'room_sections': [
-            {'id': x.id, 'code': x.code, 'name': x.name, 'schedule': x.schedule}
-            for x in req.room.sections.all()
-        ],
-        'created_at': req.created_at,
-    }
-
-
 class RoomDiscoverView(APIView):
     """Salas grupales de la institucion del alumno para autoinscribirse."""
     permission_classes = [IsAuthenticated]
@@ -688,7 +617,7 @@ class JoinRequestListView(APIView):
             .select_related('room', 'student')
             .order_by('created_at')
         )
-        return Response([_join_request_data(r) for r in reqs])
+        return Response([join_request_data(r) for r in reqs])
 
 
 class JoinRequestApproveView(APIView):

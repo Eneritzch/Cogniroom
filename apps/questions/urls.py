@@ -2,7 +2,6 @@ from django.urls import path
 
 from .views import (
     ApproveQuestionsView,
-    EstimateGenerationView,
     GenerateQuestionsView,
     ManualQuestionView,
     NodeDetailView,
@@ -21,11 +20,6 @@ urlpatterns = [
         '<int:room_id>/questions/generate/',
         GenerateQuestionsView.as_view(),
         name='question-generate',
-    ),
-    path(
-        '<int:room_id>/questions/estimate/',
-        EstimateGenerationView.as_view(),
-        name='question-estimate',
     ),
     path(
         '<int:room_id>/questions/manual/',

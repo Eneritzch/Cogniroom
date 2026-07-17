@@ -38,7 +38,7 @@ class Command(BaseCommand):
         parser.add_argument(
             '--difficulty', default='medium', choices=['easy', 'medium', 'hard']
         )
-        parser.add_argument('--count', type=int, default=20)
+        parser.add_argument('--count', type=int, default=10)
         parser.add_argument(
             '--material',
             help='Ruta a un archivo de texto con el material. Si se omite, usa un material de ejemplo.',
@@ -65,7 +65,7 @@ class Command(BaseCommand):
             f'Generando {count} preguntas sobre "{node}" (dificultad {difficulty})...'
         ))
         questions = service.generate_questions(
-            content=content, node_name=node, difficulty=difficulty, count=count,
+            content=content, difficulty=difficulty, count=count, focus=node,
         )
         if not questions:
             self.stderr.write(self.style.ERROR('La generación no devolvió preguntas.'))
