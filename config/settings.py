@@ -30,6 +30,10 @@ ANTHROPIC_API_KEY = config('ANTHROPIC_API_KEY', default='')
 # Preguntas con IA que un docente puede generar por mes calendario. 0 = sin límite.
 AI_MONTHLY_QUESTION_QUOTA = config('AI_MONTHLY_QUESTION_QUOTA', default=100, cast=int)
 
+# Umbral de desalineación (ICC): por debajo se dispara el diagnóstico IA en
+# respuestas falladas. Constante de dominio (ver CLAUDE.md); subir reduce costo.
+AI_ICC_THRESHOLD = config('AI_ICC_THRESHOLD', default=0.6, cast=float)
+
 # El alta de docentes se valida contra el código por institución
 # (Institution.teacher_code), no contra un secreto global. Ver apps.users.
 

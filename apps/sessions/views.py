@@ -1,5 +1,6 @@
 import random
 
+from django.conf import settings
 from django.db import transaction
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404
@@ -319,9 +320,11 @@ class SubmitAnswerView(APIView):
             # Alerta in-app al docente si el estudiante quedó en el cuadrante crítico.
             maybe_alert_teacher_critical(session)
 
-        # Diagnóstico IA fuera del request (no bloquea al estudiante): se dispara
-        # en desalineación (icc < 0.6) y se persiste en background para el repaso.
-        ai_pending = icc_result['icc'] < 0.6
+        # Diagnóstico IA fuera del request (no bloquea al estudiante): solo se
+        # dispara en respuestas FALLADAS con desalineación (icc < AI_ICC_THRESHOLD), donde
+        # explicar el error aporta aprendizaje real. En aciertos descalibrados la
+        # nota de calibración es determinista (se arma en el repaso, sin IA).
+        ai_pending = (not is_correct) and icc_result['icc'] < settings.AI_ICC_THRESHOLD
         if ai_pending:
             schedule_ai_analysis(answer.id, new_mastery)
 

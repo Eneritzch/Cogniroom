@@ -166,8 +166,8 @@ class PasswordResetRequestView(APIView):
                 body=(
                     'Recibimos una solicitud para restablecer tu contraseña en '
                     'CogniRoom. Usá el botón para elegir una nueva. El enlace es '
-                    'de un solo uso y caduca por seguridad. Si no fuiste vos, '
-                    'ignorá este correo: tu contraseña no cambia.'
+                    'de un solo uso y caduca por seguridad. Si no fuiste tu, '
+                    'ignora este correo: tu contraseña no cambia.'
                 ),
                 link=f'/app/reset-password/?uid={uid}&token={token}',
                 action_label='Restablecer contraseña',

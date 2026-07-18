@@ -25,6 +25,10 @@ function getSessionId() {
 const SESSION_ID = getSessionId();
 let currentFilter = 'all';
 
+// Frontera de perfil overconfident/underconfident: |gap| > 0.2 (canónico en
+// services/icc_calculator). Aquí el gap va en puntos (conf−dominio, ×100).
+const PROFILE_GAP_PTS = 20;
+
 
 function fmtDate(iso) {
     const d = new Date(iso);
@@ -72,9 +76,8 @@ function accuracyTone(pct) {
 
 
 function gapTone(gapPts) {
-    if (Math.abs(gapPts) <= 15) return 'moss';
-    if (gapPts > 15)  return 'amber';
-    if (gapPts < -15) return 'stone';
+    if (gapPts > PROFILE_GAP_PTS) return 'amber';
+    if (gapPts < -PROFILE_GAP_PTS) return 'stone';
     return 'moss';
 }
 
@@ -95,6 +98,31 @@ function gapForAnswer(a) {
 }
 
 
+// Nota de calibración determinista para aciertos descalibrados (sin IA).
+// La IA se reserva para explicar respuestas falladas; en un acierto la dirección
+// de la brecha (confianza vs. dominio) ya la sabemos y el mensaje es de plantilla.
+function calibrationNote(a) {
+    if (!a.is_correct) return null;
+    const gap = gapForAnswer(a);
+    if (gap > PROFILE_GAP_PTS) {
+        return {
+            title: 'Acertaste, pero con más seguridad de la que tu dominio respalda',
+            body: 'Buen resultado. Aun así declaraste bastante más confianza de la que tu '
+                + 'historial en este tema sostiene todavía: que la seguridad la respalde la '
+                + 'práctica, no solo el acierto de hoy.',
+        };
+    }
+    if (gap < -PROFILE_GAP_PTS) {
+        return {
+            title: 'Acertaste y sabías más de lo que creías',
+            body: 'Respondiste bien con poca confianza declarada: dominas el tema mejor de lo '
+                + 'que crees. Puedes confiar un poco más en ti la próxima vez.',
+        };
+    }
+    return null;
+}
+
+
 function paintHeader(session, answers) {
     const durationMin = durationMinFromSession(session);
     document.getElementById('review-room-name').textContent = session.room?.name || '';
@@ -107,15 +135,13 @@ function paintHeader(session, answers) {
     document.getElementById('review-accuracy').dataset.tone = accuracyTone(pct);
     document.getElementById('review-accuracy-sub').textContent = `${correct} de ${answers.length}`;
 
-    // widget review-icc (iccDelta) removido — no se computan ventanas temporales en schema v2026-06
-
     const gaps = answers.map(gapForAnswer);
     const avgGap = gaps.length ? Math.round(gaps.reduce((s, g) => s + g, 0) / gaps.length) : 0;
     const gapEl = document.getElementById('review-gap');
     gapEl.textContent = `${avgGap >= 0 ? '+' : ''}${avgGap}`;
-    gapEl.dataset.tone = avgGap > 15 ? 'amber' : avgGap < -15 ? 'stone' : 'moss';
+    gapEl.dataset.tone = avgGap > PROFILE_GAP_PTS ? 'amber' : avgGap < -PROFILE_GAP_PTS ? 'stone' : 'moss';
 
-    const aiCount = answers.filter((a) => a.ai_feedback).length;
+    const aiCount = answers.filter((a) => !a.is_correct && a.ai_feedback).length;
     document.getElementById('review-ai-count').textContent = aiCount;
 }
 
@@ -185,6 +211,7 @@ function renderQuestion(a, i) {
     const gap = conf - mast;
     const gapT = gapTone(gap);
     const hasAi = !!a.ai_feedback;
+    const coach = calibrationNote(a);
     const nodeName = a.node?.name || '';
     const nodeTopic = a.node?.description || '';
 
@@ -200,10 +227,26 @@ function renderQuestion(a, i) {
                 <svg class="icon-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path>
                 </svg>
-                Tutor cognitivo 
+                Tutor cognitivo
             </header>
             <h4 class="rq__ai-title">«${escapeHTML(firstSentence)}»</h4>
             ${body ? `<p class="rq__ai-body">${escapeHTML(body)}</p>` : ''}
+        </aside>`;
+    } else if (coach) {
+        aiBlock = `<aside class="rq__ai" data-variant="coach" role="note" aria-label="Nota de calibración">
+            <header class="rq__ai-head">
+                <svg class="icon-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="9"></circle>
+                    <circle cx="12" cy="12" r="4"></circle>
+                    <line x1="12" y1="2" x2="12" y2="4"></line>
+                    <line x1="12" y1="20" x2="12" y2="22"></line>
+                    <line x1="2" y1="12" x2="4" y2="12"></line>
+                    <line x1="20" y1="12" x2="22" y2="12"></line>
+                </svg>
+                Nota de calibración
+            </header>
+            <h4 class="rq__ai-title">«${escapeHTML(coach.title)}»</h4>
+            <p class="rq__ai-body">${escapeHTML(coach.body)}</p>
         </aside>`;
     }
 
@@ -221,11 +264,17 @@ function renderQuestion(a, i) {
                         </svg>
                         ${a.is_correct ? 'Acertada' : 'Fallada'}
                     </span>
-                    ${hasAi ? `<span class="rq__ai-tag" data-kind="${a.is_correct ? 'confidence' : 'ai'}">
+                    ${hasAi ? `<span class="rq__ai-tag" data-kind="ai">
                         <svg class="icon-svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path>
                         </svg>
-                        ${a.is_correct ? 'Acertaste — solo te faltó confianza' : 'Feedback IA'}
+                        Feedback IA
+                    </span>` : coach ? `<span class="rq__ai-tag" data-kind="confidence">
+                        <svg class="icon-svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="12" cy="12" r="9"></circle>
+                            <circle cx="12" cy="12" r="4"></circle>
+                        </svg>
+                        Revisa tu confianza
                     </span>` : ''}
                 </div>
                 <p class="rq__statement">${escapeHTML(a.statement)}</p>

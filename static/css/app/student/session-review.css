@@ -1,5 +1,7 @@
 .review-back {
-  display: inline-flex;
+  display: flex;
+  width: fit-content;
+  margin-left: auto;
   align-items: center;
   gap: 6px;
   margin-top: var(--s-4);
@@ -594,6 +596,19 @@
       var(--paper-elevated) 90%);
   border: 1px solid color-mix(in srgb, var(--amber) 30%, transparent);
   border-radius: 12px;
+}
+
+/* Nota de calibración (acierto descalibrado): tono informativo, no de error. */
+.rq__ai[data-variant='coach'] {
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--stone) 10%, var(--paper-elevated)),
+      var(--paper-elevated) 90%);
+  border-color: color-mix(in srgb, var(--stone) 30%, transparent);
+}
+
+.rq__ai[data-variant='coach'] .rq__ai-head {
+  color: var(--stone);
 }
 
 .rq__ai-head {

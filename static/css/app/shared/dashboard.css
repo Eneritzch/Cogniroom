@@ -1907,13 +1907,9 @@
 }
 
 .dashboard-shell__profile-meta {
-  display: none;
+  display: flex;
   flex-direction: column;
   line-height: 1.1;
-}
-
-@media (min-width: 768px) {
-  .dashboard-shell__profile-meta { display: flex; }
 }
 
 .dashboard-shell__profile-name {
