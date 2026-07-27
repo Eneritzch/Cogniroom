@@ -974,11 +974,8 @@
 
 .app-sidebar {
   position: relative;
-  /* El sidebar usa backdrop-filter, que crea un contexto de apilamiento propio.
-     Sin un z-index explícito, ese contexto (y con él el tooltip del menú
-     colapsado) queda por debajo del contenido posicionado de la página. Con
-     z-index lo elevamos por encima del contenido, pero por debajo de los
-     modales/overlays (z-index 60). */
+  /* backdrop-filter crea contexto de apilamiento propio: sin z-index explícito
+     el tooltip del menú colapsado quedaría bajo el contenido (60 = overlays). */
   z-index: 50;
   display: flex;
   flex-direction: column;

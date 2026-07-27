@@ -544,8 +544,12 @@
   line-height: 1.25;
 }
 
-.session-stage[data-stage='feedback'] .paper-card {
-  padding: var(--s-6) !important;
+.session-feedback__panel {
+  padding: var(--s-6);
+}
+
+.session-feedback__panel-title {
+  margin-bottom: var(--s-3);
 }
 
 .session-stage[data-stage='feedback'] .paper-card > * + * {

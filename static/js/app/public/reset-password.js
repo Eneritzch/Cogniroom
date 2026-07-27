@@ -62,7 +62,7 @@ $form.addEventListener('submit', async (event) => {
 
     try {
         await auth.confirmPasswordReset(uid, token, $password.value);
-        toast('Contraseña actualizada. Iniciá sesión.', { kind: 'success', duration: 2000 });
+        toast('Contraseña actualizada. Inicia sesión.', { kind: 'success', duration: 2000 });
         setTimeout(() => { location.href = '/app/'; }, 900);
     } catch (err) {
         $submit.disabled = false;
@@ -85,7 +85,7 @@ $form.addEventListener('submit', async (event) => {
         } else if (err instanceof ApiError && err.status === 429) {
             toast('Demasiados intentos. Esperá un momento.', { kind: 'error' });
         } else {
-            toast('No se pudo actualizar la contraseña. Intentá de nuevo.', { kind: 'error' });
+            toast('No se pudo actualizar la contraseña. Intenta de nuevo.', { kind: 'error' });
         }
     }
 });

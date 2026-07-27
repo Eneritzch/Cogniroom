@@ -7,9 +7,8 @@ class KnowledgeNodeSerializer(serializers.ModelSerializer):
     # Preguntas aprobadas (= contestables) del nodo. El estudiante usa esto para
     # elegir nodos con material y el docente para ver qué nodos ya tienen banco.
     approved_count = serializers.SerializerMethodField()
-    # Cuántas verá realmente el estudiante en una evaluación: el docente puede
-    # limitar por nodo con questions_per_session (0 = todas). Misma fórmula que la
-    # cuota en sessions.views (min(qps or approved, approved)).
+    # Cuántas verá el estudiante en una evaluación: el docente limita por tema con
+    # questions_per_session (0 = todas). Misma fórmula que la cuota en sessions.views.
     eval_count = serializers.SerializerMethodField()
 
     class Meta:
@@ -100,7 +99,7 @@ class ManualQuestionSerializer(serializers.Serializer):
         if indices is None:
             if 'correct_index' not in attrs:
                 raise serializers.ValidationError(
-                    'Proporcioná "correct_indices" o "correct_index".'
+                    'Proporciona "correct_indices" o "correct_index".'
                 )
             indices = [attrs['correct_index']]
 

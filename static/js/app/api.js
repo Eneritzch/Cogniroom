@@ -89,9 +89,8 @@ export const auth = {
         method: 'POST', body: { uid, token, new_password }, auth: false,
     }),
     logout: () => {
-        // Cierre de sesión a prueba de fallos: primero se limpia el estado local
-        // (instantáneo, no depende de la red), luego se revoca el refresh en el
-        // servidor en segundo plano (keepalive sobrevive a la navegación).
+        // Cierre a prueba de fallos: primero limpia el estado local (no depende de la red)
+        // y luego revoca el refresh en segundo plano (keepalive sobrevive a la navegación).
         const refresh = tokens.refresh;
         const access = tokens.access;
         tokens.clear();

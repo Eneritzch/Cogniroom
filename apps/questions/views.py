@@ -140,9 +140,8 @@ class NodeDetailView(APIView):
         node, error = self._owned_node(request, room_id, node_id)
         if error:
             return error
-        # Solo nodos vacíos: con preguntas asociadas se perderían en cascada las
-        # respuestas, el BKT y los índices de los estudiantes. Para nodos con datos
-        # la vía es archivar (a definir), no borrar.
+        # Solo nodos vacíos: con preguntas asociadas se perderían en cascada las respuestas,
+        # el BKT y los índices de los estudiantes.
         if node.questions.exists():
             return Response(
                 {'detail': 'No se puede borrar un nodo con preguntas. Solo se borran nodos vacíos.'},
@@ -215,7 +214,7 @@ class GenerateQuestionsView(APIView):
                 kind=Notification.KIND_QUESTION_PENDING,
                 title=f'{len(created)} preguntas IA por revisar',
                 body=f'Se generaron {len(created)} preguntas en "{node.name}" ({room.name}). '
-                     'Revisalas y aprobá las que correspondan.',
+                     'Revísalas y aprueba las que correspondan.',
                 link='/app/questions/',
             )
 
@@ -428,9 +427,8 @@ class PDFUploadListView(APIView):
             pdf.status = PDFDocument.STATUS_PROCESSED
             pdf.save(update_fields=['extracted_text', 'status'])
 
-            # Análisis nativo por Claude (Files API) solo para PDF: preserva
-            # tablas, fórmulas y figuras. PPTX/DOCX quedan con su texto extraído.
-            # Best-effort: si falla, queda el texto plano.
+            # Análisis nativo por Claude solo para PDF (preserva tablas y fórmulas); PPTX/DOCX
+            # quedan con su texto extraído. Best-effort: si falla, queda el texto plano.
             if name.endswith('.pdf'):
                 try:
                     pdf.file_path.open('rb')

@@ -117,9 +117,8 @@ class RoomDetailView(APIView):
             room.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
-        # Sala grupal con datos de estudiantes: el CASCADE arrastraría el historial
-        # cognitivo (BKT/ICC/diagnósticos) de cada alumno. Se exige confirmar con el
-        # nombre exacto; sin eso, se sugiere archivar.
+        # Borrar una sala grupal con datos arrastraría en cascada el historial cognitivo de
+        # cada alumno: se exige confirmar con el nombre exacto.
         confirm = (request.data.get('confirm') or request.query_params.get('confirm') or '').strip()
         if confirm != room.name:
             return Response(
@@ -534,9 +533,8 @@ class RoomDiscoverView(APIView):
             .select_related('teacher')
             .prefetch_related('sections')
         )
-        # Búsqueda por sala o docente: en instituciones grandes (muchos docentes
-        # con muchas salas) la lista se vuelve enorme; se filtra en servidor y se
-        # limita el resultado en vez de traerlo todo.
+        # Búsqueda por sala o docente: en instituciones grandes la lista es enorme, así que
+        # se filtra y se limita en el servidor.
         q = (request.query_params.get('q') or '').strip()
         if q:
             rooms = rooms.filter(

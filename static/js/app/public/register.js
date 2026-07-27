@@ -286,7 +286,7 @@ $form.addEventListener('submit', async (event) => {
     // avisamos temprano para mejor UX.
     if (selectedRole === 'teacher' && !$teacherCode.value.trim()) {
         setInvalid($teacherCode, true);
-        toast('Ingresá el código de docente provisto por tu institución.', { kind: 'error' });
+        toast('Ingresa el código de docente provisto por tu institución.', { kind: 'error' });
         $teacherCode.focus();
         return;
     }
@@ -294,7 +294,7 @@ $form.addEventListener('submit', async (event) => {
     // El estudiante elige su institución del catálogo.
     if (selectedRole === 'student' && !$institutionInput.value) {
         setInvalid($institutionTrigger, true);
-        toast('Seleccioná tu institución.', { kind: 'error' });
+        toast('Selecciona tu institución.', { kind: 'error' });
         $institutionTrigger.focus();
         return;
     }
@@ -323,7 +323,7 @@ $form.addEventListener('submit', async (event) => {
         // Se descartan los tokens del registro y se precarga el correo en el login.
         tokens.clear();
         sessionStorage.setItem('cogniroom.justRegistered', $email.value.trim());
-        toast('Cuenta creada. Iniciá sesión con tu correo y contraseña.', {
+        toast('Cuenta creada. Inicia sesión con tu correo y contraseña.', {
             kind: 'success', duration: 1800,
         });
         setTimeout(() => { location.href = '/app/'; }, 800);
@@ -371,7 +371,7 @@ function handleServerError(err) {
             }
         }
         const general = body.non_field_errors?.[0] || body.detail;
-        toast(general || 'No se pudo crear la cuenta. Revisá los datos.', { kind: 'error' });
+        toast(general || 'No se pudo crear la cuenta. Revisa los datos.', { kind: 'error' });
         return;
     }
 

@@ -98,9 +98,8 @@ function gapForAnswer(a) {
 }
 
 
-// Nota de calibración determinista para aciertos descalibrados (sin IA).
-// La IA se reserva para explicar respuestas falladas; en un acierto la dirección
-// de la brecha (confianza vs. dominio) ya la sabemos y el mensaje es de plantilla.
+// Nota determinista para aciertos descalibrados: la IA se reserva para explicar
+// fallos; en un acierto ya se conoce la dirección de la brecha.
 function calibrationNote(a) {
     if (!a.is_correct) return null;
     const gap = gapForAnswer(a);
@@ -281,7 +280,7 @@ function renderQuestion(a, i) {
             </div>
             <span class="rq__time">${fmtTime(a.response_time_sec)}</span>
             <span class="rq__chev" aria-hidden="true">
-                <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg aria-hidden="true" class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="6 9 12 15 18 9"></polyline>
                 </svg>
             </span>

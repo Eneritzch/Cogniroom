@@ -190,18 +190,7 @@ function bindPasswordForm() {
 }
 
 
-function bindLogout() {
-    const $btn = document.getElementById('logout-btn-profile');
-    if (!$btn) return;
-    $btn.addEventListener('click', () => {
-        auth.logout();
-        location.href = '/app/';
-    });
-}
-
-
 async function init() {
-    bindLogout();
     let p;
     try {
         p = await me.profile();

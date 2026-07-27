@@ -136,3 +136,7 @@
     height: 500px;
   }
 }
+
+.student-nodes__skeleton {
+  height: 200px;
+}

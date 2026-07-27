@@ -166,13 +166,11 @@ function selectView(target) {
     const $all = document.getElementById('view-all');
     const $room = document.getElementById('view-room');
     const $heading = document.getElementById('metrics-heading');
-    const $sub = document.getElementById('metrics-subtitle');
 
     if (target === 'all') {
         if ($all) $all.hidden = false;
         if ($room) $room.hidden = true;
         if ($heading) $heading.textContent = 'Todas mis salas';
-        if ($sub) $sub.textContent = 'Compara el estado cognitivo de tus salas de un vistazo';
         loadAll();
         return;
     }
@@ -329,7 +327,6 @@ async function loadRoom(id) {
 
     const room = ROOMS.find((r) => r.id === id);
     const $heading = document.getElementById('metrics-heading');
-    const $sub = document.getElementById('metrics-subtitle');
     if ($heading) $heading.textContent = room ? room.name : 'Sala';
 
 

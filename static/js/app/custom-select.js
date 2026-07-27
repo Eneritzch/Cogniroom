@@ -1,7 +1,5 @@
-// Reemplaza cada <select class="form-select"> por un dropdown custom limpio.
-// El <select> nativo queda oculto como fuente de verdad: al elegir una opción
-// se actualiza su value y se dispara un evento 'change', así toda la lógica
-// existente (listeners, lectura de .value) sigue funcionando sin cambios.
+// Dropdown propio sobre el <select> nativo, que queda oculto como fuente de verdad:
+// al elegir se actualiza su value y se dispara 'change', sin tocar la lógica existente.
 
 function enhance(select) {
     if (select.dataset.cselect === 'true') return;
@@ -41,7 +39,7 @@ function enhance(select) {
 
     function syncLabel() {
         const opt = select.options[select.selectedIndex];
-        value.textContent = (opt && opt.textContent) || 'Seleccioná…';
+        value.textContent = (opt && opt.textContent) || 'Selecciona…';
         value.dataset.placeholder = (!opt || opt.value === '') ? 'true' : 'false';
     }
 

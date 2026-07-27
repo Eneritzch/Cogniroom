@@ -31,7 +31,7 @@
         <header class="clay-header" data-accent="secondary">
             <div class="clay-header__lead">
                 <span class="clay-header__icon" aria-hidden="true">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
                         <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
                     </svg>
@@ -65,7 +65,7 @@
 
         <aside class="node-insight" id="node-insight" hidden>
             <span class="node-insight__icon" aria-hidden="true">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"></path>
                     <path d="M9 18h6"></path>
                     <path d="M10 22h4"></path>
@@ -76,13 +76,13 @@
 
         <section class="node-kpis" aria-label="Lo que sabe y lo que cree saber en este tema">
             <article class="node-kpi node-kpi--ring">
-                <div class="calibration-ring" data-profile="calibrated" id="node-ring" style="width:140px;height:140px;">
+                <div class="calibration-ring" data-profile="calibrated" id="node-ring" style="--ring-size:140px; --ring-value-size:32px;">
                     <svg class="calibration-ring__svg" width="140" height="140" aria-hidden="true">
                         <circle class="calibration-ring__track" cx="70" cy="70" r="63" stroke-width="10"></circle>
                         <circle class="calibration-ring__fill"  cx="70" cy="70" r="63" stroke-width="10" stroke-dasharray="395.84" stroke-dashoffset="0"></circle>
                     </svg>
                     <div class="calibration-ring__center">
-                        <span class="calibration-ring__value num" id="node-ring-value" style="font-size:32px;">—</span>
+                        <span class="calibration-ring__value num" id="node-ring-value">—</span>
                         <span class="calibration-ring__label eyebrow">Autoconocimiento</span>
                     </div>
                 </div>

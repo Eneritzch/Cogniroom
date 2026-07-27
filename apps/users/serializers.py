@@ -69,7 +69,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         if attrs.get('role') == User.ROLE_TEACHER:
             if not code:
                 raise serializers.ValidationError(
-                    {'teacher_code': 'Ingresá el código de docente provisto por tu institución.'}
+                    {'teacher_code': 'Ingresa el código de docente provisto por tu institución.'}
                 )
             institution = Institution.objects.filter(
                 teacher_code=code, is_active=True,
@@ -81,7 +81,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             attrs['institution'] = institution
         elif not attrs.get('institution'):
             raise serializers.ValidationError(
-                {'institution': 'Seleccioná tu institución.'}
+                {'institution': 'Selecciona tu institución.'}
             )
         return attrs
 
@@ -157,7 +157,7 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
     new_password = serializers.CharField(write_only=True)
 
     default_error_messages = {
-        'invalid_link': 'El enlace no es válido o ya expiró. Pedí uno nuevo.',
+        'invalid_link': 'El enlace no es válido o ya expiró. Pide uno nuevo.',
     }
 
     def validate_new_password(self, value):

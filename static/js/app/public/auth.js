@@ -53,7 +53,7 @@ FIELDS.forEach((input) => {
     if (!justRegistered) return;
     sessionStorage.removeItem('cogniroom.justRegistered');
     $email.value = justRegistered;
-    toast('Cuenta creada. Iniciá sesión para continuar.', { kind: 'success', duration: 2500 });
+    toast('Cuenta creada. Inicia sesión para continuar.', { kind: 'success', duration: 2500 });
     $password.focus();
 })();
 

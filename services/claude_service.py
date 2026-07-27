@@ -82,10 +82,13 @@ DIAGNOSIS_SCHEMA = {
         },
         'reasoning': {'type': 'string'},
         'recommendation': {'type': 'string'},
+        'student_reasoning': {'type': 'string'},
+        'student_recommendation': {'type': 'string'},
     },
     'required': [
         'profile', 'risk_level', 'risk_nodes', 'prediction',
         'problem_type', 'reasoning', 'recommendation',
+        'student_reasoning', 'student_recommendation',
     ],
     'additionalProperties': False,
 }
@@ -149,9 +152,8 @@ class CognitiveAnalysisService:
 
     def __init__(self):
         api_key = getattr(settings, 'ANTHROPIC_API_KEY', '') or ''
-        # max_retries por encima del default (2): la generación es una request
-        # pesada y la API puede devolver 529 transitorios; sin esto el docente
-        # vería "0 preguntas" por una saturación pasajera.
+        # max_retries sobre el default (2): la generación es pesada y la API devuelve 529
+        # transitorios; sin esto el docente vería "0 preguntas" por saturación pasajera.
         self.client = anthropic.Anthropic(api_key=api_key, max_retries=4) if api_key else None
         self.last_usage = None
 
@@ -182,6 +184,8 @@ class CognitiveAnalysisService:
             'prediction': 0.5,
             'reasoning': '',
             'recommendation': '',
+            'student_reasoning': '',
+            'student_recommendation': '',
             'problem_type': 'sin_patron',
         }
         if self.client is None:
@@ -190,11 +194,13 @@ class CognitiveAnalysisService:
         known_nodes = student_data.get('known_nodes', []) or []
 
         system = (
-            'Eres un analista pedagógico que ayuda a un docente a entender a un '
-            'estudiante. Diagnosticas SOLO a partir de los datos provistos: no '
-            'inventes causas, temas ni hechos que no estén en la evidencia. Si no '
-            'hay un patrón claro, dilo (problem_type "sin_patron") en vez de '
-            'especular.'
+            'Eres un analista pedagógico. Del mismo diagnóstico escribes DOS '
+            'versiones con audiencias distintas: una para el docente (habla del '
+            'estudiante en tercera persona) y otra para el propio estudiante '
+            '(le hablas a él, de "tú"). Diagnosticas SOLO a partir de los datos '
+            'provistos: no inventes causas, temas ni hechos que no estén en la '
+            'evidencia. Si no hay un patrón claro, dilo (problem_type '
+            '"sin_patron") en vez de especular.'
         )
 
         error_block = ''
@@ -224,17 +230,30 @@ class CognitiveAnalysisService:
             '"error_procedimental" (conoce pero falla al aplicar), '
             '"aplicacion_incorrecta" (aplica bien un concepto equivocado) o '
             '"sin_patron" (sin patrón claro).\n\n'
-            'MUY IMPORTANTE — "reasoning" y "recommendation" los lee el docente, en '
-            'español claro y cotidiano, sin jerga (nada de "BKT", "ICC", '
-            '"metacognición", "calibración", "nodo", ni números/probabilidades).\n'
+            'MUY IMPORTANTE — los cuatro textos van en español claro y cotidiano, '
+            'sin jerga (nada de "BKT", "ICC", "metacognición", "calibración", '
+            '"nodo", ni números/probabilidades) y hablando de "temas".\n\n'
+            'PARA EL DOCENTE (tercera persona, habla DEL estudiante):\n'
             '"reasoning" (1-2 frases): nombra EXACTAMENTE qué idea confunde el '
             'estudiante y con cuál la está mezclando, y por qué probablemente pasa, '
             'apoyándote en su error concreto.\n'
-            '"recommendation" (1-2 frases): una acción concreta dirigida a ESA '
-            'confusión puntual — por ejemplo, que el estudiante contraste los dos '
-            'conceptos que mezcla y explique con sus palabras en qué se diferencian. '
-            'NO des consejos genéricos como "que relea el tema" sin decir qué '
-            'comparar o revisar. Habla de "temas", no de "nodos".'
+            '"recommendation" (1-2 frases): una acción concreta que el docente puede '
+            'pedirle, dirigida a ESA confusión puntual — por ejemplo, que contraste '
+            'los dos conceptos que mezcla y explique con sus palabras en qué se '
+            'diferencian. NO des consejos genéricos como "que relea el tema" sin '
+            'decir qué comparar o revisar.\n\n'
+            'PARA EL ESTUDIANTE (segunda persona, le hablas A ÉL de "tú", con '
+            'cercanía y sin culpabilizar):\n'
+            '"student_reasoning" (1-2 frases): explícale qué idea está mezclando y '
+            'con cuál, partiendo de su error concreto. Ejemplo de tono: "Estás '
+            'tomando X como si fuera Y, y por eso...".\n'
+            '"student_recommendation" (1-2 frases): una acción concreta que él mismo '
+            'puede hacer ahora, empezando por un verbo en imperativo dirigido a él '
+            '("Abre...", "Compara...", "Escribe..."). \n'
+            'PROHIBIDO en los campos "student_*": referirse al estudiante en tercera '
+            'persona ("el estudiante", "el alumno"), hablarle al docente, o dar '
+            'instrucciones sobre él ("pide al estudiante que...", "haz que...", '
+            '"pídele..."). Esos textos los lee el estudiante en su propia pantalla.'
         )
 
         try:
@@ -280,9 +299,8 @@ class CognitiveAnalysisService:
         return parsed
 
     def upload_pdf(self, fileobj, filename: str) -> str:
-        # Sube el PDF a la Files API de Anthropic una sola vez y devuelve su
-        # file_id (para generar con el PDF nativo). Devuelve '' si la IA no está
-        # activa o si la subida falla — el flujo siempre puede caer a pdfplumber.
+        # Sube el PDF una sola vez a la Files API y devuelve su file_id. Devuelve '' si la
+        # IA está apagada o la subida falla: siempre se puede caer a pdfplumber.
         if self.client is None:
             return ''
         try:
@@ -295,9 +313,8 @@ class CognitiveAnalysisService:
             return ''
 
     def _material_block(self, content: str, file_id: str):
-        # Bloque cacheable del material: PDF nativo (document) si hay file_id,
-        # si no texto plano. El cache_control deja que las generaciones
-        # siguientes lo lean a ~10% del costo.
+        # Material cacheable: PDF nativo si hay file_id, si no texto plano. El cache_control
+        # deja que las siguientes generaciones lo lean a ~10% del costo.
         if file_id:
             return {
                 'type': 'document',
@@ -311,9 +328,8 @@ class CognitiveAnalysisService:
         }
 
     def _generation_messages(self, difficulty, count, content='', file_id='', question_type='', focus=''):
-        # El material va primero y marcado como cacheable; la instrucción (que
-        # varía por dificultad/cantidad/enfoque) va después del breakpoint para no
-        # invalidar el prefijo cacheado.
+        # El material va primero y cacheable; la instrucción, que varía, va después del
+        # breakpoint para no invalidar el prefijo cacheado.
         type_labels = {
             'single': 'todas de opción única (question_type="single")',
             'true_false': 'todas de verdadero/falso (question_type="true_false")',

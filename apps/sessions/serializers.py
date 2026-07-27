@@ -33,7 +33,7 @@ class SubmitAnswerSerializer(serializers.Serializer):
         if attrs.get('selected_indices') is None:
             if 'selected_index' not in attrs:
                 raise serializers.ValidationError(
-                    'Proporcioná "selected_index" o "selected_indices".'
+                    'Proporciona "selected_index" o "selected_indices".'
                 )
             attrs['selected_indices'] = [attrs['selected_index']]
         # Sin duplicados.

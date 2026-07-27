@@ -66,16 +66,10 @@ const $optionsList = document.getElementById('options-list');
 const $submit = document.getElementById('submit-answer');
 const $questionEyebrow = document.getElementById('question-eyebrow');
 const $questionText = document.getElementById('question-text');
-const $current = document.getElementById('session-current');
-const $total = document.getElementById('session-total');
 const $progress = document.getElementById('session-progress-fill');
 const $progressCurrent = document.getElementById('progress-current');
 const $progressTotal = document.getElementById('progress-total');
 const $progressCardFill = document.getElementById('progress-card-fill');
-
-// La sesión termina cuando el backend responde `completed` (no se conoce el
-// total de preguntas de antemano).
-if ($total) $total.textContent = '—';
 
 
 // El estudiante DEBE declarar su confianza antes de que se desbloqueen las
@@ -138,11 +132,9 @@ function renderQuestion(q) {
     const total = typeof q.total === 'number' ? q.total : null;
     if (total != null) sessionTotal = total;
 
-    if ($current) $current.textContent = String(num);
     if ($progressCurrent) $progressCurrent.textContent = String(num);
 
     if (total != null) {
-        if ($total) $total.textContent = String(total);
         if ($progressTotal) $progressTotal.textContent = String(total);
         const pct = Math.min(100, (currentIndex / total) * 100);
         $progress.style.width = `${pct}%`;
@@ -252,11 +244,11 @@ function renderFeedback(result) {
     $gap.dataset.tone = tone;
 
     if (gapAbs > 5) {
-        $hatch.style.display = 'block';
+        $hatch.hidden = false;
         $hatch.style.left = `${Math.min(declared, mastery)}%`;
         $hatch.style.width = `${gapAbs}%`;
     } else {
-        $hatch.style.display = 'none';
+        $hatch.hidden = true;
     }
 
     document.getElementById('tile-confidence').textContent = `${declared}%`;
@@ -269,10 +261,8 @@ function renderFeedback(result) {
     const $diag = document.getElementById('feedback-diagnosis');
     if ($diag) $diag.hidden = true;
 
-    // Con el cupo por nodo se conoce el total: en la última pregunta se muestra
-    // el CTA prominente "Terminar evaluación" + aviso, en vez del enlace
-    // "Siguiente". El cierre real sigue ocurriendo cuando el backend responde
-    // `completed`.
+    // Con el cupo por tema se conoce el total: en la última pregunta se muestra
+    // "Terminar evaluación" en vez de "Siguiente" (el cierre lo marca el backend).
     const $nextBtn = document.getElementById('next-question');
     const $finishBtn = document.getElementById('complete-session');
     const $lastNote = document.getElementById('feedback-lastnote');
@@ -304,7 +294,7 @@ $submit.addEventListener('click', async () => {
         }
         toast(err?.message || 'No se pudo enviar la respuesta', { kind: 'error' });
         $submit.disabled = false;
-        $submit.innerHTML = `Enviar respuesta <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>`;
+        $submit.innerHTML = `Enviar respuesta <svg aria-hidden="true" class="icon-svg" width="16" height="16" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>`;
     }
 });
 
@@ -313,7 +303,7 @@ document.getElementById('next-question').addEventListener('click', async () => {
     currentIndex += 1;
     await loadNextQuestion();
     $submit.disabled = true;
-    $submit.innerHTML = `Enviar respuesta <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>`;
+    $submit.innerHTML = `Enviar respuesta <svg aria-hidden="true" class="icon-svg" width="16" height="16" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>`;
 });
 
 

@@ -2,12 +2,8 @@
    Consumen exclusivamente tokens de tokens.css (--clay-*, --r-clay-*).
    Base = móvil. Único breakpoint: 768px. Solo Flexbox. */
 
-/* ========================================================================
-   El TEMA (paleta teal-clara, tipografía Nunito, sombras clay, --gradient-brand,
-   --bs-*-rgb) vive ahora en :root de tokens.css como FUENTE ÚNICA. La clase
-   .clay-theme se mantiene en cada <body> solo para los selectores de componentes
-   de abajo (.clay-theme .foo …). Ya no re-declara tokens: no dupliques aquí.
-   ======================================================================== */
+/* El tema vive en :root de tokens.css (fuente única). .clay-theme solo agrupa
+   los selectores de abajo: no re-declara tokens, no dupliques aquí. */
 
 /* La X de Bootstrap NO debe invertirse sobre superficies claras (quedaría
    invisible). */
@@ -144,10 +140,8 @@
     align-items: center;
     justify-content: space-between;
   }
-  /* Base cómoda para el título: si las acciones no caben a su lado (barra
-     lateral abierta en pantallas medias), bajan a una segunda fila en vez de
-     encimarse. Solo en fila (desktop): en móvil el header es columna y aquí
-     flex-basis afectaría la altura. */
+  /* Si las acciones no caben al lado del título bajan a otra fila en vez de
+     encimarse. Solo en desktop: en móvil el header es columna. */
   .clay-header__lead { flex: 1 1 260px; }
 }
 
@@ -496,10 +490,8 @@
   box-shadow: var(--clay-raised-hover);
 }
 
-/* Chip de icono de cabecera de modal — COMPONENTE REUTILIZABLE.
-   Da identidad de color a cada modal (primary por defecto · secondary =
-   petróleo). Sirve tanto en modales Bootstrap (.modal-header) como en los
-   custom (.create-room-modal__head). Emparéjalo con .modal-heading. */
+/* Chip de icono de cabecera de modal (reutilizable): da color de identidad al
+   modal, en Bootstrap o custom. Emparéjalo con .modal-heading. */
 .clay-theme .modal-heading {
   display: flex;
   align-items: center;

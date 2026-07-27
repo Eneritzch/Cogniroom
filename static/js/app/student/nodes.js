@@ -106,9 +106,8 @@ function renderNodes(nodes) {
 }
 
 
-// Mapa jerárquico: TÚ al centro, las SALAS en una órbita interna, y los TEMAS de
-// cada sala en su propio sector (con el color de la sala). Elipse (Y aplastada)
-// para caber en el viewBox 100x70.
+// Mapa jerárquico: TÚ al centro, SALAS en órbita interna y TEMAS por sector.
+// Elipse (Y aplastada) para caber en el viewBox 100x70.
 const KG_CX = 50;
 const KG_CY = 35;
 const KG_YS = 0.72;
@@ -163,9 +162,7 @@ function el(tag, attrs) {
 }
 
 
-// Constelación viva: nodos que flotan, conexiones con energía fluyendo, núcleo
-// pulsante, hover que resalta y entrada animada. Se construye una vez y un loop
-// de requestAnimationFrame actualiza posiciones (barato, son pocos nodos).
+// Constelación animada: se construye una vez y un rAF actualiza posiciones.
 function renderKnowledgeGraph(graph) {
     const $svg = document.getElementById('knowledge-graph-svg');
     const $readout = document.getElementById('knowledge-graph-readout');

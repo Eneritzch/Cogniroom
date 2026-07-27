@@ -71,7 +71,7 @@ function render() {
         <li class="pdf-item" data-id="${p.id}" data-file="${escapeHTML(fileUrl)}" data-name="${escapeHTML(originalName)}" role="button" tabindex="0" aria-label="Abrir ${escapeHTML(originalName)}">
             <div class="pdf-item__top">
                 <span class="pdf-item__icon" aria-hidden="true">
-                    <svg class="icon-svg" width="20" height="20" viewBox="0 0 24 24">
+                    <svg aria-hidden="true" class="icon-svg" width="20" height="20" viewBox="0 0 24 24">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                         <polyline points="14 2 14 8 20 8"></polyline>
                     </svg>
@@ -93,7 +93,7 @@ function render() {
                     Ver documento
                 </span>
                 <button type="button" class="pdf-item__del" data-pdf-id="${p.id}" aria-label="Eliminar documento">
-                    <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24">
+                    <svg aria-hidden="true" class="icon-svg" width="16" height="16" viewBox="0 0 24 24">
                         <polyline points="3 6 5 6 21 6"></polyline>
                         <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
                     </svg>
@@ -148,7 +148,7 @@ async function openPdfViewer(url, name) {
         pdfBlobUrl = URL.createObjectURL(blob);
         $pdfFrame.src = pdfBlobUrl;
     } catch (_) {
-        toast('No se pudo cargar el PDF aquí. Probá "Abrir en pestaña nueva".', { kind: 'error' });
+        toast('No se pudo cargar el PDF aquí. Prueba "Abrir en pestaña nueva".', { kind: 'error' });
     }
 }
 
@@ -273,9 +273,8 @@ async function load() {
         toast('No se pudieron cargar las salas.', { kind: 'error' });
         return;
     }
-    // Solo salas que el usuario administra: el docente las suyas, el estudiante
-    // sus salas de estudio. Las grupales a las que se unió (membership != null)
-    // no suben material acá.
+    // Solo salas que el usuario administra: a las grupales a las que se unió
+    // (membership != null) no se les sube material.
     const owned = (list || []).filter((r) => !r.membership);
     const stored = activeRoomId();
     ROOM_INFO = owned.find((r) => r.id === stored) || owned[0];

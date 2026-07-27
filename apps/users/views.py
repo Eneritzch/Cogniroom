@@ -49,7 +49,7 @@ class ResolveTeacherCodeView(APIView):
         code = (request.data.get('code') or '').strip().upper()
         if not code:
             return Response(
-                {'detail': 'Ingresá un código.'},
+                {'detail': 'Ingresa un código.'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         institution = Institution.objects.filter(
@@ -162,11 +162,11 @@ class PasswordResetRequestView(APIView):
             token = default_token_generator.make_token(user)
             send_branded_email(
                 user.email,
-                title='Restablecé tu contraseña',
+                title='Restablece tu contraseña',
                 body=(
                     'Recibimos una solicitud para restablecer tu contraseña en '
-                    'CogniRoom. Usá el botón para elegir una nueva. El enlace es '
-                    'de un solo uso y caduca por seguridad. Si no fuiste tu, '
+                    'CogniRoom. Usa el botón para elegir una nueva. El enlace es '
+                    'de un solo uso y caduca por seguridad. Si no fuiste tú, '
                     'ignora este correo: tu contraseña no cambia.'
                 ),
                 link=f'/app/reset-password/?uid={uid}&token={token}',
@@ -189,5 +189,5 @@ class PasswordResetConfirmView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(
-            {'detail': 'Tu contraseña se actualizó. Ya podés iniciar sesión.'}
+            {'detail': 'Tu contraseña se actualizó. Ya puedes iniciar sesión.'}
         )

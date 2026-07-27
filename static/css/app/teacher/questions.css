@@ -862,10 +862,8 @@
   border: 0;
 }
 
-/* Fila de opción como componente clay: superficie plana en reposo; la
-   opción marcada como correcta se tiñe de turquesa (fondo glow + anillo +
-   chip de letra relleno). El input de texto va plano dentro de la fila para
-   no encadenar 4 pastillas "hundidas" que chocarían entre sí. */
+/* Fila de opción: plana en reposo, turquesa la marcada como correcta. El input
+   va plano dentro para no encadenar 4 pastillas hundidas. */
 .qopt {
   display: flex;
   align-items: center;

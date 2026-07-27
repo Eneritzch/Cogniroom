@@ -1,8 +1,6 @@
-"""Resumen de estudiantes en alerta cognitiva (correr por cron). Por cada sala
-grupal activa, agrupa a los estudiantes en cuadrante crítico ("no sabe y está
-confiado") y envía UN correo-resumen al docente dueño. In-app siempre; email
-según config. La alerta se calcula desde las métricas reales (BKT × confianza),
-sin depender de que Claude haya corrido."""
+"""Resumen por cron: un solo correo al docente con los estudiantes de su sala en
+cuadrante crítico ("no sabe y está confiado"). Se calcula desde las métricas
+reales (BKT × confianza), sin depender de que Claude haya corrido."""
 from datetime import timedelta
 
 from django.core.management.base import BaseCommand

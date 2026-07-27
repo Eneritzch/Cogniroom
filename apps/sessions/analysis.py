@@ -170,6 +170,11 @@ def _run_ai_analysis(answer_id, new_mastery):
                 'rationale': question.rationale or '',
             }
         diagnosis = claude.analyze_student(student_data, error_context=error_context)
+        # Sin API key (o si la llamada falló) el servicio devuelve defaults vacíos:
+        # persistirlos llenaría el historial del estudiante de tarjetas en blanco.
+        if not (diagnosis.get('reasoning') or diagnosis.get('recommendation')):
+            return
+
         try:
             failure_probability = float(diagnosis.get('prediction', 0.5) or 0.5)
         except (TypeError, ValueError):
@@ -190,6 +195,8 @@ def _run_ai_analysis(answer_id, new_mastery):
             failure_probability=failure_probability,
             reasoning=diagnosis.get('reasoning', '') or '',
             recommendation=diagnosis.get('recommendation', '') or '',
+            student_reasoning=diagnosis.get('student_reasoning', '') or '',
+            student_recommendation=diagnosis.get('student_recommendation', '') or '',
         )
 
         # Estudiante: su diagnóstico/feedback ya está disponible.
@@ -198,7 +205,7 @@ def _run_ai_analysis(answer_id, new_mastery):
             kind=Notification.KIND_DIAGNOSIS_READY,
             title='Tu diagnóstico está listo',
             body=f'Generamos tu análisis en "{question.node.name}". '
-                 'Revisá tu feedback y recomendaciones.',
+                 'Revisa tu feedback y recomendaciones.',
             link='/app/diagnoses/',
         )
 

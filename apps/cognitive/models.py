@@ -120,8 +120,12 @@ class AIDiagnosis(models.Model):
     risk_level = models.CharField(max_length=10, choices=RISK_CHOICES)
     risk_node = models.JSONField(default=list)
     failure_probability = models.FloatField()
+    # reasoning/recommendation hablan DEL estudiante (los lee el docente); student_* le
+    # hablan A ÉL. La misma llamada a Claude devuelve las dos audiencias.
     reasoning = models.TextField()
     recommendation = models.TextField()
+    student_reasoning = models.TextField(blank=True, default='')
+    student_recommendation = models.TextField(blank=True, default='')
     generated_at = models.DateTimeField(auto_now_add=True)
 
 

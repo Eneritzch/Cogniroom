@@ -266,10 +266,10 @@ Sin esto, los imports quedan cacheados aunque el wrapper se refresque.
 
 ## 10. Checklist antes de hacer commit
 
-1. ¿Estoy duplicando HTML que ya existe como partial? → usá `{% include %}`
-2. ¿Estoy hardcodeando un color, tamaño, espaciado o radio? → usá tokens
-3. ¿Usé `<div>` cuando había una etiqueta semántica? → reemplazá
+1. ¿Estoy duplicando HTML que ya existe como partial? → usa `{% include %}`
+2. ¿Estoy hardcodeando un color, tamaño, espaciado o radio? → usa tokens
+3. ¿Usé `<div>` cuando había una etiqueta semántica? → reemplaza
 4. ¿Mi componente tiene más de un breakpoint? → replantealo
-5. ¿Usé `display: grid`? → cambialo a `flex`
+5. ¿Usé `display: grid`? → cámbialo a `flex`
 6. ¿Mi botón solo tiene icono y no tiene `aria-label`? → agregalo
 7. ¿Estoy bindeando logout, sidebar toggle o user info manualmente? → ya lo hace `nav-auth.js`

@@ -27,6 +27,11 @@ ALLOWED_HOSTS = [
 
 ANTHROPIC_API_KEY = config('ANTHROPIC_API_KEY', default='')
 
+# En tests nunca se llama a la API real (lenta, no determinista, con costo): sin key
+# el servicio devuelve defaults vacíos, que es el camino degradado a ejercitar.
+if 'test' in sys.argv:
+    ANTHROPIC_API_KEY = ''
+
 # Preguntas con IA que un docente puede generar por mes calendario. 0 = sin límite.
 AI_MONTHLY_QUESTION_QUOTA = config('AI_MONTHLY_QUESTION_QUOTA', default=100, cast=int)
 
@@ -124,8 +129,10 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
+# Producto en español para universidades ecuatorianas: admin y mensajes de DRF en
+# español, y fechas en hora local (se siguen guardando en UTC).
+LANGUAGE_CODE = 'es-ec'
+TIME_ZONE = 'America/Guayaquil'
 USE_I18N = True
 USE_TZ = True
 

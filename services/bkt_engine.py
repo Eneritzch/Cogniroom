@@ -1,10 +1,7 @@
 class BKTEngine:
-    """Bayesian Knowledge Tracing engine — Corbett & Anderson (1994).
-
-    Soporta evidencia blanda (crédito parcial): `correctness` puede ser un bool
-    o un float en [0,1]. Con 1.0/0.0 el resultado es idéntico al BKT binario
-    clásico; los valores intermedios mezclan ambas posteriores en proporción al
-    score, para puntuar preguntas de opción múltiple sin perder granularidad.
+    """Bayesian Knowledge Tracing — Corbett & Anderson (1994). `correctness`
+    acepta bool o float en [0,1]: con 1.0/0.0 equivale al BKT binario clásico y
+    los intermedios mezclan ambas posteriores (crédito parcial en multi-opción).
     """
 
     def update(self, p_mastery, p_transit, p_slip, p_guess, correctness):

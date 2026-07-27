@@ -58,13 +58,6 @@ function fmtDateLong(iso) {
 }
 
 
-function profileFromGap(gap) {
-    if (gap > 0.15)  return 'overconfident';
-    if (gap < -0.15) return 'underconfident';
-    return 'calibrated';
-}
-
-
 function masteryTone(m) {
     if (m < 0.4) return 'rust';
     if (m < 0.6) return 'amber';
@@ -206,7 +199,7 @@ function paintAi(n) {
 function paintResponses(n) {
     const $list = document.getElementById('node-responses');
     const $count = document.getElementById('node-responses-count');
-    const list = n.recentResponses || [];
+    const list = n.recent_answers || [];
     $count.textContent = `${list.length} respuesta${list.length === 1 ? '' : 's'}`;
 
     if (list.length === 0) {
@@ -227,7 +220,7 @@ function paintResponses(n) {
         return `
         <a class="node-response" href="/app/session/${r.id_session}/review/" data-correct="${r.is_correct}">
             <span class="node-response__icon" aria-hidden="true">
-                <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <svg aria-hidden="true" class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     ${r.is_correct
                         ? '<polyline points="20 6 9 17 4 12"></polyline>'
                         : '<line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>'}
@@ -249,7 +242,7 @@ function paintResponses(n) {
                 </div>
             </div>
             <span class="node-response__arrow" aria-hidden="true">
-                <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg aria-hidden="true" class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="9 18 15 12 9 6"></polyline>
                 </svg>
             </span>
@@ -293,7 +286,7 @@ function paintCategories(n) {
         return `
           <article class="catcard" data-tone="${tone}" title="${escapeHTML(meta.label)}: ${c.correct} de ${c.total} correctas">
             <span class="catcard__icon" aria-hidden="true">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${meta.icon}</svg>
+              <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${meta.icon}</svg>
             </span>
             <span class="catcard__pct num">${acc}%</span>
             <span class="catcard__label">${escapeHTML(meta.label)}</span>

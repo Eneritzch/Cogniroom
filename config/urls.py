@@ -34,18 +34,37 @@ def api_root(request):
             'mark_read': 'POST /api/v1/notifications/mark-read/',
         },
         'rooms': {
-            'list':    'GET  /api/v1/rooms/',
-            'create':  'POST /api/v1/rooms/',
-            'join':    'POST /api/v1/rooms/join/',
-            'members': 'GET  /api/v1/rooms/{room_id}/members/',
+            'list':     'GET    /api/v1/rooms/',
+            'create':   'POST   /api/v1/rooms/',
+            'detail':   'GET/PATCH/DELETE /api/v1/rooms/{room_id}/',
+            'join':     'POST   /api/v1/rooms/join/  (por código)',
+            'discover': 'GET    /api/v1/rooms/discover/',
+            'members':  'GET    /api/v1/rooms/{room_id}/members/',
+            'member_remove':  'DELETE /api/v1/rooms/{room_id}/members/{student_id}/',
+            'member_section': 'PATCH  /api/v1/rooms/{room_id}/members/{student_id}/section/',
+            'enroll':   'POST   /api/v1/rooms/{room_id}/enroll/',
+        },
+        'join_requests': {
+            'list':         'GET  /api/v1/rooms/join-requests/',
+            'create':       'POST /api/v1/rooms/{room_id}/request-join/',
+            'approve':      'POST /api/v1/rooms/join-requests/{req_id}/approve/',
+            'reject':       'POST /api/v1/rooms/join-requests/{req_id}/reject/',
+        },
+        'sections': {
+            'list':   'GET    /api/v1/rooms/{room_id}/sections/',
+            'create': 'POST   /api/v1/rooms/{room_id}/sections/',
+            'detail': 'PATCH/DELETE /api/v1/rooms/{room_id}/sections/{section_id}/',
         },
         'questions': {
-            'nodes_list':    'GET  /api/v1/rooms/{room_id}/nodes/',
-            'nodes_create':  'POST /api/v1/rooms/{room_id}/nodes/',
-            'list':          'GET  /api/v1/rooms/{room_id}/questions/',
-            'manual_create': 'POST /api/v1/rooms/{room_id}/questions/manual/',
-            'generate':      'POST /api/v1/rooms/{room_id}/questions/generate/',
-            'approve':       'POST /api/v1/rooms/{room_id}/questions/approve/',
+            'nodes_list':    'GET    /api/v1/rooms/{room_id}/nodes/',
+            'nodes_create':  'POST   /api/v1/rooms/{room_id}/nodes/',
+            'nodes_detail':  'PATCH/DELETE /api/v1/rooms/{room_id}/nodes/{node_id}/',
+            'list':          'GET    /api/v1/rooms/{room_id}/questions/',
+            'detail':        'GET/PATCH/DELETE /api/v1/rooms/{room_id}/questions/{question_id}/',
+            'manual_create': 'POST   /api/v1/rooms/{room_id}/questions/manual/',
+            'generate':      'POST   /api/v1/rooms/{room_id}/questions/generate/  (202, async)',
+            'approve':       'POST   /api/v1/rooms/{room_id}/questions/approve/',
+            'reject':        'POST   /api/v1/rooms/{room_id}/questions/reject/',
         },
         'pdfs': {
             'list':   'GET    /api/v1/rooms/{room_id}/pdfs/',
@@ -54,8 +73,12 @@ def api_root(request):
             'delete': 'DELETE /api/v1/rooms/{room_id}/pdfs/{pdf_id}/',
         },
         'room_metrics': {
-            'blind_spots': 'GET /api/v1/rooms/{room_id}/metrics/blind-spots/',
-            'at_risk':     'GET /api/v1/rooms/{room_id}/metrics/at-risk/',
+            'summary':        'GET /api/v1/rooms/metrics/summary/',
+            'overview':       'GET /api/v1/rooms/{room_id}/metrics/overview/',
+            'blind_spots':    'GET /api/v1/rooms/{room_id}/metrics/blind-spots/',
+            'at_risk':        'GET /api/v1/rooms/{room_id}/metrics/at-risk/',
+            'heatmap':        'GET /api/v1/rooms/{room_id}/metrics/heatmap/',
+            'student_detail': 'GET /api/v1/rooms/{room_id}/students/{student_id}/',
         },
         'sessions': {
             'list':          'GET  /api/v1/sessions/',
@@ -82,9 +105,8 @@ html_routes = [
     path('app/pdfs/',                         TemplateView.as_view(template_name='app/teacher/pdfs.html'),             name='teacher-pdfs'),
     path('app/metrics/',                      TemplateView.as_view(template_name='app/teacher/metrics.html'),          name='teacher-metrics'),
     path('app/rooms/',                        TemplateView.as_view(template_name='app/teacher/rooms.html'),            name='teacher-rooms'),
-    # La página-sala agregada se retiró: duplicaba las páginas dedicadas del menú
-    # (Estudiantes/Preguntas/PDFs/Métricas). Se redirige a Métricas para no romper
-    # enlaces antiguos (p. ej. notificaciones ya enviadas).
+    # La página-sala agregada se retiró (duplicaba las páginas del menú); se redirige a
+    # Métricas para no romper enlaces ya enviados.
     path('app/room/<int:room_id>/',           RedirectView.as_view(url='/app/metrics/', permanent=False), name='room-detail'),
     path('app/my-rooms/',                     TemplateView.as_view(template_name='app/student/my-rooms.html'),         name='student-my-rooms'),
     path('app/nodes/',                        TemplateView.as_view(template_name='app/student/nodes.html'),            name='student-nodes'),

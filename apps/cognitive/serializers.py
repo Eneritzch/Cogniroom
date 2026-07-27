@@ -45,7 +45,7 @@ class AIDiagnosisSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'student', 'session', 'room', 'node', 'node_name', 'classification',
             'problem_type', 'risk_level', 'risk_node', 'failure_probability', 'reasoning',
-            'recommendation', 'generated_at',
+            'recommendation', 'student_reasoning', 'student_recommendation', 'generated_at',
         ]
 
     def get_node_name(self, obj):

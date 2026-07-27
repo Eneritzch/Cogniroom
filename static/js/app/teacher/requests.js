@@ -49,10 +49,7 @@ function rowHTML(r) {
 function render(items) {
     const $list = document.getElementById('join-requests-list');
     const $empty = document.getElementById('requests-empty');
-    const $count = document.getElementById('requests-count');
     if (!$list) return;
-
-    if ($count) $count.textContent = String(items.length);
 
     if (!items.length) {
         $list.innerHTML = '';

@@ -20,12 +20,9 @@ _cached_version = None
 
 
 def asset_version(request):
-    """Versión estable para cache-busting de CSS/JS: el mtime más reciente de
-    los estáticos (css/js). No cambia entre navegaciones si nada se editó → el
-    navegador cachea y no re-descarga (evita el flash sin estilos). Al editar un
-    archivo, su mtime sube y todo se refresca, así que en desarrollo se siguen
-    viendo los cambios. En producción (DEBUG=False) se calcula una sola vez.
-    """
+    """Cache-buster de CSS/JS: el mtime más reciente de los estáticos. Estable
+    entre navegaciones (el navegador cachea, sin flash sin estilos) y sube al
+    editar un archivo. Con DEBUG=False se calcula una sola vez."""
     global _cached_version
     if not settings.DEBUG and _cached_version is not None:
         return {'ASSET_V': _cached_version}

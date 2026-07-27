@@ -18,9 +18,8 @@ class Institution(models.Model):
     Gestionable desde el admin de Django."""
 
     name = models.CharField(max_length=200, unique=True)
-    # Código de invitación de docentes propio de la institución. Único en todo el
-    # sistema para que un código resuelva a una sola institución. Se normaliza a
-    # mayúsculas en save() para que la comparación sea estable.
+    # Código de invitación de la institución. Único en el sistema para que resuelva a
+    # una sola; se normaliza a mayúsculas en save().
     teacher_code = models.CharField(max_length=100, unique=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)

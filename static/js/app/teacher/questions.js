@@ -123,9 +123,7 @@ function qType(q) {
 function renderList() {
     const $list = document.getElementById('questions-list');
     const $meta = document.getElementById('questions-meta');
-    const $pager = document.getElementById('questions-pager');
     if (!$list) return;
-    if ($pager) { $pager.hidden = true; $pager.innerHTML = ''; }
 
     const filtered = applyFilters(BANK);
     if ($meta) {
@@ -235,7 +233,7 @@ function cardHTML(q) {
                         <span class="qcard__option-letter num">${String.fromCharCode(65 + idx)}</span>
                         <span class="qcard__option-text">${escapeHTML(opt)}</span>
                         ${correctSet.has(idx) ? `
-                            <svg class="icon-svg" width="12" height="12" viewBox="0 0 24 24" aria-label="Respuesta correcta">
+                            <svg aria-hidden="true" class="icon-svg" width="12" height="12" viewBox="0 0 24 24" aria-label="Respuesta correcta">
                                 <polyline points="20 6 9 17 4 12"></polyline>
                             </svg>
                         ` : ''}
@@ -322,12 +320,8 @@ function render() {
 
     const $name = document.getElementById('room-name');
     const $q = document.getElementById('room-questions');
-    const $pending = document.getElementById('room-pending');
     if ($name) $name.textContent = ROOM_INFO.name;
     if ($q) $q.textContent = String(BANK.filter((q) => q.status === 'approved').length);
-
-    const pendingTotal = BANK.filter((q) => q.status === 'pending').length;
-    if ($pending) $pending.textContent = `${pendingTotal} pendiente${pendingTotal === 1 ? '' : 's'} de aprobación`;
 
     fillNodeFilter();
     renderList();
@@ -1003,9 +997,8 @@ async function load() {
         toast('No se pudieron cargar las salas.', { kind: 'error' });
         return;
     }
-    // Esta página gestiona el banco de una sala que el usuario administra: el
-    // docente sus salas, el estudiante sus salas de estudio. Las salas grupales
-    // a las que un estudiante se unió (membership != null) no se gestionan acá.
+    // Solo salas que el usuario administra (docente: las suyas; estudiante: las de
+    // estudio). Las grupales a las que se unió (membership != null) no se gestionan aquí.
     const owned = (list || []).filter((r) => !r.membership);
     const stored = activeRoomId();
     ROOM_INFO = owned.find((r) => r.id === stored) || owned[0];

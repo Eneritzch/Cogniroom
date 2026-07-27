@@ -273,8 +273,10 @@ Diagnóstico generado por IA cuando hay desalineación grave.
 | `risk_level` | CharField(10) | CHOICES | `high` / `medium` / `low` |
 | `risk_node` | JSONField | default [] | Array de nombres de nodos en riesgo |
 | `failure_probability` | FloatField | 0.0..1.0 | Probabilidad predicha de fallo |
-| `reasoning` | TextField | — | Razonamiento del modelo |
-| `recommendation` | TextField | — | Acción sugerida |
+| `reasoning` | TextField | — | Razonamiento del modelo, redactado para el docente (habla del estudiante) |
+| `recommendation` | TextField | — | Acción sugerida al docente |
+| `student_reasoning` | TextField | blank, default '' | Mismo razonamiento redactado para el estudiante (le habla a él) |
+| `student_recommendation` | TextField | blank, default '' | Acción que el estudiante puede hacer por sí mismo |
 | `generated_at` | DateTime | auto_now_add | — |
 
 ### `cognitive_studentprogresssnapshot`

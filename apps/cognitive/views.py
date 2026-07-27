@@ -33,11 +33,8 @@ from .serializers import (
 
 
 def _parse_section(request, room):
-    """Lee ?section_id= y valida que pertenezca a la sala.
-
-    Devuelve (section_id|None, error_response|None). Sin parámetro (o 'all')
-    → (None, None): comportamiento de sala completa, intacto.
-    """
+    """Lee ?section_id= y valida que sea de la sala. Devuelve
+    (section_id|None, error|None); sin parámetro o 'all' → sala completa."""
     raw = request.query_params.get('section_id')
     if raw in (None, '', 'all'):
         return None, None
@@ -153,10 +150,12 @@ class MyNodesView(APIView):
         return Response(result)
 
 
+# Mismos títulos que muestran el panel y el historial (static/js/app/…): un solo
+# fraseo para el mismo perfil en las tres pantallas, en lenguaje llano.
 DIAGNOSIS_TITLES = {
-    'overconfident': 'Brecha de sobreconfianza detectada',
-    'underconfident': 'Subestimación del propio dominio',
-    'calibrated': 'Calibración alineada',
+    'overconfident': 'Confía de más: cree saber más de lo que realmente sabe',
+    'underconfident': 'Confía de menos: sabe más de lo que cree',
+    'calibrated': 'Confianza justa: lo que cree y lo que sabe coinciden',
 }
 
 
@@ -186,8 +185,9 @@ class MyNodeDetailView(APIView):
         if diag:
             diagnosis = {
                 'title': DIAGNOSIS_TITLES.get(diag.classification, 'Diagnóstico cognitivo'),
-                'reasoning': diag.reasoning,
-                'recommendation': diag.recommendation,
+                # Vista del propio estudiante: solo la versión escrita para él.
+                'reasoning': diag.student_reasoning,
+                'recommendation': diag.student_recommendation,
                 'generated_at': diag.generated_at,
             }
 
@@ -209,7 +209,7 @@ class MyNodeDetailView(APIView):
             'node_id': node.id,
             'name': node.name,
             'description': '',
-            'room': {'id_room': node.room_id, 'name': node.room.name},
+            'room': {'id': node.room_id, 'name': node.room.name},
             'updated_at': bkt.updated_at,
             'profile': latest_ci.profile if latest_ci else 'calibrated',
             'avg_confidence': latest_ci.avg_confidence if latest_ci else 0.0,
@@ -224,15 +224,13 @@ class MyNodeDetailView(APIView):
             'categories': category_breakdown(
                 Answer.objects.filter(session__student=user, question__node_id=node_id)
             ),
-            'recentResponses': recent,
+            'recent_answers': recent,
         })
 
 
 class RoomOverviewView(APIView):
-    """Panel consolidado de una sala para el docente: distribución de cuadrantes,
-    habilidades del grupo (categorías), estudiantes a atender primero (con su
-    categoría más floja y último diagnóstico), puntos ciegos y dispersión
-    dominio×confianza para el mapa de cuadrantes."""
+    """Panel de sala para el docente: cuadrantes, categorías del grupo, a quién
+    atender primero, puntos ciegos y dispersión dominio×confianza."""
     permission_classes = [IsAuthenticated]
 
     def get(self, request, room_id):

@@ -1,8 +1,12 @@
+/* El tamaño es por instancia (hero, dashboard, detalle de tema): se pasa como
+   variable --ring-size, y --ring-value-size ajusta la cifra del centro. */
 .calibration-ring {
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: var(--ring-size, 140px);
+  height: var(--ring-size, 140px);
 }
 
 .calibration-ring__svg {
@@ -41,6 +45,7 @@
 .calibration-ring__value {
   font-family: var(--font-mono);
   font-weight: var(--fw-medium);
+  font-size: var(--ring-value-size, var(--fs-xl));
   color: var(--ink);
   line-height: 1;
 }
@@ -248,7 +253,11 @@
   overflow: hidden;
   padding: var(--s-6);
   background-color: var(--paper-surface);
-  background-image: linear-gradient(180deg, rgba(91, 122, 110, 0.04), transparent 60%);
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--sage) 6%, transparent),
+    transparent 60%
+  );
   border: 1px solid var(--paper-border-strong);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow-md);

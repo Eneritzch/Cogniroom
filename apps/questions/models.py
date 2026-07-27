@@ -37,9 +37,8 @@ class PDFDocument(models.Model):
     )
     file_path = models.FileField(upload_to=_pdf_upload_path, max_length=500)
     extracted_text = models.TextField(blank=True)
-    # ID del archivo en la Files API de Anthropic. Si está presente, la
-    # generación usa el PDF nativo (tablas/fórmulas/figuras); si no, cae al
-    # texto plano de extracted_text (pdfplumber).
+    # ID en la Files API de Anthropic: si está, la generación usa el PDF nativo
+    # (tablas/fórmulas); si no, cae al texto de pdfplumber.
     file_id = models.CharField(max_length=128, blank=True)
     status = models.CharField(max_length=12, choices=STATUS_CHOICES, default=STATUS_UPLOADED)
     created_at = models.DateTimeField(auto_now_add=True)

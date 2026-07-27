@@ -413,9 +413,7 @@ function render() {
     if (!DATA) return;
 
     const $name = document.getElementById('room-name');
-    const $students = document.getElementById('room-students');
     if ($name) $name.textContent = DATA.name;
-    if ($students) $students.textContent = String(DATA.students);
 
     visibleCount = PAGE_SIZE;
     currentSection = 'all';
@@ -456,7 +454,7 @@ async function load() {
     }
     if (!roomId) {
         const $rows = document.getElementById('students-rows');
-        if ($rows) $rows.innerHTML = `<li class="students-list__empty">Todavía no tenés salas. Creá una para ver tu cohorte.</li>`;
+        if ($rows) $rows.innerHTML = `<li class="students-list__empty">Todavía no tienes salas. Crea una para ver tu cohorte.</li>`;
         return;
     }
     ROOM_ID = roomId;

@@ -73,7 +73,7 @@ function bindPersonalForm() {
         $save.disabled = !dirty;
         $hint.textContent = dirty
             ? 'Hay cambios sin guardar.'
-            : 'Editá un campo para activar guardar.';
+            : 'Edita un campo para activar guardar.';
     }
 
     fields.forEach((id) => {
@@ -162,18 +162,7 @@ function bindPasswordForm() {
 }
 
 
-function bindLogout() {
-    const $btn = document.getElementById('logout-btn-profile');
-    if (!$btn) return;
-    $btn.addEventListener('click', () => {
-        auth.logout();
-        location.href = '/app/';
-    });
-}
-
-
 async function init() {
-    bindLogout();
 
     let user, roomsList;
     try {

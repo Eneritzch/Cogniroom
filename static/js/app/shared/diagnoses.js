@@ -34,9 +34,9 @@ const PROBLEM_LABEL = {
 function problemLabel(p) { return PROBLEM_LABEL[p] || ''; }
 
 const DIAG_TITLES = {
-    overconfident: 'Cree saber más de lo que realmente sabe',
-    underconfident: 'Sabe más de lo que cree saber',
-    calibrated: 'Lo que cree saber y lo que sabe coinciden',
+    overconfident: 'Confía de más: cree saber más de lo que realmente sabe',
+    underconfident: 'Confía de menos: sabe más de lo que cree',
+    calibrated: 'Confianza justa: lo que cree y lo que sabe coinciden',
 };
 
 
@@ -79,8 +79,10 @@ function predominantProfile(list) {
 function renderDiagnosis(diag) {
     const classification = diag.classification || 'calibrated';
     const title = diag.title || DIAG_TITLES[classification] || 'Diagnóstico cognitivo';
-    const reasoning = diag.reasoning || '';
-    const recommendation = diag.recommendation || '';
+    // Esta pantalla la ve el propio estudiante: solo los textos escritos para él.
+    // Las versiones para el docente viven en su vista de cohorte.
+    const reasoning = diag.student_reasoning || '';
+    const recommendation = diag.student_recommendation || '';
     const date = formatDate(diag.generated_at);
     const risk = diag.risk_level || 'medium';
     const problemType = diag.problem_type || '';

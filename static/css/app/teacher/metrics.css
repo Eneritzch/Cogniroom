@@ -1043,7 +1043,7 @@
   stroke: var(--paper-elevated);
   stroke-width: 0.9;
   cursor: pointer;
-  filter: drop-shadow(0 0.5px 1.2px rgba(0, 0, 0, 0.45));
+  filter: drop-shadow(0 0.5px 1.2px color-mix(in srgb, var(--ink) 45%, transparent));
   transition: r var(--dur-fast) var(--ease-out);
 }
 .qm-dot[data-quadrant='overconfident']  { fill: var(--rust); }
@@ -1210,10 +1210,10 @@
 
 /* Select de sala alineado a la derecha; el custom-select lo envuelve en .cselect. */
 .metrics-roombar { flex-wrap: wrap; }
-.metrics-roombar .cselect { margin-left: auto; width: min(240px, 100%); }
+.metrics-roombar .cselect { width: 100%; }
 .metrics-roomselect { width: min(240px, 100%); }
-@media (max-width: 767px) {
-  .metrics-roombar .cselect { margin-left: 0; width: 100%; }
+@media (min-width: 768px) {
+  .metrics-roombar .cselect { margin-left: auto; width: min(240px, 100%); }
 }
 
 /* Selector más compacto que el estándar (solo en Métricas). El divisor entre

@@ -123,9 +123,8 @@ class SessionListCreateView(APIView):
                 )
             node_ids = valid_ids
 
-        # Congelar el cupo por nodo: cuántas preguntas de cada tema verá el
-        # estudiante en esta sesión. 0 en el tema = todas las aprobadas. Se
-        # acota al pool real y se omiten nodos sin preguntas aprobadas.
+        # Congela el cupo por tema de esta sesión (0 = todas las aprobadas), acotado al pool
+        # real y omitiendo temas sin preguntas aprobadas.
         effective_nodes = KnowledgeNode.objects.filter(room=room)
         if node_ids:
             effective_nodes = effective_nodes.filter(id__in=node_ids)
@@ -268,9 +267,8 @@ class SubmitAnswerView(APIView):
         score = question.score_answer(selected_indices)
         is_correct = score >= 1.0
 
-        # El avance de BKT, el snapshot de CognitiveIndex y el Answer son una
-        # unidad atómica: o se escriben los tres o ninguno (evita mastery
-        # avanzado sin respuesta registrada, que re-serviría la pregunta).
+        # BKT, CognitiveIndex y Answer son una unidad atómica: evita mastery avanzado sin
+        # respuesta registrada, que volvería a servir la misma pregunta.
         with transaction.atomic():
             bkt_state, _ = BKTState.objects.select_for_update().get_or_create(
                 student=request.user, node=question.node
@@ -320,10 +318,8 @@ class SubmitAnswerView(APIView):
             # Alerta in-app al docente si el estudiante quedó en el cuadrante crítico.
             maybe_alert_teacher_critical(session)
 
-        # Diagnóstico IA fuera del request (no bloquea al estudiante): solo se
-        # dispara en respuestas FALLADAS con desalineación (icc < AI_ICC_THRESHOLD), donde
-        # explicar el error aporta aprendizaje real. En aciertos descalibrados la
-        # nota de calibración es determinista (se arma en el repaso, sin IA).
+        # Diagnóstico IA fuera del request y solo en respuestas FALLADAS con desalineación:
+        # en aciertos descalibrados basta la nota determinista del repaso.
         ai_pending = (not is_correct) and icc_result['icc'] < settings.AI_ICC_THRESHOLD
         if ai_pending:
             schedule_ai_analysis(answer.id, new_mastery)

@@ -22,7 +22,7 @@ $form.addEventListener('submit', async (event) => {
     if (!$form.checkValidity()) {
         $email.setAttribute('aria-invalid', 'true');
         toast(
-            $email.validity.valueMissing ? 'Ingresá tu correo.' : 'Introducí un correo válido.',
+            $email.validity.valueMissing ? 'Ingresa tu correo.' : 'Introduce un correo válido.',
             { kind: 'error' },
         );
         $email.focus();
@@ -42,9 +42,9 @@ $form.addEventListener('submit', async (event) => {
         $submit.disabled = false;
         $submitText.textContent = 'Enviar enlace';
         if (err instanceof ApiError && err.status === 429) {
-            toast('Demasiados intentos. Esperá un momento e intentá de nuevo.', { kind: 'error' });
+            toast('Demasiados intentos. Espera un momento e intenta de nuevo.', { kind: 'error' });
         } else {
-            toast('No se pudo enviar el enlace. Intentá de nuevo.', { kind: 'error' });
+            toast('No se pudo enviar el enlace. Intenta de nuevo.', { kind: 'error' });
         }
     }
 });

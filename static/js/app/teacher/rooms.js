@@ -208,7 +208,7 @@ function emptyStateHTML() {
     return `
     <li class="rooms-empty">
         <span class="rooms-empty__art" aria-hidden="true">
-            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg aria-hidden="true" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"></path>
                 <path d="M9 21v-6h6v6"></path>
             </svg>
@@ -226,7 +226,6 @@ function emptyStateHTML() {
 
 function render() {
     const $list = document.getElementById('rooms-list');
-    const $count = document.getElementById('rooms-count');
     const $meta = document.getElementById('rooms-meta');
     if (!$list) return;
 
@@ -235,14 +234,11 @@ function render() {
     // Hasta que la primera carga termine no se pinta nada en la lista: así el
     // estado vacío no parpadea cuando el usuario sí tiene salas (FOUC).
     if (!LOADED) {
-        if ($count) $count.textContent = '—';
         if ($meta) $meta.textContent = '';
         $list.innerHTML = '';
         renderPager(0, 1);
         return;
     }
-
-    if ($count) $count.textContent = String(ROOMS.filter((r) => r.is_active !== false).length);
 
     if (ROOMS.length === 0) {
         if ($meta) $meta.textContent = '';

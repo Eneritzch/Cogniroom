@@ -1,9 +1,6 @@
-"""Cuadrante cognitivo: cruza lo que el estudiante REALMENTE sabe (BKT) con lo
-que CREE saber (confianza declarada) en una matriz 2x2. Es el corazón del
-diagnóstico de sobreconfianza: el perfil de 3 vías basado solo en la brecha no
-distingue "no sabe pero lo sabe" de "no sabe y está confiado" (ambos con brecha
-pequeña), y esa diferencia es justamente la alerta que le importa al docente.
-
+"""Cruza lo que el estudiante REALMENTE sabe (BKT) con lo que CREE saber en una
+matriz 2x2. El perfil de 3 vías (solo brecha) no distingue "no sabe y lo
+reconoce" de "no sabe y está confiado", que es justo la alerta para el docente.
 Recibe primitivos, devuelve primitivos (sin ORM).
 """
 

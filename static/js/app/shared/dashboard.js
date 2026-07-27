@@ -35,25 +35,11 @@ function profileLabel(profile) {
     })[profile] || 'Confianza justa';
 }
 
-function profileFromGap(gap) {
-    if (gap > 0.2)  return 'overconfident';
-    if (gap < -0.2) return 'underconfident';
-    return 'calibrated';
-}
-
 function gapTone(gap) {
     if (gap > 15)  return 'amber';
     if (gap < -15) return 'stone';
     return 'moss';
 }
-
-function masteryColor(m) {
-    if (m < 0.4) return 'var(--rust)';
-    if (m < 0.6) return 'var(--amber)';
-    if (m < 0.8) return 'var(--sage)';
-    return 'var(--moss)';
-}
-
 
 function updateCalibrationRing(container, value, profile, sublabel) {
     const clamped = Math.max(0, Math.min(1, value || 0));
@@ -73,68 +59,6 @@ function updateCalibrationRing(container, value, profile, sublabel) {
     container.dataset.profile = profile;
     valueEl.textContent = clamped.toFixed(2);
     if (sublabel && subEl) subEl.textContent = sublabel;
-}
-
-
-function renderStudentNodeCard(node) {
-    const mastery = Math.round((node.p_mastery ?? 0) * 100);
-    const conf = Math.round((node.avg_confidence ?? 0) * 100);
-    const gap = conf - mastery;
-    const gapAbs = Math.abs(gap);
-    const tone = gapTone(gap);
-    const attempts = node.attempts ?? 0;
-    const bkt = node.p_mastery ?? 0;
-    const topic = node.description ? `<span class="node-card__topic eyebrow">${escapeHTML(node.description)}</span>` : '';
-
-    return `
-      <article class="node-card">
-        <header class="node-card__head">
-          <div style="min-width:0;">
-            ${topic}
-            <h3 class="node-card__name">${escapeHTML(node.name)}</h3>
-          </div>
-          <div class="node-card__mastery">
-            <span class="node-card__mastery-value num">${mastery}<span class="node-card__mastery-value-unit">%</span></span>
-            <span class="node-card__mastery-label eyebrow">Lo que realmente sabe</span>
-          </div>
-        </header>
-        <div class="dual-bar">
-          <div class="dual-bar__rows">
-            <div class="dual-bar__row">
-              <span class="dual-bar__num">${conf}</span>
-              <div class="dual-bar__track">
-                <div class="dual-bar__fill dual-bar__fill--declared" style="width:${conf}%;"></div>
-              </div>
-            </div>
-            <div class="dual-bar__row">
-              <span class="dual-bar__num">${mastery}</span>
-              <div class="dual-bar__track">
-                <div class="dual-bar__fill dual-bar__fill--mastery" style="width:${mastery}%;"></div>
-                ${gapAbs > 5 ? `<div class="dual-bar__gap-hatch" style="left:${Math.min(conf, mastery)}%;width:${gapAbs}%;"></div>` : ''}
-              </div>
-            </div>
-          </div>
-        </div>
-        <footer class="node-card__meta">
-          <span><span class="num">${attempts}</span> intentos</span>
-          <span>Lo que realmente sabe <span class="num">${fmt(bkt)}</span></span>
-          <span>Diferencia <span class="num node-card__gap" data-tone="${tone}">${gap >= 0 ? '+' : ''}${gap}</span></span>
-        </footer>
-      </article>
-    `;
-}
-
-
-function renderStudentNodes(nodes) {
-    const $grid = document.getElementById('student-nodes-grid');
-    const $count = document.getElementById('nodes-count');
-    if (!nodes || nodes.length === 0) {
-        $grid.innerHTML = `<p class="empty" style="flex:1;">Aún no hay temas registrados. Inicia una sesión para empezar a registrar lo que realmente sabe.</p>`;
-        $count.textContent = '0';
-        return;
-    }
-    $count.textContent = String(nodes.length);
-    $grid.innerHTML = nodes.map(renderStudentNodeCard).join('');
 }
 
 
@@ -173,8 +97,9 @@ function renderStudentDiagnosis(diag) {
 
     const $sug = document.getElementById('student-diag-suggestion');
     const $sugText = document.getElementById('student-diag-suggestion-text');
-    if (diag.recommendation && $sug && $sugText) {
-        $sugText.textContent = diag.recommendation;
+    const suggestion = diag.student_recommendation || '';
+    if (suggestion && $sug && $sugText) {
+        $sugText.textContent = suggestion;
         $sug.hidden = false;
     } else if ($sug) {
         $sug.hidden = true;
@@ -206,251 +131,6 @@ function buildGraphNodes(nodes) {
 }
 
 
-function renderKnowledgeGraph(graphNodes) {
-    const $svg = document.getElementById('knowledge-graph-svg');
-    const $readout = document.getElementById('knowledge-graph-readout');
-    if (!$svg) return;
-
-    const byId = Object.fromEntries(graphNodes.map((n) => [n.id_node, n]));
-    let hover = null;
-
-    const buildSvg = () => {
-        const svgNS = 'http://www.w3.org/2000/svg';
-        $svg.innerHTML = '';
-
-        const defs = document.createElementNS(svgNS, 'defs');
-        defs.innerHTML = `<pattern id="kg-grid" width="5" height="5" patternUnits="userSpaceOnUse">
-            <path d="M 5 0 L 0 0 0 5" fill="none" stroke="var(--paper-border)" stroke-width="0.1"/>
-        </pattern>`;
-        $svg.appendChild(defs);
-
-        const bg = document.createElementNS(svgNS, 'rect');
-        bg.setAttribute('width', '100');
-        bg.setAttribute('height', '70');
-        bg.setAttribute('fill', 'url(#kg-grid)');
-        bg.setAttribute('opacity', '0.6');
-        $svg.appendChild(bg);
-
-        graphNodes.forEach((n) => {
-            const lit = !hover || hover === n.id_node;
-            const r = 1.6 + n.attempts * 0.12;
-            const color = masteryColor(n.p_mastery);
-            const gap = n.avg_confidence - n.p_mastery;
-            const isOver = gap > 0.15;
-
-            const g = document.createElementNS(svgNS, 'g');
-            g.style.cursor = 'pointer';
-            g.style.opacity = lit ? '1' : '0.25';
-            g.style.transition = 'opacity 200ms';
-
-            if (isOver) {
-                const aura = document.createElementNS(svgNS, 'circle');
-                aura.setAttribute('cx', n.x);
-                aura.setAttribute('cy', n.y);
-                aura.setAttribute('r', r + 1.6);
-                aura.setAttribute('fill', 'none');
-                aura.setAttribute('stroke', 'var(--amber)');
-                aura.setAttribute('stroke-width', '0.18');
-                aura.setAttribute('stroke-dasharray', '0.8 0.6');
-                aura.setAttribute('opacity', '0.6');
-                const animate = document.createElementNS(svgNS, 'animateTransform');
-                animate.setAttribute('attributeName', 'transform');
-                animate.setAttribute('type', 'rotate');
-                animate.setAttribute('from', `0 ${n.x} ${n.y}`);
-                animate.setAttribute('to', `360 ${n.x} ${n.y}`);
-                animate.setAttribute('dur', '40s');
-                animate.setAttribute('repeatCount', 'indefinite');
-                aura.appendChild(animate);
-                g.appendChild(aura);
-            }
-
-            [
-                [n.x - r - 0.8, n.y, n.x - r - 0.3, n.y],
-                [n.x + r + 0.3, n.y, n.x + r + 0.8, n.y],
-                [n.x, n.y - r - 0.8, n.x, n.y - r - 0.3],
-                [n.x, n.y + r + 0.3, n.x, n.y + r + 0.8],
-            ].forEach(([x1, y1, x2, y2]) => {
-                const tick = document.createElementNS(svgNS, 'line');
-                tick.setAttribute('x1', x1);
-                tick.setAttribute('y1', y1);
-                tick.setAttribute('x2', x2);
-                tick.setAttribute('y2', y2);
-                tick.setAttribute('stroke', 'var(--ink-faint)');
-                tick.setAttribute('stroke-width', '0.1');
-                g.appendChild(tick);
-            });
-
-            const circle = document.createElementNS(svgNS, 'circle');
-            circle.setAttribute('cx', n.x);
-            circle.setAttribute('cy', n.y);
-            circle.setAttribute('r', r);
-            circle.setAttribute('fill', color);
-            circle.setAttribute('stroke', 'var(--paper)');
-            circle.setAttribute('stroke-width', '0.4');
-            g.appendChild(circle);
-
-            const label = document.createElementNS(svgNS, 'text');
-            label.setAttribute('x', n.x);
-            label.setAttribute('y', n.y + r + 2.2);
-            label.setAttribute('text-anchor', 'middle');
-            label.setAttribute('font-size', '1.6');
-            label.setAttribute('fill', 'var(--ink)');
-            label.setAttribute('font-family', 'Inter');
-            label.setAttribute('font-weight', '500');
-            label.textContent = n.name;
-            g.appendChild(label);
-
-            const mlabel = document.createElementNS(svgNS, 'text');
-            mlabel.setAttribute('x', n.x);
-            mlabel.setAttribute('y', n.y + r + 4.1);
-            mlabel.setAttribute('text-anchor', 'middle');
-            mlabel.setAttribute('font-size', '1.3');
-            mlabel.setAttribute('fill', 'var(--ink-faint)');
-            mlabel.setAttribute('font-family', 'JetBrains Mono');
-            mlabel.textContent = n.p_mastery.toFixed(2);
-            g.appendChild(mlabel);
-
-            g.addEventListener('mouseenter', () => { hover = n.id_node; buildSvg(); updateReadout(); });
-            g.addEventListener('mouseleave', () => { hover = null; buildSvg(); updateReadout(); });
-            g.addEventListener('click', () => { location.href = `/app/node/${n.id_node}/`; });
-
-            $svg.appendChild(g);
-        });
-    };
-
-    const updateReadout = () => {
-        if (!hover) {
-            $readout.innerHTML = '<span class="knowledge-graph__readout-empty">// pasa el cursor sobre un tema</span>';
-            return;
-        }
-        const n = byId[hover];
-        $readout.innerHTML = `
-            <span class="knowledge-graph__readout-name">${escapeHTML(n.name)}</span>
-            <div class="knowledge-graph__readout-nums">
-                <span>m <b>${n.p_mastery.toFixed(2)}</b></span>
-                <span>c <b>${n.avg_confidence.toFixed(2)}</b></span>
-                <span>n <b>${n.attempts}</b></span>
-            </div>
-        `;
-    };
-
-    buildSvg();
-}
-
-
-function renderRooms(items) {
-    const $list = document.getElementById('teacher-rooms-list');
-    const $count = document.getElementById('rooms-count-meta');
-    const $headerCount = document.getElementById('teacher-rooms-count');
-
-    if (!items || items.length === 0) return;
-    if (!$list) return;
-
-    if ($count) $count.textContent = `${items.length} activa${items.length === 1 ? '' : 's'}`;
-    if ($headerCount) $headerCount.textContent = String(items.length);
-
-    $list.innerHTML = items.map((r) => {
-        const subject = r.subject || '';
-        return `
-          <a href="/app/metrics/" class="room-card" data-room-id="${r.id_room ?? r.id}" style="text-decoration:none;color:inherit;">
-            <header class="room-card__head">
-              <div>
-                <h3 class="room-card__name">${escapeHTML(r.name)}</h3>
-                <p class="room-card__used">${escapeHTML(r.mode || 'group')} · ${escapeHTML(r.access_code || '')}</p>
-              </div>
-              <span class="room-card__more" aria-hidden="true">
-                <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24">
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                  <polyline points="12 5 19 12 12 19"></polyline>
-                </svg>
-              </span>
-            </header>
-            <div class="room-card__meta">
-              <div>
-                <div class="room-card__meta-eyebrow eyebrow">Estudiantes</div>
-                <div class="room-card__meta-v num">${r.member_count ?? 0}</div>
-              </div>
-              <div class="room-card__meta-end">
-                <div class="room-card__meta-eyebrow eyebrow">Materia</div>
-                <div class="room-card__meta-v">${escapeHTML(subject)}</div>
-              </div>
-            </div>
-          </a>
-        `;
-    }).join('');
-
-    // Al abrir una sala se fija como activa; las páginas dedicadas (Métricas,
-    // etc.) operan sobre esa sala.
-    $list.querySelectorAll('[data-room-id]').forEach((a) => {
-        a.addEventListener('click', () => {
-            localStorage.setItem('cogniroom.activeRoomId', String(a.dataset.roomId));
-        });
-    });
-}
-
-
-function renderBlindSpots(items) {
-    const $list = document.getElementById('teacher-blind-spots');
-    if (!$list) return;
-    if (!items || items.length === 0) {
-        $list.innerHTML = `<p class="empty" style="padding:var(--s-3);">Sin puntos ciegos del grupo detectados todavía.</p>`;
-        return;
-    }
-    $list.innerHTML = items.map((b) => {
-        const ipc = b.ipc_value ?? 0;
-        const tone = ipc < 0.25 ? 'rust' : ipc < 0.4 ? 'amber' : 'sage';
-        const nodeName = b.node?.name ?? b.node_name ?? '—';
-        const topic = b.node?.description ?? b.description ?? '';
-        return `
-          <div class="blind-spots__item">
-            <div class="blind-spots__row">
-              <p class="blind-spots__node">${escapeHTML(nodeName)}${topic ? ` <span class="eyebrow">· ${escapeHTML(topic)}</span>` : ''}</p>
-              <span class="blind-spots__ipc num">${fmt(ipc)}</span>
-            </div>
-            <div class="blind-spots__bar">
-              <div class="blind-spots__bar-fill" data-tone="${tone}" style="width:${(1 - ipc) * 100}%;"></div>
-            </div>
-            <div class="blind-spots__meta">
-              <span><span class="num">${b.total_student ?? 0}</span> estudiantes afectados</span>
-              <button class="blind-spots__action" type="button">Ver tema →</button>
-            </div>
-          </div>
-        `;
-    }).join('');
-}
-
-
-function renderAtRisk(items) {
-    const $list = document.getElementById('teacher-at-risk');
-    if (!$list) return;
-    if (!items || items.length === 0) {
-        $list.innerHTML = `<li class="empty" style="padding:var(--s-3);list-style:none;">Ningún estudiante en riesgo por ahora.</li>`;
-        return;
-    }
-    $list.innerHTML = items.map((s) => {
-        const fullName = `${s.first_name ?? ''} ${s.last_name ?? ''}`.trim() || s.username || '—';
-        const initials = fullName.split(/\s+/).map((p) => p[0]).join('').slice(0, 2).toUpperCase();
-        const gapValue = s.metacognitive_gap ?? 0;
-        const gapPts = Math.round(gapValue * 100);
-        const risk = s.risk_level || 'medium';
-        const profile = s.profile || 'overconfident';
-        const label = s.quadrant_label || profileLabel(profile);
-        const tone = gapPts >= 0 ? 'amber' : 'stone';
-        return `
-          <li class="at-risk__row"${s.critical ? ' data-critical="true"' : ''}>
-            <div class="at-risk__student">
-              <span class="at-risk__avatar" aria-hidden="true">${escapeHTML(initials)}</span>
-              <span class="at-risk__name">${escapeHTML(fullName)}</span>
-            </div>
-            <div><span class="pill" data-quadrant="${profile}">${escapeHTML(label)}</span></div>
-            <div class="at-risk__gap" data-tone="${tone}">${gapPts > 0 ? '+' : ''}${gapPts} pts</div>
-            <div><span class="pill" data-risk="${risk}">Riesgo ${risk === 'high' ? 'alto' : risk === 'medium' ? 'medio' : 'bajo'}</span></div>
-          </li>
-        `;
-    }).join('');
-}
-
-
 async function startSession(roomId, $btn) {
     if ($btn) {
         $btn.disabled = true;
@@ -468,44 +148,6 @@ async function startSession(roomId, $btn) {
             $btn.textContent = 'Empezar evaluación';
         }
     }
-}
-
-
-function renderStudentRooms(items) {
-    const $list = document.getElementById('student-rooms-list');
-    const $count = document.getElementById('student-rooms-count');
-    if (!$list) return;  // la sección de salas se quitó del dashboard del estudiante
-
-    if (!items || items.length === 0) {
-        $list.innerHTML = `<p class="empty">No estás inscrito en ninguna sala todavía</p>`;
-        $count.textContent = '0 salas';
-        return;
-    }
-
-    $count.textContent = `${items.length} sala${items.length === 1 ? '' : 's'}`;
-    $list.innerHTML = items.map((r) => `
-      <article class="room-card" data-room-id="${r.id_room ?? r.id}">
-        <header class="room-card__head">
-          <div>
-            <h3 class="room-card__name">${escapeHTML(r.name)}</h3>
-            <p class="room-card__used">${escapeHTML(r.mode || 'group')} · código ${escapeHTML(r.access_code || '—')}</p>
-          </div>
-          <button type="button" class="teacher-btn teacher-btn--primary" data-start-session="${r.id_room ?? r.id}">
-            Empezar evaluación
-            <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-              <polyline points="12 5 19 12 12 19"></polyline>
-            </svg>
-          </button>
-        </header>
-      </article>
-    `).join('');
-
-    $list.querySelectorAll('[data-start-session]').forEach((btn) => {
-        btn.addEventListener('click', () => {
-            startSession(Number(btn.dataset.startSession), btn);
-        });
-    });
 }
 
 
@@ -562,13 +204,12 @@ async function bootstrapStudent(user) {
     $studentView.hidden = false;
     document.getElementById('student-greeting').textContent = user.first_name || user.username;
 
-    let profile, nodes, diagnoses, roomList;
+    let profile, nodes, diagnoses;
     try {
-        [profile, nodes, diagnoses, roomList] = await Promise.all([
+        [profile, nodes, diagnoses] = await Promise.all([
             me.profile(),
             me.nodes(),
             me.diagnoses(),
-            rooms.list(),
         ]);
     } catch (err) {
         if (err instanceof ApiError && err.status === 401) {
@@ -579,8 +220,6 @@ async function bootstrapStudent(user) {
         toast('No se pudo cargar tu panel.', { kind: 'error' });
         return;
     }
-
-    renderStudentRooms(roomList || []);
 
     // Sin respuestas todavía no hay métricas: mostrar estado neutro, no valores
     // fabricados (icc=0 daría un "gap" de +100 y un relato de sobreconfianza falso).
@@ -658,14 +297,8 @@ function renderHeroFocus(graphNodes) {
 let TEACHER_ROOMS = [];
 
 
-async function bootstrapTeacher(user) {
+async function bootstrapTeacher() {
     $teacherView.hidden = false;
-    const $greeting = document.getElementById('teacher-greeting');
-    if ($greeting) {
-        $greeting.textContent = user.first_name
-            ? `${user.last_name ? 'Dr/a. ' + user.last_name : user.first_name}`
-            : user.username;
-    }
 
     let list;
     try {
@@ -680,8 +313,6 @@ async function bootstrapTeacher(user) {
     TEACHER_ROOMS = list || [];
 
     renderKpis(TEACHER_ROOMS);
-    renderRooms(TEACHER_ROOMS);
-    renderRoomsCompare(TEACHER_ROOMS);
     renderCalibrationBars(TEACHER_ROOMS);
 
     if (!TEACHER_ROOMS.length) return;
@@ -701,11 +332,6 @@ function renderKpis(list) {
     set('students-value', list.reduce((s, r) => s + (r.member_count || 0), 0));
     set('answers-value', list.reduce((s, r) => s + (r.session_count || 0), 0));
     set('diags-value', list.reduce((s, r) => s + (r.diagnosis_count || 0), 0));
-}
-
-
-function bindData(key, value) {
-    document.querySelectorAll(`[data-bind="${key}"]`).forEach((el) => { el.textContent = value; });
 }
 
 
@@ -730,33 +356,10 @@ async function loadRoomData(roomId) {
     const room = TEACHER_ROOMS.find((r) => r.id === Number(roomId)) || TEACHER_ROOMS[0];
     if (!room) return;
 
-    const $tcr = document.getElementById('teacher-current-room');
-    if ($tcr) $tcr.textContent = room.name;
-    bindData('room-subject', room.subject || '');
-    bindData('room-access-code', room.access_code || '');
-    bindData('room-mode', room.mode || 'group');
-    bindData('donut-total', `${room.member_count ?? 0} est.`);
-    bindData('next-room', String(room.name).split(' · ')[0]);
-    bindData('next-students', String(room.member_count ?? 0));
-    bindData('next-questions', String(room.question_count ?? 0));
-
-    const [heatmap, blindSpots, atRisk] = await Promise.all([
-        rooms.heatmap(room.id).catch(() => null),
-        rooms.blindSpots(room.id).catch(() => []),
-        rooms.atRisk(room.id).catch(() => []),
-    ]);
-
-    const counts = countProfiles(heatmap && heatmap.roster);
-    bindData('prof-cal-count', String(counts.cal));
-    bindData('prof-over-count', String(counts.over));
-    bindData('prof-und-count', String(counts.und));
-    renderDonut(counts);
-    renderDotMatrix(counts);
-
-    bindData('bs-count', `${(blindSpots || []).length} detectados`);
-    bindData('ar-count', `${(atRisk || []).length} en riesgo`);
-    renderBlindSpots(blindSpots || []);
-    renderAtRisk(atRisk || []);
+    // El panel solo grafica la distribución de cuadrantes de la sala activa; el
+    // detalle (puntos ciegos, en riesgo, listados) vive en /app/metrics/.
+    const heatmap = await rooms.heatmap(room.id).catch(() => null);
+    renderDonut(countProfiles(heatmap && heatmap.roster));
 }
 
 
@@ -777,7 +380,7 @@ async function bootstrap() {
         }
 
         if (user.role === 'teacher') {
-            await bootstrapTeacher(user);
+            await bootstrapTeacher();
         } else {
             await bootstrapStudent(user);
         }
@@ -842,10 +445,8 @@ function renderDonut(counts) {
     set('.d-donut__seg--und',   undArc,   calArc + overArc);
     set('.d-donut__seg--aware', awareArc, calArc + overArc + undArc);
 
-    // El centro resume la salud metacognitiva: % del grupo cuya confianza coincide
-    // con lo que realmente sabe. Son DOS cuadrantes alineados: "sabe y confía" (cal)
-    // y "no sabe y lo reconoce" (aware) — ambos son "bien calibrados". Solo están
-    // descalibrados los que confían de más (over) o de menos (und).
+    // Bien calibrados = los dos cuadrantes alineados: "sabe y confía" y "no sabe y lo
+    // reconoce". Descalibrados son solo los que confían de más o de menos.
     const calPct = Math.round(((counts.cal + counts.aware) / total) * 100);
     if ($pct) {
         $pct.textContent = `${calPct}%`;
@@ -853,36 +454,6 @@ function renderDonut(counts) {
     }
     if ($label) $label.textContent = 'Bien calibrados';
 }
-
-
-function renderDotMatrix(counts) {
-    const $matrix = document.getElementById('dot-matrix');
-    if (!$matrix) return;
-    const dots = [];
-    for (let i = 0; i < counts.cal; i++)   dots.push('moss');
-    for (let i = 0; i < counts.over; i++)  dots.push('rust');
-    for (let i = 0; i < counts.und; i++)   dots.push('stone');
-    for (let i = 0; i < (counts.aware || 0); i++) dots.push('amber');
-
-    const cols = 14;
-    const rows = Math.ceil(dots.length / cols);
-    const r = 5;
-    const gap = 4;
-    const step = r * 2 + gap;
-    const w = cols * step - gap;
-    const h = rows * step - gap;
-
-    const circles = dots.map((c, i) => {
-        const cx = (i % cols) * step + r;
-        const cy = Math.floor(i / cols) * step + r;
-        return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="var(--${c})"/>`;
-    }).join('');
-
-    $matrix.innerHTML = `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid meet" class="dot-matrix__svg">${circles}</svg>`;
-}
-
-
-const _roomIcon = '<svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24"><path d="M3 21V8l9-5 9 5v13"></path><path d="M9 21V12h6v9"></path></svg>';
 
 
 function renderCalibrationBars(list) {
@@ -933,40 +504,5 @@ function renderCalibrationBars(list) {
 }
 
 
-function renderRoomsCompare(list) {
-    const $list = document.getElementById('rooms-compare');
-    if (!$list) return;
-
-    // Tamaño fijo: solo las 4 salas más recientes (la lista viene ordenada por
-    // -created_at). Para verlas todas está el enlace del encabezado a /app/rooms/.
-    $list.innerHTML = (list || []).slice(0, 4).map((r) => {
-        const n = r.member_count ?? 0;
-        const sub = n > 0
-            ? `<span class="d-rooms__sub">${n} ${n === 1 ? 'estudiante' : 'estudiantes'}</span>`
-            : '';
-        return `
-      <li class="d-rooms__row" data-switch-room="${r.id}" tabindex="0">
-        <span class="d-rooms__icon">${_roomIcon}</span>
-        <div class="d-rooms__main">
-          <span class="d-rooms__name">${escapeHTML(String(r.name).split(' · ')[0])}</span>
-          ${sub}
-        </div>
-      </li>`;
-    }).join('');
-
-    $list.querySelectorAll('[data-switch-room]').forEach((row) => {
-        const go = () => switchActiveRoom(Number(row.dataset.switchRoom));
-        row.addEventListener('click', go);
-        row.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); }
-        });
-    });
-}
-
-
 // Cambia la sala activa: persiste y emite roomchange (que dispara loadRoomData
 // acá y, en otras páginas docentes, su propia recarga).
-function switchActiveRoom(id) {
-    localStorage.setItem('cogniroom.activeRoomId', String(id));
-    window.dispatchEvent(new CustomEvent('cogniroom:roomchange', { detail: { id } }));
-}

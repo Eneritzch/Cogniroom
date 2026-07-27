@@ -481,6 +481,12 @@ body.auth-page {
   gap: 6px;
 }
 
+/* Los campos van dentro de un <fieldset>, así que el gap de .auth-fields no
+   los separa: la separación se declara entre hermanos. */
+.auth-field + .auth-field {
+  margin-top: 14px;
+}
+
 .auth-field__label {
   font-family: var(--font-sans);
   font-size: 12px;
