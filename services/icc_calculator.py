@@ -1,3 +1,6 @@
+from services.thresholds import CALIBRATION_BAND
+
+
 class ICCCalculator:
     """Index of Cognitive Calibration — measures gap between declared confidence and BKT mastery."""
 
@@ -5,9 +8,9 @@ class ICCCalculator:
         gap = declared_confidence - bkt_mastery
         icc = 1.0 - abs(gap)
 
-        if gap > 0.2:
+        if gap > CALIBRATION_BAND:
             profile = 'overconfident'
-        elif gap < -0.2:
+        elif gap < -CALIBRATION_BAND:
             profile = 'underconfident'
         else:
             profile = 'calibrated'

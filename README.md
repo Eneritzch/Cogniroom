@@ -40,8 +40,6 @@ CogniRoom es un **monolito modular Django** que combina dos roles del mismo back
 - **Sirve la UI** mediante el patrón clásico **MVT** de Django (templates HTML).
 - **Expone una API REST JSON** mediante Django REST Framework para el cliente JavaScript que consume datos.
 
-El detalle y la justificación de la arquitectura están en [docs/architecture.md](docs/architecture.md).
-
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │  Navegador                                                      │
@@ -138,14 +136,9 @@ Cogniroom/
 │       ├── toast.js            # Notificaciones
 │       └── design-system.js
 │
-├── docs/
-│   ├── architecture.md         # Decisión: monolito modular
-│   └── database.md             # Esquema BD + diagrama Mermaid
-│
 ├── manage.py
 ├── requirements.txt
-├── .env.example
-└── CLAUDE.md                   # Reglas para asistentes IA
+└── .env.example
 ```
 
 ---
@@ -432,14 +425,6 @@ Ningún módulo UI llama a `fetch` directamente — todos importan `api.js`. As�
 - Vistas como `APIView` (no `ViewSet`) — endpoints explícitos, fáciles de leer.
 - Serializers separados por intención: `RoomSerializer` (lectura), `RoomCreateSerializer` (escritura), `JoinRoomSerializer` (acción).
 - Servicios en `services/` reciben primitivos y devuelven primitivos — desacoplados del ORM y testables sin Django.
-
----
-
-## Documentación adicional
-
-- [docs/architecture.md](docs/architecture.md) — decisión arquitectónica y comparación con microservicios.
-- [docs/database.md](docs/database.md) — esquema completo con diagrama Mermaid.
-- [CLAUDE.md](CLAUDE.md) — guía de contexto para asistentes IA que trabajen sobre el repo.
 
 ---
 

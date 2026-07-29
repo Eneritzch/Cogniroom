@@ -48,9 +48,9 @@ local_settings.py
 # apps/*/migrations/*.py
 # !apps/*/migrations/__init__.py
 
-# Claude Code (mantén CLAUDE.md y .claude/ versionados, ignora local-only)
-.claude/settings.local.json
-.claude/.local/
+# Configuración local de herramientas — no se versiona
+.claude/
+CLAUDE.md
 
 # IDE
 .idea/

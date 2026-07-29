@@ -10,6 +10,7 @@ from rest_framework.views import APIView
 from apps.rooms.models import Room, RoomMembership
 from apps.sessions.models import Answer, EvaluationSession
 from services.cognitive_quadrant import QUADRANTS, classify_quadrant, is_critical
+from services.thresholds import BLIND_SPOT_TH
 
 from .metrics import (
     category_breakdown,
@@ -404,7 +405,7 @@ class BlindSpotsView(APIView):
                 'ipc_value': ipc,
                 'total_student': total,
                 'calculated_at': None,
-                'alert': ipc < 0.5,
+                'alert': ipc < BLIND_SPOT_TH,
             })
         result.sort(key=lambda s: s['ipc_value'])
         return Response(result)

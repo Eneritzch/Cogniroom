@@ -4,8 +4,7 @@ reconoce" de "no sabe y está confiado", que es justo la alerta para el docente.
 Recibe primitivos, devuelve primitivos (sin ORM).
 """
 
-MASTERY_TH = 0.6   # umbral para considerar que el estudiante "sabe" el tema
-CONF_TH = 0.6      # umbral para considerar que el estudiante "está confiado"
+from services.thresholds import CONF_TH, MASTERY_TH
 
 # Los cuatro cuadrantes. `critical` marca el caso peligroso (no sabe y confía).
 QUADRANTS = {

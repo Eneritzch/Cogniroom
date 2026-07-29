@@ -36,7 +36,8 @@ if 'test' in sys.argv:
 AI_MONTHLY_QUESTION_QUOTA = config('AI_MONTHLY_QUESTION_QUOTA', default=100, cast=int)
 
 # Umbral de desalineación (ICC): por debajo se dispara el diagnóstico IA en
-# respuestas falladas. Constante de dominio (ver CLAUDE.md); subir reduce costo.
+# respuestas falladas. Es una decisión de costo operativo, no de dominio: los
+# umbrales del modelo viven en services/thresholds.py. Subirlo reduce el gasto.
 AI_ICC_THRESHOLD = config('AI_ICC_THRESHOLD', default=0.6, cast=float)
 
 # El alta de docentes se valida contra el código por institución

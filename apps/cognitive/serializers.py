@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+from services.thresholds import BLIND_SPOT_TH
+
 from .models import (
     AIDiagnosis,
     BKTState,
@@ -31,7 +33,7 @@ class BlindSpotIndexSerializer(serializers.ModelSerializer):
         ]
 
     def get_alert(self, obj):
-        return obj.ipc_value < 0.5
+        return obj.ipc_value < BLIND_SPOT_TH
 
 
 class AIDiagnosisSerializer(serializers.ModelSerializer):

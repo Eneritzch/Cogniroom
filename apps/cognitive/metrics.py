@@ -2,6 +2,7 @@ from django.db.models import Avg, Count, Q
 
 from apps.rooms.models import RoomMembership
 from services.cognitive_quadrant import classify_quadrant
+from services.thresholds import BLIND_SPOT_TH, WEAK_ACCURACY_TH, WEAK_MIN_SAMPLE
 
 from .models import CognitiveIndex
 
@@ -24,7 +25,7 @@ def category_breakdown(answers):
             'total': total,
             'correct': r['correct'],
             'accuracy': acc,
-            'weak': total >= 2 and acc < 0.6,
+            'weak': total >= WEAK_MIN_SAMPLE and acc < WEAK_ACCURACY_TH,
         })
     result.sort(key=lambda c: c['accuracy'])
     return result
@@ -94,7 +95,7 @@ def room_blind_spots(room, section_id=None):
             'node_name': node.name,
             'ipc_value': ipc,
             'total_student': total,
-            'alert': ipc < 0.5,
+            'alert': ipc < BLIND_SPOT_TH,
         })
     spots.sort(key=lambda s: s['ipc_value'])
     return spots
