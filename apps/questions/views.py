@@ -269,11 +269,6 @@ class ApproveQuestionsView(APIView):
 
     def post(self, request, room_id):
         room = get_object_or_404(Room, id=room_id)
-        if room.mode != 'group':
-            return Response(
-                {'detail': 'Approval applies only to group rooms.'},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
         if room.teacher_id != request.user.id:
             return Response(
                 {'detail': 'Only the room owner can approve questions.'},

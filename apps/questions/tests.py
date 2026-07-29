@@ -51,6 +51,31 @@ class QuestionAuthoringTests(APITestCase):
         q.refresh_from_db()
         self.assertEqual(q.status, 'rejected')
 
+    def test_approve_and_reject_individual_room(self):
+        indiv_room = Room.objects.create(name='Indiv', subject='X', mode='individual', teacher=self.teacher)
+        node = KnowledgeNode.objects.create(room=indiv_room, name='N')
+        q = Question.objects.create(
+            node=node, statement='q', difficulty='easy',
+            options=['a', 'b', 'c', 'd'], correct_index=0, source='ai',
+        )
+        self.assertEqual(q.status, 'approved')  # ai + individual => approved (auto)
+
+        # Reject
+        rej = self.client.post(f'/api/v1/rooms/{indiv_room.id}/questions/reject/', {
+            'question_ids': [q.id],
+        }, format='json')
+        self.assertEqual(rej.status_code, 200)
+        q.refresh_from_db()
+        self.assertEqual(q.status, 'rejected')
+
+        # Approve again
+        ap = self.client.post(f'/api/v1/rooms/{indiv_room.id}/questions/approve/', {
+            'question_ids': [q.id],
+        }, format='json')
+        self.assertEqual(ap.status_code, 200)
+        q.refresh_from_db()
+        self.assertEqual(q.status, 'approved')
+
     @override_settings(ANTHROPIC_API_KEY='')
     def test_generate_without_key_degrades(self):
         r = self.client.post(f'/api/v1/rooms/{self.room.id}/questions/generate/', {

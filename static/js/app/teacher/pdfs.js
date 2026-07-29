@@ -216,7 +216,14 @@ if ($uploadBtn && $fileInput) {
     $uploadBtn.addEventListener('click', () => $fileInput.click());
     $fileInput.addEventListener('change', async () => {
         const file = $fileInput.files && $fileInput.files[0];
-        if (!file || !ROOM_ID) return;
+        if (!file) return;
+        // Sin sala propia no hay destino para el archivo: se avisa en lugar de
+        // descartar la selección en silencio.
+        if (!ROOM_ID) {
+            toast('Cree una sala de estudio para subir material.', { kind: 'error' });
+            $fileInput.value = '';
+            return;
+        }
         const ext = file.name.toLowerCase().slice(file.name.lastIndexOf('.'));
         if (!ALLOWED_EXTENSIONS.includes(ext)) {
             toast('El documento debe ser PDF, PPTX o DOCX.', { kind: 'error' });
@@ -281,10 +288,21 @@ async function load() {
     if (!ROOM_INFO) {
         const $list = document.getElementById('pdfs-list');
         if ($list) $list.innerHTML = `<li class="pdfs-empty">Cree una sala de estudio para subir material.</li>`;
+        if ($uploadBtn) $uploadBtn.disabled = true;
+        if ($uploadHint) {
+            $uploadHint.textContent = 'Cree una sala de estudio para subir material';
+            $uploadHint.dataset.state = 'error';
+        }
         return;
     }
     ROOM_ID = ROOM_INFO.id;
     localStorage.setItem('cogniroom.activeRoomId', String(ROOM_ID));
+    // Al crear la sala, `roomchange` reejecuta load(): hay que rehabilitar el botón.
+    if ($uploadBtn) $uploadBtn.disabled = false;
+    if ($uploadHint && $uploadHint.dataset.state === 'error') {
+        $uploadHint.textContent = UPLOAD_HINT_DEFAULT;
+        delete $uploadHint.dataset.state;
+    }
     try {
         FILES = (await pdfsApi.list(ROOM_ID)) || [];
         render();
