@@ -38,23 +38,37 @@ def student_cognitive_rows(room, section_id=None):
     memberships = RoomMembership.objects.filter(room=room).select_related('student')
     if section_id is not None:
         memberships = memberships.filter(section_id=section_id)
+        
+    all_cis = CognitiveIndex.objects.filter(
+        node__room=room
+    ).select_related('student').order_by('-calculated_at')
+    
+    cis_by_student = {}
+    for ci in all_cis:
+        if ci.student_id not in cis_by_student:
+            cis_by_student[ci.student_id] = {}
+        if ci.node_id not in cis_by_student[ci.student_id]:
+            cis_by_student[ci.student_id][ci.node_id] = ci
+
     rows = []
     for m in memberships:
-        agg = (
-            CognitiveIndex.objects.filter(node__room=room, student=m.student)
-            .aggregate(gap=Avg('metacognitive_gap'), conf=Avg('avg_confidence'),
-                       mastery=Avg('bkt_mastery'), icc=Avg('icc_value'))
-        )
-        if agg['mastery'] is None or agg['conf'] is None:
+        student_cis = cis_by_student.get(m.student_id, {})
+        if not student_cis:
             continue
-        mastery = float(agg['mastery'])
-        conf = float(agg['conf'])
+            
+        def _avg(attr):
+            vals = [getattr(ci, attr) for ci in student_cis.values() if getattr(ci, attr) is not None]
+            return sum(vals) / len(vals) if vals else 0.0
+
+        mastery = _avg('bkt_mastery')
+        conf = _avg('avg_confidence')
+        
         rows.append({
             'student': m.student,
-            'mastery': round(mastery, 4),
-            'confidence': round(conf, 4),
-            'gap': round(float(agg['gap'] or 0.0), 4),
-            'icc': round(float(agg['icc'] or 0.0), 4),
+            'mastery': round(float(mastery), 4),
+            'confidence': round(float(conf), 4),
+            'gap': round(float(_avg('metacognitive_gap')), 4),
+            'icc': round(float(_avg('icc_value')), 4),
             'quadrant': classify_quadrant(mastery, conf),
         })
     return rows

@@ -432,15 +432,34 @@ class AtRiskView(APIView):
         memberships = RoomMembership.objects.filter(room=room).select_related('student')
         if section_id is not None:
             memberships = memberships.filter(section_id=section_id)
+            
+        all_cis = CognitiveIndex.objects.filter(
+            node__room=room
+        ).order_by('-calculated_at')
+        
+        cis_by_student = {}
+        for ci in all_cis:
+            if ci.student_id not in cis_by_student:
+                cis_by_student[ci.student_id] = {}
+            if ci.node_id not in cis_by_student[ci.student_id]:
+                cis_by_student[ci.student_id][ci.node_id] = ci
+
         for m in memberships:
-            agg = (
-                CognitiveIndex.objects.filter(node__room=room, student=m.student)
-                .aggregate(gap=Avg('metacognitive_gap'), conf=Avg('avg_confidence'),
-                           mastery=Avg('bkt_mastery'))
-            )
-            if agg['mastery'] is None or agg['conf'] is None:
+            student_cis = cis_by_student.get(m.student_id, {})
+            if not student_cis:
                 continue
-            quadrant = classify_quadrant(agg['mastery'], agg['conf'])
+                
+            def _avg(attr):
+                vals = [getattr(ci, attr) for ci in student_cis.values() if getattr(ci, attr) is not None]
+                return sum(vals) / len(vals) if vals else None
+
+            mastery = _avg('bkt_mastery')
+            conf = _avg('avg_confidence')
+            gap = _avg('metacognitive_gap')
+            
+            if mastery is None or conf is None:
+                continue
+            quadrant = classify_quadrant(mastery, conf)
             if quadrant not in ('overconfident', 'underconfident'):
                 continue
             critical = is_critical(quadrant)
@@ -451,7 +470,7 @@ class AtRiskView(APIView):
                 'quadrant': quadrant,
                 'quadrant_label': QUADRANTS[quadrant]['label'],
                 'critical': critical,
-                'metacognitive_gap': round(float(agg['gap'] or 0.0), 4),
+                'metacognitive_gap': round(float(gap or 0.0), 4),
                 'risk_level': 'high' if critical else 'medium',
             })
 
@@ -489,28 +508,46 @@ class RoomHeatmapView(APIView):
             (b.student_id, b.node_id): b.p_mastery
             for b in BKTState.objects.filter(node__room=room)
         }
+        
+        all_cis = CognitiveIndex.objects.filter(
+            node__room=room
+        ).order_by('-calculated_at')
+        
+        cis_by_student = {}
+        for ci in all_cis:
+            if ci.student_id not in cis_by_student:
+                cis_by_student[ci.student_id] = {}
+            if ci.node_id not in cis_by_student[ci.student_id]:
+                cis_by_student[ci.student_id][ci.node_id] = ci
 
         roster = []
         for m in memberships:
             cells = [round(float(mastery.get((m.student_id, n.id), 0.0)), 4) for n in nodes]
-            agg = (
-                CognitiveIndex.objects.filter(node__room=room, student=m.student)
-                .aggregate(gap=Avg('metacognitive_gap'), conf=Avg('avg_confidence'),
-                           mastery=Avg('bkt_mastery'))
-            )
-            gap = agg['gap'] or 0.0
-            if gap > 0.2:
+            student_cis = cis_by_student.get(m.student_id, {})
+            
+            def _avg(attr):
+                vals = [getattr(ci, attr) for ci in student_cis.values() if getattr(ci, attr) is not None]
+                return sum(vals) / len(vals) if vals else None
+
+            mast = _avg('bkt_mastery')
+            conf = _avg('avg_confidence')
+            gap = _avg('metacognitive_gap')
+            
+            gap_val = gap or 0.0
+            if gap_val > 0.2:
                 profile = 'overconfident'
-            elif gap < -0.2:
+            elif gap_val < -0.2:
                 profile = 'underconfident'
             else:
                 profile = 'calibrated'
+            
             # Cuadrante 2x2 (dominio real × confianza); None si el estudiante aún
             # no tiene datos cognitivos.
-            if agg['mastery'] is None or agg['conf'] is None:
+            if mast is None or conf is None:
                 quadrant = None
             else:
-                quadrant = classify_quadrant(agg['mastery'], agg['conf'])
+                quadrant = classify_quadrant(mast, conf)
+                
             roster.append({
                 'id': m.student_id,
                 'first_name': m.student.first_name,

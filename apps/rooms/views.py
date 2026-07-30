@@ -284,24 +284,41 @@ class RoomMembersView(APIView):
             .order_by('student__first_name', 'student__last_name')
         )
 
+        all_cis = CognitiveIndex.objects.filter(
+            node__room=room
+        ).order_by('-calculated_at')
+        
+        cis_by_student = {}
+        for ci in all_cis:
+            if ci.student_id not in cis_by_student:
+                cis_by_student[ci.student_id] = {}
+            if ci.node_id not in cis_by_student[ci.student_id]:
+                cis_by_student[ci.student_id][ci.node_id] = ci
+
         roster = []
         for m in memberships:
-            aggs = (
-                CognitiveIndex.objects.filter(node__room=room, student=m.student)
-                .aggregate(conf=Avg('avg_confidence'), mast=Avg('bkt_mastery'), gap=Avg('metacognitive_gap'))
-            )
-            gap = aggs['gap'] or 0.0
+            student_cis = cis_by_student.get(m.student_id, {})
+            
+            def _avg(attr):
+                vals = [getattr(ci, attr) for ci in student_cis.values() if getattr(ci, attr) is not None]
+                return sum(vals) / len(vals) if vals else 0.0
+                
+            conf = _avg('avg_confidence') if student_cis else None
+            mast = _avg('bkt_mastery') if student_cis else None
+            gap = _avg('metacognitive_gap') if student_cis else 0.0
+            
             if gap > 0.2:
                 profile = 'overconfident'
             elif gap < -0.2:
                 profile = 'underconfident'
             else:
                 profile = 'calibrated'
+                
             # Cuadrante 2x2; None si el estudiante aún no tiene datos cognitivos.
-            if aggs['mast'] is None or aggs['conf'] is None:
+            if mast is None or conf is None:
                 quadrant = None
             else:
-                quadrant = classify_quadrant(aggs['mast'], aggs['conf'])
+                quadrant = classify_quadrant(mast, conf)
 
             section = None
             if m.section_id:
@@ -311,8 +328,8 @@ class RoomMembersView(APIView):
                 'user': UserSerializer(m.student).data,
                 'profile': profile,
                 'quadrant': quadrant,
-                'avg_confidence': round(float(aggs['conf'] or 0.0), 4),
-                'bkt_mastery': round(float(aggs['mast'] or 0.0), 4),
+                'avg_confidence': round(float(conf or 0.0), 4),
+                'bkt_mastery': round(float(mast or 0.0), 4),
                 'metacognitive_gap': round(float(gap), 4),
                 'membership': {'section': section},
             })
